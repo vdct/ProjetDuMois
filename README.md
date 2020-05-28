@@ -9,7 +9,7 @@ __Le projet est en cours de développement__, et sera bientôt disponible à l'a
 
 L'outil est libre et réalisé par une équipe de bénévoles. Vous pouvez nous aider à améliorer le projet :
 
-* [En nous faisant des retours d'expériences et suggestions](./issues)
+* En nous faisant des retours d'expériences et suggestions
 * En proposant du code pour de nouvelles fonctionnalités ou des correctifs de bugs
 
 

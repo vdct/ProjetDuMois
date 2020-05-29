@@ -2,11 +2,18 @@
 doctype html
 html(lang="fr")
 	head
+		//- Meta
 		meta(charset="UTF-8")
 		title Projet du mois.fr
+
+		//- CSS
 		link(rel="stylesheet" type="text/css" href="/lib/bootstrap/bootstrap.css")
+		link(rel="stylesheet" type="text/css" href="/lib/mapbox-gl/mapbox-gl.css")
 		style
 			include index.css
+
+		//- JS
+		script(src="/lib/mapbox-gl/mapbox-gl.js")
 	body
 		div.container
 			//- Header
@@ -37,8 +44,8 @@ html(lang="fr")
 				div#contribute.blog-post
 					h2.blog-post-title Participer
 					div.row
-						div.col-md-8.bg-light.p-4
-							p Emplacement de la carte
+						div.col-md-8
+							include map.pug
 						div.col-md-4
 							p Descriptif synthétique de la mission et ce qu'il faut faire en lien avec la carte
 

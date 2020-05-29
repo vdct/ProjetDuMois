@@ -41,6 +41,10 @@ app.get('/lib/:modname/:file', (req, res) => {
 	const authorized = {
 		"bootstrap": {
 			"bootstrap.css": "dist/css/bootstrap.min.css"
+		},
+		"mapbox-gl": {
+			"mapbox-gl.js": "dist/mapbox-gl.js",
+			"mapbox-gl.css": "dist/mapbox-gl.css"
 		}
 	};
 

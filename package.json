@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "jstransformer-markdown-it": "^2.1.0",
+    "mapbox-gl": "^1.10.1",
     "pug": "^3.0.0"
   }
 }

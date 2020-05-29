@@ -1,0 +1,113 @@
+//- Original template from https://getbootstrap.com/docs/4.5/examples/blog/
+doctype html
+html(lang="fr")
+	head
+		meta(charset="UTF-8")
+		title Projet du mois.fr
+		link(rel="stylesheet" type="text/css" href="/lib/bootstrap/bootstrap.css")
+		style
+			include index.css
+	body
+		div.container
+			//- Header
+			header.blog-header.py-3
+				div.row.flex-nowrap.justify-content-between.align-items-center
+					div.col-12.text-center
+						a.blog-header-logo.text-dark(href="#") Projet du mois.fr
+
+			//- Nav links
+			div.nav-scroller.py-1.mb-2
+				nav.nav.d-flex.justify-content-between
+					a.p-2.text-muted(href="#summary") Au programme
+					a.p-2.text-muted(href="#contribute") Participer
+					a.p-2.text-muted(href="#statistics") Statistiques
+					a.p-2.text-muted(href="#about") À propos
+
+			//- Project summary
+			div#summary.jumbotron.p-4.p-md-5.text-white.rounded.bg-dark
+				div.col-md-8.px-0
+					h1.display-4.font-italic= `Au programme ce mois-ci : ${title}`
+					p.lead.my-3= summary
+					p.lead.mb-0
+						a.text-white.font-weight-bold(href="#contribute") Participer
+
+		main.container(role="container")
+			div.blog-main
+				//- Contribute
+				div#contribute.blog-post
+					h2.blog-post-title Participer
+					div.row
+						div.col-md-8.bg-light.p-4
+							p Emplacement de la carte
+						div.col-md-4
+							p Descriptif synthétique de la mission et ce qu'il faut faire en lien avec la carte
+
+				//- Statistics
+				div#statistics.blog-post
+					h2.blog-post-title.mb-3 Statistiques
+
+					//- Synthetic stats
+					div.row.mb-4
+						div.col-md-4
+							div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+								h3.mb-0 70%
+								p.card-text.mb-auto des tâches validées
+						div.col-md-4
+							div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+								h3.mb-0 42
+								p.card-text.mb-auto contributeurs
+						div.col-md-4
+							div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+								h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
+								p.card-text.mb-auto jours restants
+
+					div.row
+						//- Leaderboard
+						div.col-md-5
+							h3 Classement
+							table.table
+								thead
+									tr
+										th(scope="col") #
+										th(scope="col") Pseudo
+										th(scope="col") Éditions
+										th(scope="col") Badges
+								tbody
+									-
+										const lipsum = [
+											{ user: "Foo1", edits: 7800, badges: [ "B1", "B2" ] },
+											{ user: "Foo2", edits: 4400, badges: [ "B2" ] },
+											{ user: "Foo3", edits: 1500, badges: [ "B1"] },
+											{ user: "Foo4", edits: 42, badges: [] }
+										]
+									each item, pos in lipsum
+										tr
+											td(scope="row")= pos+1
+											td= item.user
+											td= item.edits
+											td= item.badges.join(", ")
+
+						//- Charts
+						div.col-md-7
+							h3 Évolution
+							p.bg-light.p-4 Emplacement des graphiques avec courbes d'évolution à travers le mois
+
+				//- About
+				div.row
+					div#about.blog-post.col-md-8
+						include:markdown-it ../../README.md
+					aside.col-md-4.blog-sidebar
+						div.p-4.mb-3.rounded
+							h4.font-italic Projets passés
+							ol.list-unstyled
+								each pastProj in past
+									li: a(href=`/past/${pastProj.id}`)= pastProj.label
+								li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener") Davantage sur le wiki OSM
+							h4.font-italic En savoir plus
+							ul.list-unstyled.mb-0
+								li: a(href="https://github.com/vdct/ProjetDuMois" rel="noopener") Code source du projet
+								li: a(href="https://openstreetmap.fr" rel="noopener") OpenStreetMap France
+
+		//- Footer
+		footer.blog-footer
+			p Copyright 2020 ProjetDuMois.fr - Développé sous licence libre AGPL 3.0

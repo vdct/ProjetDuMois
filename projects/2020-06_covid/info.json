@@ -1,0 +1,7 @@
+{
+	"id": "covid",
+	"title": "Déconfinement",
+	"start_date": "2020-05-01",
+	"end_date": "2020-08-31",
+	"summary": "Suite à l'épidémie de Covid-19 dans le monde, l'équipe de \"Ça reste ouvert\" et la communauté de contributeurs OpenStreetMap ont renseigné de nombreux commerces et services avec le tag opening_hours:covid19 et autres variantes. Avec la période de déconfinement qui s'engage en France, un nettoyage est à faire : garder les informations saisies pendant le confinement et qui restent d'actualité, et supprimer les informations qui n'ont plus d'intérêt."
+}

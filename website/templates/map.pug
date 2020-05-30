@@ -7,25 +7,7 @@ script.
 		dragRotate: false,
 		hash: true,
 		bounds: [-5.010, 41.212, 10.019, 51.234],
-		style: {
-			version: 8,
-			name: "ProjetDuMois.fr",
-			sources: {
-				osm: {
-					type: "raster",
-					tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
-					maxzoom: 19,
-					attribution: "&copy; OpenStreetMap"
-				}
-			},
-			layers: [
-				{
-					id: "osm",
-					source: "osm",
-					type: "raster"
-				}
-			]
-		}
+		style: '/mapstyle.json'
 	});
 
 	map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));

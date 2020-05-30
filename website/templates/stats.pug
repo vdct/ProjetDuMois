@@ -1,0 +1,85 @@
+div#statistics.blog-post
+	h2.blog-post-title.mb-3 Statistiques
+
+	//- Synthetic stats
+	div.row.mb-4
+		div.col-md-4
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				h3#stats-pctdone.mb-0 ?%
+				p.card-text.mb-auto des tâches terminées
+		div.col-md-4
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				h3#stats-contributors.mb-0 ?
+				p.card-text.mb-auto contributeurs
+		div.col-md-4
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
+				p.card-text.mb-auto jours restants
+
+	div.row
+		//- Leaderboard
+		div.col-md-5
+			h3 Classement
+			table.table
+				thead
+					tr
+						th(scope="col") #
+						th(scope="col") Pseudo
+						th(scope="col") Éditions
+						th(scope="col") Badges
+				tbody
+					-
+						const lipsum = [
+							{ user: "Foo1", edits: 7800, badges: [ "B1", "B2" ] },
+							{ user: "Foo2", edits: 4400, badges: [ "B2" ] },
+							{ user: "Foo3", edits: 1500, badges: [ "B1"] },
+							{ user: "Foo4", edits: 42, badges: [] }
+						]
+					each item, pos in lipsum
+						tr
+							td(scope="row")= pos+1
+							td= item.user
+							td= item.edits
+							td= item.badges.join(", ")
+
+		//- Charts
+		div.col-md-7
+			h3 Évolution
+			canvas#stats-chart.chart-100w(height="300")
+
+script.
+	fetch("/projects/#{id}/stats")
+	.then(res => res.json())
+	.then(res => {
+		// % of done tasks
+		document.getElementById("stats-pctdone").innerHTML = res.pctTasksDone+" %";
+
+		// Evolution chart
+		const ctx = document.getElementById("stats-chart").getContext("2d");
+		const myChart = new Chart(ctx, {
+			type: "line",
+			data: {
+				datasets: res.chart
+			},
+			options: {
+				responsive: true,
+				scales: {
+					xAxes: [{
+						type: 'time',
+						bounds: 'ticks',
+						time: {
+							tooltipFormat: "DD/MM",
+							displayFormats: {
+								day: "DD/MM"
+							}
+						}
+					}],
+					yAxes: [{
+						ticks: {
+							beginAtZero: true
+						}
+					}]
+				}
+			}
+		});
+	});

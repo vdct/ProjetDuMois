@@ -7,7 +7,7 @@ script.
 		dragRotate: false,
 		hash: true,
 		bounds: [-5.010, 41.212, 10.019, 51.234],
-		style: '/mapstyle.json'
+		style: !{JSON.stringify(mapstyle)}
 	});
 
 	map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));

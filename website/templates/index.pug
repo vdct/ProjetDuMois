@@ -9,11 +9,13 @@ html(lang="fr")
 		//- CSS
 		link(rel="stylesheet" type="text/css" href="/lib/bootstrap/bootstrap.css")
 		link(rel="stylesheet" type="text/css" href="/lib/mapbox-gl/mapbox-gl.css")
+		link(rel="stylesheet" type="text/css" href="/lib/chart.js/chart.css")
 		style
 			include index.css
 
 		//- JS
 		script(src="/lib/mapbox-gl/mapbox-gl.js")
+		script(src="/lib/chart.js/chart.js")
 	body
 		div.container
 			//- Header
@@ -50,54 +52,7 @@ html(lang="fr")
 							p Descriptif synthétique de la mission et ce qu'il faut faire en lien avec la carte
 
 				//- Statistics
-				div#statistics.blog-post
-					h2.blog-post-title.mb-3 Statistiques
-
-					//- Synthetic stats
-					div.row.mb-4
-						div.col-md-4
-							div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
-								h3.mb-0 70%
-								p.card-text.mb-auto des tâches terminées
-						div.col-md-4
-							div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
-								h3.mb-0 42
-								p.card-text.mb-auto contributeurs
-						div.col-md-4
-							div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
-								h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
-								p.card-text.mb-auto jours restants
-
-					div.row
-						//- Leaderboard
-						div.col-md-5
-							h3 Classement
-							table.table
-								thead
-									tr
-										th(scope="col") #
-										th(scope="col") Pseudo
-										th(scope="col") Éditions
-										th(scope="col") Badges
-								tbody
-									-
-										const lipsum = [
-											{ user: "Foo1", edits: 7800, badges: [ "B1", "B2" ] },
-											{ user: "Foo2", edits: 4400, badges: [ "B2" ] },
-											{ user: "Foo3", edits: 1500, badges: [ "B1"] },
-											{ user: "Foo4", edits: 42, badges: [] }
-										]
-									each item, pos in lipsum
-										tr
-											td(scope="row")= pos+1
-											td= item.user
-											td= item.edits
-											td= item.badges.join(", ")
-
-						//- Charts
-						div.col-md-7
-							h3 Évolution
-							p.bg-light.p-4 Emplacement des graphiques avec courbes d'évolution à travers le mois
+				include stats.pug
 
 				//- About
 				div.row

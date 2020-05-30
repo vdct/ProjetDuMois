@@ -6,26 +6,10 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const path = require('path');
+const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
-
-// Get current+past projects
-function filterProjects() {
-	const prjs = { past: [], current: null };
-	Object.values(projects).forEach(project => {
-		// Check dates
-		if(new Date(project.start_date).getTime() <= Date.now() && Date.now() <= new Date(project.end_date).getTime()) {
-			prjs.current = project;
-		}
-		else {
-			prjs.past.push({
-				id: project.id,
-				label: `${new Date(project.start_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'numeric' })} - ${project.title}`
-			});
-		}
-	});
-	return prjs;
-}
+const { filterProjects, queryParams, getMapStyle } = require('./utils');
 
 
 /*
@@ -42,65 +26,44 @@ app.set('views', __dirname+'/templates');
 
 // Index
 app.get('/', (req, res) => {
-	const p = filterProjects();
-	res.render('index', Object.assign({ past: p.past }, p.current));
+	const p = filterProjects(projects);
+	const mapstyle = getMapStyle(p.current);
+	res.render('index', Object.assign({ mapstyle, past: p.past }, p.current));
 });
 
-// Mapbox GL style
-app.get('/mapstyle.json', (req, res) => {
-	const osmoseSources = {};
-	const osmoseLayers = [];
-	const p = filterProjects();
-
-	if(p.current) {
-		p.current.datasources
-		.filter(ds => ds.source === "osmose")
-		.forEach(ds => {
-			const id = `osmose_${ds.item}_${ds.class}`;
-
-			osmoseSources[id] = {
-				type: "vector",
-				tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3beta/issues/{z}/{x}/{y}.mvt?item=${ds.item}${ds.class ? "&class="+ds.class : ""}` ],
-				minzoom: 7
-			};
-
-			osmoseLayers.push({
-				id: id,
-				source: id,
-				type: "circle",
-				"source-layer": "issues",
-				paint: {
-					"circle-color": ds.color || "red",
-					"circle-radius": [
-						"interpolate",
-						["linear"],
-						["zoom"],
-						11, 3,
-						19, 13
-					]
-				}
-			});
-		});
+// Project statistics
+app.get('/projects/:id/stats', (req, res) => {
+	if(!req.params.id || !projects[req.params.id]) {
+		return res.status(404).send('Project ID not found');
 	}
 
-	res.json({
-		version: 8,
-		name: "ProjetDuMois.fr",
-		sources: Object.assign({
-			osm: {
-				type: "raster",
-				tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
-				maxzoom: 19,
-				attribution: "&copy; OpenStreetMap"
-			}
-		}, osmoseSources),
-		layers: [
-			{
-				id: "osm",
-				source: "osm",
-				type: "raster"
-			}
-		].concat(osmoseLayers)
+	const p = projects[req.params.id];
+
+	// Fetch Osmose statistics
+	const osmosePromises = p.datasources
+		.filter(ds => ds.source === "osmose")
+		.map(ds => {
+			const params = { item: ds.item, class: ds.class, start_date: p.start_date, end_date: p.end_date };
+			return fetch(`${CONFIG.OSMOSE_URL}/fr/errors/graph.json?${queryParams(params)}`)
+			.then(res => res.json())
+			.then(res => ({
+				label: ds.name,
+				data: Object.entries(res.data).map(e => ({ t: e[0], y: e[1] })).sort((a,b) => a.t.localeCompare(b.t)),
+				fill: false,
+				borderColor: ds.color || "red"
+			}));
+		});
+
+	Promise.all(osmosePromises)
+	.then(results => {
+		const nbTasksStart = results.map(r => r.data[0].y).reduce((acc,cur) => acc + cur);
+		const nbTasksEnd = results.map(r => r.data[r.data.length-1].y).reduce((acc,cur) => acc + cur);
+
+		const stats = {
+			chart: results,
+			pctTasksDone: Math.floor(100 - nbTasksEnd / nbTasksStart * 100)
+		};
+		res.send(stats);
 	});
 });
 
@@ -120,6 +83,10 @@ app.get('/lib/:modname/:file', (req, res) => {
 		"mapbox-gl": {
 			"mapbox-gl.js": "dist/mapbox-gl.js",
 			"mapbox-gl.css": "dist/mapbox-gl.css"
+		},
+		"chart.js": {
+			"chart.js": "dist/Chart.bundle.min.js",
+			"chart.css": "dist/Chart.min.css"
 		}
 	};
 

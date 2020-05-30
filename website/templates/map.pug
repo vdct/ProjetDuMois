@@ -1,6 +1,8 @@
 div#map.map-main
 
+//- This runs on client
 script.
+	// Map init
 	const map = new mapboxgl.Map({
 		container: 'map',
 		pitchWithRotate: false,
@@ -11,3 +13,73 @@ script.
 	});
 
 	map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
+
+	// Alert for zoom/search
+	class AlertControl {
+		onAdd(map) {
+			this._map = map;
+			this._container = document.createElement('div');
+			this._container.className = "mapboxgl-ctrl map-ctrl-custom"+(map.getZoom() >= 7 ? " d-none": "");
+			this._container.textContent = 'Zoomez ou lancez une recherche pour commencer';
+
+			this._map.on("zoom", e => {
+				if(this._map.getZoom() >= 7) {
+					this._container.classList.add("d-none");
+				}
+				else {
+					this._container.classList.remove("d-none");
+				}
+			});
+
+			return this._container;
+		}
+
+		onRemove() {
+			this._container.parentNode.removeChild(this._container);
+			this._map = undefined;
+		}
+	}
+
+	map.addControl(new AlertControl(), "bottom-left");
+
+	// Click on feature
+	function showPopup(e, feature, description) {
+		const coordinates = feature.geometry.coordinates.slice();
+
+		while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+			coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+		}
+
+		const popup = new mapboxgl.Popup().setLngLat(coordinates);
+
+		if(typeof description === "string") {
+			popup.setHTML(description);
+		}
+		else {
+			popup.setDOMContent(description);
+		}
+
+		popup.addTo(map);
+	}
+
+	function clickFeature(e) {
+		if(!map || !e) { return; }
+		const features = map.queryRenderedFeatures(e.point);
+		if(!features || features.length === 0) { return; }
+
+		const p = features[0].properties;
+		const description = `${p.uuid} ${p.class} ${p.item}`;
+
+		showPopup(e, features[0], description);
+	}
+
+	map.on("click", clickFeature);
+
+//- Generate hover events for each layer dynamically on server
+-
+	const hoverEvents = mapstyle.layers
+		.map(l => l.id)
+		.map(id => `map.on('mouseenter', '${id}', () => { map.getCanvas().style.cursor = 'pointer'; });\nmap.on('mouseleave', '${id}', () => { map.getCanvas().style.cursor = ''; });`)
+		.join("\n");
+
+script !{hoverEvents}

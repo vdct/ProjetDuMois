@@ -34,7 +34,7 @@ exports.getMapStyle = (p) => {
 		p.datasources
 		.filter(ds => ds.source === "osmose")
 		.forEach(ds => {
-			const id = `osmose_${ds.item}_${ds.class}`;
+			const id = `osmose_${ds.item}_${ds.class || "all"}`;
 
 			osmoseSources[id] = {
 				type: "vector",

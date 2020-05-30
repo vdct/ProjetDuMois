@@ -128,3 +128,13 @@ h1, h2, h3, h4, h5, h6 {
 .chart-100w {
 	width: 100%;
 }
+
+.map-ctrl-custom {
+	min-height: 20px;
+	padding: 2px 4px;
+	margin: 10px;
+	margin-top: 10px;
+	position: relative;
+	background-color: #fff;
+	border-radius: 3px;
+}

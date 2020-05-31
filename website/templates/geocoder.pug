@@ -1,0 +1,66 @@
+div.dropdown
+	input#boundary-search.form-control.rounded-0.dropdown-toggle(type="text" placeholder="Rechercher un lieu..." data-toggle="dropdown" data-display="static")
+	div.dropdown-menu.m-0#boundary-suggestions
+		a.dropdown-item.disabled Tapez un nom pour lancer la recherche
+
+script.
+	const searchTextField = document.getElementById("boundary-search");
+	const searchSuggestions = document.getElementById("boundary-suggestions");
+	searchTextField.value = "";
+	let hasPrevTextSearch = false;
+	let timerSearchInput = null;
+
+	searchTextField.addEventListener("input", e => {
+		if(timerSearchInput) {
+			clearTimeout(timerSearchInput);
+		}
+
+		searchSuggestions.classList.add('d-block');
+		searchTextField.addEventListener("blur", () => setTimeout(() => searchSuggestions.classList.remove('d-block'), 300), { once: true });
+
+		const text = e.target.value;
+		if(!text || text.trim().length === 0) {
+			searchSuggestions.innerHTML = '<a class="dropdown-item disabled">Tapez un nom pour lancer la recherche</a>';
+			hasPrevTextSearch = false;
+		}
+		else {
+			const waitText = '<a class="dropdown-item disabled"><span class="spinner-border text-primary" role="status"></span></a>';
+			if(!hasPrevTextSearch && searchSuggestions.innerHTML !== waitText) {
+				searchSuggestions.innerHTML = waitText;
+			}
+
+			timerSearchInput = setTimeout(() => {
+				hasPrevTextSearch = true;
+				fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(text)}&format=json&countrycodes=fr&limit=5`)
+				.then(res => res.json())
+				.then(results => {
+					searchSuggestions.innerHTML = '';
+
+					if(results.length >= 3) {
+						results.forEach(r => {
+							const labels = r.display_name.split(', ');
+							const entry = document.createElement("a");
+							entry.classList.add("dropdown-item");
+							entry.innerHTML = `${labels[0]} <small>(${r.class}=${r.type})<br />${labels.splice(1).join(", ")}</small>`;
+
+							searchSuggestions.appendChild(entry);
+							entry.addEventListener("click", () => {
+								searchTextField.removeEventListener
+								searchTextField.value = r.display_name;
+								const [ minlat, maxlat, minlon, maxlon ] = r.boundingbox.map(v => parseFloat(v));
+								map.fitBounds([minlon, minlat, maxlon, maxlat]);
+								searchSuggestions.classList.remove('d-block');
+							});
+						});
+					}
+					else {
+						searchSuggestions.innerHTML = '<a class="dropdown-item disabled">Aucun résultat</a>';
+					}
+				})
+				.catch(e => {
+					console.log(e);
+					searchSuggestions.innerHTML = '<a class="dropdown-item disabled">Erreur</a>';
+				});
+			}, 1000);
+		}
+	});

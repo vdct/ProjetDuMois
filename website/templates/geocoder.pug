@@ -1,5 +1,5 @@
 div.dropdown
-	input#boundary-search.form-control.rounded-0.dropdown-toggle(type="text" placeholder="Rechercher un lieu..." data-toggle="dropdown" data-display="static")
+	input#boundary-search.form-control.rounded-top-only.dropdown-toggle(type="text" placeholder="Rechercher un lieu..." data-toggle="dropdown" data-display="static")
 	div.dropdown-menu.m-0#boundary-suggestions
 		a.dropdown-item.disabled Tapez un nom pour lancer la recherche
 
@@ -19,7 +19,7 @@ script.
 		searchTextField.addEventListener("blur", () => setTimeout(() => searchSuggestions.classList.remove('d-block'), 300), { once: true });
 
 		const text = e.target.value;
-		if(!text || text.trim().length === 0) {
+		if(!text || text.trim().length < 3) {
 			searchSuggestions.innerHTML = '<a class="dropdown-item disabled">Tapez un nom pour lancer la recherche</a>';
 			hasPrevTextSearch = false;
 		}
@@ -31,12 +31,12 @@ script.
 
 			timerSearchInput = setTimeout(() => {
 				hasPrevTextSearch = true;
-				fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(text)}&format=json&countrycodes=fr&limit=5`)
+				fetch(`#{CONFIG.NOMINATIM_URL}/search?q=${encodeURIComponent(text)}&format=json&countrycodes=fr&limit=5`)
 				.then(res => res.json())
 				.then(results => {
 					searchSuggestions.innerHTML = '';
 
-					if(results.length >= 3) {
+					if(results.length > 0) {
 						results.forEach(r => {
 							const labels = r.display_name.split(', ');
 							const entry = document.createElement("a");

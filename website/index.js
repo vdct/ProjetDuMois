@@ -28,7 +28,7 @@ app.set('views', __dirname+'/templates');
 app.get('/', (req, res) => {
 	const p = filterProjects(projects);
 	const mapstyle = getMapStyle(p.current);
-	res.render('index', Object.assign({ mapstyle, past: p.past }, p.current));
+	res.render('index', Object.assign({ mapstyle, CONFIG, past: p.past }, p.current));
 });
 
 // Project statistics
@@ -43,7 +43,7 @@ app.get('/projects/:id/stats', (req, res) => {
 	const osmosePromises = p.datasources
 		.filter(ds => ds.source === "osmose")
 		.map(ds => {
-			const params = { item: ds.item, class: ds.class, start_date: p.start_date, end_date: p.end_date };
+			const params = { item: ds.item, class: ds.class, start_date: p.start_date, end_date: p.end_date, country: ds.country };
 			return fetch(`${CONFIG.OSMOSE_URL}/fr/errors/graph.json?${queryParams(params)}`)
 			.then(res => res.json())
 			.then(res => ({

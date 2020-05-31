@@ -120,9 +120,22 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+.rounded-top-only {
+	border-top-right-radius: 0.25rem;
+	border-top-left-radius: 0.25rem;
+	border-bottom-right-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
 .map-main {
 	width: 100%;
 	height: 400px;
+}
+
+@media (min-width: 992px) {
+	.map-main {
+		height: 600px;
+	}
 }
 
 .chart-100w {

@@ -1,4 +1,4 @@
-div#map.map-main
+div#map.map-main.rounded-bottom
 
 //- This runs on client
 script.
@@ -43,23 +43,38 @@ script.
 	map.addControl(new AlertControl(), "bottom-left");
 
 	// Click on feature
-	function showPopup(e, feature, description) {
-		const coordinates = feature.geometry.coordinates.slice();
+	function getDescription(feature) {
+		const osmoseLabels = !{JSON.stringify(osmoseLabels)};
+		const p = feature.properties;
+		const resDiv = document.createElement("div");
+		resDiv.innerHTML = `<span class="spinner-border text-primary" role="status"></span>`;
 
-		while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-			coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-		}
+		// Retrieve metadata on Osmose API
+		fetch(`#{CONFIG.OSMOSE_URL}/api/0.3beta/issue/${p.uuid}`)
+		.then(res => res.json())
+		.then(meta => {
+			const title = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || meta.title.auto;
+			let links = [
+				{ title: "JOSM", href: `#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${meta.minlat}&top=${meta.maxlat}&right=${meta.maxlon}&left=${meta.minlon}&#{josmParams}` },
+				{ title: "iD", href: `#{CONFIG.OSM_URL}/edit#map=20/${meta.lat}/${meta.lon}&#{idParams}` },
+				{ title: "OSM", href: `#{CONFIG.OSM_URL}/#map=18/${meta.lat}/${meta.lon}` },
+				{ title: "Osmose", href: `#{CONFIG.OSMOSE_URL}/fr/error/${p.uuid}` },
+				{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${meta.lat}&lng=${meta.lon}&z=18` }
+			];
+			links = links.map(l => `<a href="${l.href}" target="_blank" rel="noopener">${l.title}</a>`).join(" | ");
+			const tags = meta.new_elems && meta.new_elems.length > 0 ? meta.new_elems[0].add.map(kv => kv.k+"="+kv.v).join("\n") : "";
 
-		const popup = new mapboxgl.Popup().setLngLat(coordinates);
+			resDiv.innerHTML = `
+	<h5 class="m-0">${title}</h5>
+	<p class="m-0 mb-2">${meta.subtitle.auto}</p>
+	<div class="form-group m-0 mb-1">
+		<label class="m-0" for="exampleFormControlTextarea1">Attributs</label>
+		<textarea class="form-control form-control-sm" rows="3">${tags}</textarea>
+	</div>
+	<div class="text-center">${links}</div>`;
+		});
 
-		if(typeof description === "string") {
-			popup.setHTML(description);
-		}
-		else {
-			popup.setDOMContent(description);
-		}
-
-		popup.addTo(map);
+		return resDiv;
 	}
 
 	function clickFeature(e) {
@@ -67,10 +82,17 @@ script.
 		const features = map.queryRenderedFeatures(e.point);
 		if(!features || features.length === 0) { return; }
 
-		const p = features[0].properties;
-		const description = `${p.uuid} ${p.class} ${p.item}`;
+		const description = getDescription(features[0]);
+		const coordinates = features[0].geometry.coordinates.slice();
 
-		showPopup(e, features[0], description);
+		while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+			coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+		}
+
+		const popup = new mapboxgl.Popup().setLngLat(coordinates);
+		if(typeof description === "string") { popup.setHTML(description); }
+		else { popup.setDOMContent(description); }
+		popup.addTo(map);
 	}
 
 	map.on("click", clickFeature);

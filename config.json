@@ -1,3 +1,8 @@
 {
-	"OSMOSE_URL": "https://osmose.openstreetmap.fr"
+	"OSM_URL": "https://openstreetmap.org",
+	"OSMOSE_URL": "https://osmose.openstreetmap.fr",
+	"NOMINATIM_URL": "https://nominatim.openstreetmap.org",
+	"MAPILLARY_URL": "https://www.mapillary.com",
+	"REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
+	"JOSM_REMOTE_URL": "http://localhost:8111"
 }

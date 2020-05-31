@@ -18,6 +18,16 @@ Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-ré
 
 * `info.json` : métadonnées du projet
 
+Les propriétés sont les suivantes :
+
+* `id` : identifiant de la mission (caractères autorisés : A-Z, 0-9, _ et -)
+* `title` : nom de la mission (assez court)
+* `start_date` : date de début de la mission (format AAAA-MM-JJ)
+* `end_date` : date de fin de la mission (format AAAA-MM-JJ)
+* `summary` : résumé de la mission
+* `datasources` : liste des sources de données qui apparaissent sur la page (signalements Osmose)
+* `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+
 
 ## Site web
 

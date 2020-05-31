@@ -46,10 +46,10 @@ html(lang="fr")
 				div#contribute.blog-post
 					h2.blog-post-title Participer
 					div.row
-						div.col-md-8
+						div.col-lg-8
 							include geocoder.pug
 							include map.pug
-						div.col-md-4
+						div.col-lg-4
 							p Descriptif synthétique de la mission et ce qu'il faut faire en lien avec la carte
 
 				//- Statistics
@@ -68,7 +68,7 @@ html(lang="fr")
 								li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener") Davantage sur le wiki OSM
 							h4.font-italic En savoir plus
 							ul.list-unstyled.mb-0
-								li: a(href="https://github.com/vdct/ProjetDuMois" rel="noopener") Code source du projet
+								li: a(href=CONFIG.REPOSITORY_URL rel="noopener") Code source du projet
 								li: a(href="https://openstreetmap.fr" rel="noopener") OpenStreetMap France
 
 		//- Footer

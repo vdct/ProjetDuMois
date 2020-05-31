@@ -35,10 +35,11 @@ exports.getMapStyle = (p) => {
 		.filter(ds => ds.source === "osmose")
 		.forEach(ds => {
 			const id = `osmose_${ds.item}_${ds.class || "all"}`;
+			const params = { item: ds.item, class: ds.class, country: ds.country };
 
 			osmoseSources[id] = {
 				type: "vector",
-				tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3beta/issues/{z}/{x}/{y}.mvt?item=${ds.item}${ds.class ? "&class="+ds.class : ""}` ],
+				tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3beta/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
 				minzoom: 7
 			};
 

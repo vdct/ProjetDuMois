@@ -2,27 +2,11 @@
 doctype html
 html(lang="fr")
 	head
-		//- Meta
-		meta(charset="UTF-8")
-		title Projet du mois.fr
-
-		//- CSS
-		link(rel="stylesheet" type="text/css" href="/lib/bootstrap/bootstrap.css")
-		link(rel="stylesheet" type="text/css" href="/lib/mapbox-gl/mapbox-gl.css")
-		link(rel="stylesheet" type="text/css" href="/lib/chart.js/chart.css")
-		style
-			include index.css
-
-		//- JS
-		script(src="/lib/mapbox-gl/mapbox-gl.js")
-		script(src="/lib/chart.js/chart.js")
+		include common_head.pug
 	body
 		div.container
 			//- Header
-			header.blog-header.py-3
-				div.row.flex-nowrap.justify-content-between.align-items-center
-					div.col-12.text-center
-						a.blog-header-logo.text-dark(href="#") Projet du mois.fr
+			include common_header.pug
 
 			//- Nav links
 			div.nav-scroller.py-1.mb-2
@@ -61,16 +45,16 @@ html(lang="fr")
 						include:markdown-it ../../README.md
 					aside.col-md-4.blog-sidebar
 						div.p-4.mb-3.rounded
-							h4.font-italic Projets passés
-							ol.list-unstyled
-								each pastProj in past
-									li: a(href=`/past/${pastProj.id}`)= pastProj.label
-								li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener") Davantage sur le wiki OSM
+							if past
+								h4.font-italic Projets passés
+								ol.list-unstyled
+									each pastProj in past
+										li: a(href=`/projects/${pastProj.id}`)= pastProj.label
+									li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener") Davantage sur le wiki OSM
 							h4.font-italic En savoir plus
 							ul.list-unstyled.mb-0
 								li: a(href=CONFIG.REPOSITORY_URL rel="noopener") Code source du projet
 								li: a(href="https://openstreetmap.fr" rel="noopener") OpenStreetMap France
 
 		//- Footer
-		footer.blog-footer
-			p Copyright 2020 ProjetDuMois.fr - Développé sous licence libre AGPL 3.0
+		include common_footer.pug

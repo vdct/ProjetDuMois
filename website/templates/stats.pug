@@ -13,8 +13,12 @@ div#statistics.blog-post
 				p.card-text.mb-auto contributeurs
 		div.col-md-4
 			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
-				h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
-				p.card-text.mb-auto jours restants
+				if new Date(end_date).getTime() >= Date.now()
+					h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
+					p.card-text.mb-auto jours restants
+				else
+					h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - new Date(start_date+"T00:00:00Z").getTime()) / (1000*3600*24))
+					p.card-text.mb-auto jours de contributions
 
 	div.row
 		//- Leaderboard

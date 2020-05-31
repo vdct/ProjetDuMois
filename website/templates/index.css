@@ -151,3 +151,14 @@ h1, h2, h3, h4, h5, h6 {
 	background-color: #fff;
 	border-radius: 3px;
 }
+
+a.pdm-link {
+	color: #007bff;
+	text-decoration: none;
+}
+
+a.pdm-link:hover {
+	color: #0056b3;
+	cursor: pointer;
+	text-decoration: underline;
+}

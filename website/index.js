@@ -31,6 +31,17 @@ app.get('/', (req, res) => {
 	res.render('index', Object.assign({ mapstyle, CONFIG, past: p.past }, p.current));
 });
 
+// Past project page
+app.get('/projects/:id', (req, res) => {
+	if(!req.params.id || !projects[req.params.id]) {
+		return res.status(404).send('Project ID not found');
+	}
+
+	const p = projects[req.params.id];
+	const mapstyle = getMapStyle(p);
+	res.render('project', Object.assign({ mapstyle, CONFIG }, p));
+});
+
 // Project statistics
 app.get('/projects/:id/stats', (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {

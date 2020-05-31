@@ -8,7 +8,7 @@ exports.filterProjects = (projects) => {
 		if(new Date(project.start_date).getTime() <= Date.now() && Date.now() <= new Date(project.end_date).getTime()) {
 			prjs.current = project;
 		}
-		else {
+		else if(new Date(project.end_date).getTime() < Date.now()) {
 			prjs.past.push({
 				id: project.id,
 				label: `${new Date(project.start_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'numeric' })} - ${project.title}`

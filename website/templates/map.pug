@@ -43,6 +43,25 @@ script.
 	map.addControl(new AlertControl(), "bottom-left");
 
 	// Click on feature
+	function getLinks(meta) {
+		const elem = meta.elems && meta.elems.length > 0 && meta.elems[0];
+		const newElem = meta.new_elems && meta.new_elems.length > 0 && meta.new_elems[0];
+
+		// JOSM commands
+		const josmHrefs = [ `#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${meta.minlat}&top=${meta.maxlat}&right=${meta.maxlon}&left=${meta.minlon}${elem && "&select="+elem.type+elem.id || ""}&#{josmParams}` ];
+		if(newElem) {
+			josmHrefs.push(`#{CONFIG.JOSM_REMOTE_URL}/add_node?lon=${meta.lon}&lat=${meta.lat}&addtags=${encodeURIComponent(newElem.add.map(kv => kv.k+"="+kv.v).join("|"))}`);
+		}
+
+		return [
+			{ title: "JOSM", hrefs: josmHrefs },
+			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit${elem && "?"+elem.type+"="+elem.id || ""}#map=20/${meta.lat}/${meta.lon}&#{idParams}` },
+			{ title: "OSM", href: `#{CONFIG.OSM_URL}/${elem && elem.type+"/"+elem.id || ""}#map=18/${meta.lat}/${meta.lon}` },
+			{ title: "Osmose", href: `#{CONFIG.OSMOSE_URL}/fr/error/${meta.uuid}` },
+			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${meta.lat}&lng=${meta.lon}&z=18` }
+		];
+	}
+
 	function getDescription(feature) {
 		const osmoseLabels = !{JSON.stringify(osmoseLabels)};
 		const p = feature.properties;
@@ -54,24 +73,55 @@ script.
 		.then(res => res.json())
 		.then(meta => {
 			const title = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || meta.title.auto;
-			let links = [
-				{ title: "JOSM", href: `#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${meta.minlat}&top=${meta.maxlat}&right=${meta.maxlon}&left=${meta.minlon}&#{josmParams}` },
-				{ title: "iD", href: `#{CONFIG.OSM_URL}/edit#map=20/${meta.lat}/${meta.lon}&#{idParams}` },
-				{ title: "OSM", href: `#{CONFIG.OSM_URL}/#map=18/${meta.lat}/${meta.lon}` },
-				{ title: "Osmose", href: `#{CONFIG.OSMOSE_URL}/fr/error/${p.uuid}` },
-				{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${meta.lat}&lng=${meta.lon}&z=18` }
-			];
-			links = links.map(l => `<a href="${l.href}" target="_blank" rel="noopener">${l.title}</a>`).join(" | ");
-			const tags = meta.new_elems && meta.new_elems.length > 0 ? meta.new_elems[0].add.map(kv => kv.k+"="+kv.v).join("\n") : "";
+
+			const links = getLinks(meta).map(l => {
+				const linkDom = document.createElement("a");
+				linkDom.appendChild(document.createTextNode(l.title));
+
+				// Simple link
+				if(l.href) {
+					linkDom.href = l.href;
+					linkDom.target = "_blank";
+					linkDom.rel = "noopener";
+				}
+				// Several links (JOSM) : call one, wait 3s, call second...
+				else if(l.hrefs) {
+					linkDom.classList.add("pdm-link");
+					linkDom.addEventListener("click", () => {
+						const next = () => {
+							const url = l.hrefs.shift();
+							if(url) {
+								fetch(url).then(() => setTimeout(next, 3000));
+							}
+						};
+						next();
+					});
+				}
+
+				return linkDom;
+			});
+
+			let tags = meta.new_elems && meta.new_elems.length > 0 ? meta.new_elems[0].add.map(kv => kv.k+"="+kv.v).join("\n") : "";
+			if(tags.length > 0) {
+				tags = `
+					<div class="form-group m-0 mb-1">
+						<label class="m-0" for="exampleFormControlTextarea1">Attributs</label>
+						<textarea class="form-control form-control-sm" rows="3">${tags}</textarea>
+					</div>`;
+			}
 
 			resDiv.innerHTML = `
-	<h5 class="m-0">${title}</h5>
-	<p class="m-0 mb-2">${meta.subtitle.auto}</p>
-	<div class="form-group m-0 mb-1">
-		<label class="m-0" for="exampleFormControlTextarea1">Attributs</label>
-		<textarea class="form-control form-control-sm" rows="3">${tags}</textarea>
-	</div>
-	<div class="text-center">${links}</div>`;
+				<h5 class="m-0">${title}</h5>
+				<p class="m-0 mb-2">${meta.subtitle.auto}</p>
+				${tags}`;
+
+			const divLinks = document.createElement("div");
+			divLinks.classList.add("text-center");
+			links.forEach((l,i) => {
+				if(i > 0) { divLinks.appendChild(document.createTextNode(" | ")); }
+				divLinks.appendChild(l);
+			});
+			resDiv.appendChild(divLinks);
 		});
 
 		return resDiv;

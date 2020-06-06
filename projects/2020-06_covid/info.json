@@ -1,12 +1,11 @@
 {
-	"id": "covid",
+	"id": "2020-06_covid",
 	"title": "Déconfinement",
-	"start_date": "2020-05-15",
+	"start_date": "2020-06-04",
 	"end_date": "2020-08-31",
-	"summary": "Suite à l'épidémie de Covid-19 dans le monde, l'équipe de \"Ça reste ouvert\" et la communauté de contributeurs OpenStreetMap ont renseigné de nombreux commerces et services avec le tag opening_hours:covid19 et autres variantes. Avec la période de déconfinement qui s'engage en France, un nettoyage est à faire : garder les informations saisies pendant le confinement et qui restent d'actualité, et supprimer les informations qui n'ont plus d'intérêt.",
+	"summary": "Suite à la pandémie de Covid-19 dans le monde, la communauté de contributeurs OpenStreetMap a créé plusieurs nouveaux tags (opening_hours:covid19, delivery:covid19, etc) pour renseigner des informations temporaires sur les commerces et services. Grâce au succès de Ça Reste Ouvert, près de 60 000 lieux ont ainsi pu être détaillés. Avec la période de déconfinement qui s'engage en France et le retour progressif à la normale, nous vons proposons d'entamer le nettoyage de ces tags qui ne sont plus utiles.",
 	"datasources": [
-		{ "source": "osmose", "item": "4010", "country": "france*", "name": "POI à actualiser", "color": "red" },
-		{ "source": "osmose", "item": "8340", "name": "Structure sociale à intégrer", "color": "green" }
+		{ "source": "osmose", "item": "4010", "class": "202004", "country": "france*", "name": "POI à actualiser", "color": "red" }
 	],
 	"editors": {
 		"all": {

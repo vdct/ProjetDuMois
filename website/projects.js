@@ -1,11 +1,13 @@
 const fs = require('fs');
 const { queryParams } = require('./utils');
+const marked = require('marked');
 const PROJECTS_PATH = __dirname + '/../projects';
 
 const projects = {};
 fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 	try {
 		const project = JSON.parse(fs.readFileSync(PROJECTS_PATH + '/' + projectDir + '/info.json'));
+		project.howto = marked(fs.readFileSync(PROJECTS_PATH + '/' + projectDir + '/howto.md', "utf8"));
 
 		// Add auto-computed metadata
 		project.osmoseLabels = {};

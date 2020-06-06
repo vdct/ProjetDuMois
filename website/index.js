@@ -59,7 +59,9 @@ app.get('/projects/:id/stats', (req, res) => {
 			.then(res => res.json())
 			.then(res => ({
 				label: ds.name,
-				data: Object.entries(res.data).map(e => ({ t: e[0], y: e[1] })).sort((a,b) => a.t.localeCompare(b.t)),
+				data: Object.entries(res.data)
+					.map(e => ({ t: e[0], y: e[1] }))
+					.sort((a,b) => a.t.localeCompare(b.t)),
 				fill: false,
 				borderColor: ds.color || "red"
 			}));
@@ -84,6 +86,9 @@ app.get('/projects/:id/stats', (req, res) => {
 		res.sendFile(path.join(__dirname, '..', file));
 	});
 });
+
+// Images
+app.use('/images', express.static(__dirname+'/images'));
 
 // Libraries
 app.get('/lib/:modname/:file', (req, res) => {

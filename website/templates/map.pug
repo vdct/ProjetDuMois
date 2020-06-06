@@ -72,7 +72,7 @@ script.
 		fetch(`#{CONFIG.OSMOSE_URL}/api/0.3beta/issue/${p.uuid}`)
 		.then(res => res.json())
 		.then(meta => {
-			const title = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || meta.title.auto;
+			const labels = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || { name: meta.title.auto };
 
 			const links = getLinks(meta).map(l => {
 				const linkDom = document.createElement("a");
@@ -110,9 +110,15 @@ script.
 					</div>`;
 			}
 
+			let subtitle = meta.subtitle.auto;
+			if(labels.subtitles) {
+				const subtitles = Object.keys(labels.subtitles).filter(s => meta.subtitle.auto.includes(s)).map(s => labels.subtitles[s]);
+				if(subtitles.length > 0) { subtitle = subtitles[0]; }
+			}
+
 			resDiv.innerHTML = `
-				<h5 class="m-0">${title}</h5>
-				<p class="m-0 mb-2">${meta.subtitle.auto}</p>
+				<h5 class="m-0">${labels.name}</h5>
+				<p class="m-0 mb-2">${subtitle.replace(/\n/g, "<br />")}</p>
 				${tags}`;
 
 			const divLinks = document.createElement("div");

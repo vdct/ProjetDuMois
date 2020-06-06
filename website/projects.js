@@ -13,7 +13,10 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 		project.osmoseLabels = {};
 		project.datasources
 			.filter(ds => ds.source === "osmose")
-			.forEach(ds => project.osmoseLabels[`${ds.item}_${ds.class || "all"}`] = ds.name);
+			.forEach(ds => project.osmoseLabels[`${ds.item}_${ds.class || "all"}`] = {
+				name: ds.name,
+				subtitles: ds.subtitles
+			});
 		project.idParams = queryParams(Object.assign({}, project.editors.all, project.editors.iD));
 		project.josmParams = queryParams(Object.assign({ changeset_comment: project.editors.all.comment, changeset_hashtags: project.editors.all.hashtags }, project.editors.JOSM));
 

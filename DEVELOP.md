@@ -4,7 +4,6 @@
 
 * NodeJS >= 9
 * Wget
-* osmconvert et [osmupdate](https://wiki.openstreetmap.org/wiki/Osmupdate)
 
 
 ## Installation
@@ -44,12 +43,33 @@ Le code de l'interface web se trouve dans le dossier `website`. Il s'agit d'un s
 
 ## Base de données
 
-Initialisation de la récupération des [fichiers diff](https://wiki.openstreetmap.org/wiki/Planet.osm/diffs).
+Version basée sur les [fichiers historiques](https://osm-internal.download.geofabrik.de/europe/france-internal.osh.pbf) `.osh.pbf`
 
 ```bash
+# Init structure
 mkdir diffs
 cd diffs
 
+# Extract interesting tags from history dump
+osmium tags-filter diffs/reunion-internal.osh.pbf -R nwr/delivery,delivery:covid19,takeaway,takeaway:covid19,opening_hours,opening_hours:covid19 -o diffs/filtered.osm.pbf
+
+# Output as OsmChange file
+osmium cat diffs/filtered.osm.pbf -o diffs/filtered.osc.gz
+
+# Convert OsmChange into CSV
+xsltproc db/osc2csv.xslt diffs/filtered.osc.gz > diffs/changes.csv
+```
+
+Version alternative basée sur les [fichiers diff](https://wiki.openstreetmap.org/wiki/Planet.osm/diffs).
+
+```bash
+# Get diff files
 osmupdate --minute --base-url=https://download.openstreetmap.fr/replication/merge/france_metro_dom_com_nc/ --keep-tempfiles 2020-05-01T00:00:00Z changes.osc.gz
-osmconvert changes.osc.gz --csv="@oname @id @timestamp @changeset @uid @user opening_hours delivery drive_through takeaway" --csv-headline -o=changes.csv
+
+# Create a CSV of all changes using XSLT
+xsltproc db/osc2csv.xslt diffs/changes.osc.gz > diffs/changes.csv
+
+# Curate CSV according to selected tags
+head -n 1 diffs/changes.csv > diffs/changes_project.csv
+grep -e '(""delivery""|""takeaway""|""opening_hours"")' diffs/changes.csv >> diffs/changes_project.csv
 ```

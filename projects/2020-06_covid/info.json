@@ -4,6 +4,9 @@
 	"start_date": "2020-06-04",
 	"end_date": "2020-08-31",
 	"summary": "Suite à la pandémie de Covid-19 dans le monde, la communauté de contributeurs OpenStreetMap a créé plusieurs nouveaux tags (opening_hours:covid19, delivery:covid19, etc) pour renseigner des informations temporaires sur les commerces et services. Grâce au succès de Ça Reste Ouvert, près de 60 000 lieux ont ainsi pu être détaillés. Avec la période de déconfinement qui s'engage en France et le retour progressif à la normale, nous vons proposons d'entamer le nettoyage de ces tags qui ne sont plus utiles.",
+	"database": {
+		"filter_tags": ["opening_hours", "opening_hours:covid19", "delivery", "delivery:covid19", "takeaway", "takeaway:covid19", "drive_through", "drive_through:covid19"]
+	},
 	"datasources": [
 		{
 			"source": "osmose",

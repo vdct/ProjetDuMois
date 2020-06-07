@@ -24,8 +24,8 @@ CREATE INDEX osm_changes_version_idx ON osm_changes(version);
 SELECT *
 FROM (
 	SELECT *,
-		lag(NOT tags ? 'delivery:covid19') OVER w AS prev_has_dc19,
-		tags ? 'delivery:covid19' AS curr_hasno_dc19
+		lag(tags ? 'delivery:covid19') OVER w AS prev_has_dc19,
+		NOT tags ? 'delivery:covid19' AS curr_hasno_dc19
 	FROM osm_changes
 	WINDOW w AS (PARTITION BY osmid ORDER BY version)
 ) a

@@ -19,7 +19,7 @@ script.
 		onAdd(map) {
 			this._map = map;
 			this._container = document.createElement('div');
-			this._container.className = "mapboxgl-ctrl map-ctrl-custom"+(map.getZoom() >= 7 ? " d-none": "");
+			this._container.className = "mapboxgl-ctrl map-ctrl-custom map-ctrl-zoomin"+(map.getZoom() >= 7 ? " d-none": "");
 			this._container.textContent = 'Zoomez ou lancez une recherche pour commencer';
 
 			this._map.on("zoom", e => {

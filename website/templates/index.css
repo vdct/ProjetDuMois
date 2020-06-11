@@ -164,3 +164,8 @@ a.pdm-link:hover {
 	cursor: pointer;
 	text-decoration: underline;
 }
+
+.map-ctrl-zoomin {
+	font-size: 1.3em;
+	background-color: #FFF59D;
+}

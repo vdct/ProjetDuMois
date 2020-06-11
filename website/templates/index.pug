@@ -38,7 +38,9 @@ html(lang="fr")
 				//- Statistics
 				include stats.pug
 
-				//- About
+		//- About
+		footer.blog-footer
+			div.container.text-left
 				div.row
 					div#about.blog-post.col-md-8
 						include:markdown-it ../../README.md
@@ -54,6 +56,4 @@ html(lang="fr")
 							ul.list-unstyled.mb-0
 								li: a(href=CONFIG.REPOSITORY_URL rel="noopener") Code source du projet
 								li: a(href="https://openstreetmap.fr" rel="noopener") OpenStreetMap France
-
-		//- Footer
-		include common_footer.pug
+			p Copyright 2020 ProjetDuMois.fr - Développé sous licence libre AGPL 3.0

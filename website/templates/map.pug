@@ -40,7 +40,23 @@ script.
 		}
 	}
 
+	class ExportControl {
+		onAdd(map) {
+			this._map = map;
+			this._container = document.createElement('div');
+			this._container.className = "mapboxgl-ctrl map-ctrl-custom";
+			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
+			const [osmoseItem, osmoseClasss] = Object.keys(osmoseLabels)[0].split("_");
+			const osmose_params = `item=${osmoseItem}&class=${osmoseClasss}`
+			const osmose_bbox = `${map.getBounds()._sw.lng}%2C${map.getBounds()._sw.lat}%2C${map.getBounds()._ne.lng}%2C${map.getBounds()._ne.lat}`
+			const osmose_export_url = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${osmose_params}&bbox=${osmose_bbox}`;				
+			this._container.innerHTML = `<a title="Télécharger un fichier kml pour contribuer depuis votre smartphone" href="${osmose_export_url}"> 📲 </a>`;
+			return this._container;
+		}
+	}
+
 	map.addControl(new AlertControl(), "bottom-left");
+	map.addControl(new ExportControl(), "top-right");
 
 	// Click on feature
 	function getLinks(meta) {

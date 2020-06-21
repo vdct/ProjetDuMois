@@ -45,7 +45,7 @@ script.
 		onAdd(map) {
 			this._map = map;
 			this._container = document.createElement('div');
-			this._container.className = "mapboxgl-ctrl map-ctrl-custom";
+			this._container.className = "mapboxgl-ctrl map-ctrl-btn";
 			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
 			const [osmoseItem, osmoseClasss] = Object.keys(osmoseLabels)[0].split("_");
 			const osmose_params = `item=${osmoseItem}&class=${osmoseClasss}`

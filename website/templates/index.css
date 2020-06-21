@@ -152,17 +152,27 @@ h1, h2, h3, h4, h5, h6 {
 	position: relative;
 	background-color: #fff;
 	border-radius: 3px;
+}
+
+.map-ctrl-btn {
+	min-height: 20px;
+	padding: 2px 4px;
+	margin: 10px;
+	margin-top: 10px;
+	position: relative;
+	background-color: #fff;
+	border-radius: 3px;
 	width: 29px;
 	height: 29px;
 	box-shadow: 0 0 0 2px rgba(0,0,0,.1);
 	text-align: center;
 }
 
-.map-ctrl-custom:hover {
+.map-ctrl-btn:hover {
 	background-color: #F2F2F2;
 }
 
-.map-ctrl-custom a {
+.map-ctrl-btn a {
 	display: block;
 	line-height: 26px;
 	width: 21px;

@@ -40,6 +40,7 @@ script.
 		}
 	}
 
+	// Button for KML exports
 	class ExportControl {
 		onAdd(map) {
 			this._map = map;
@@ -49,7 +50,7 @@ script.
 			const [osmoseItem, osmoseClasss] = Object.keys(osmoseLabels)[0].split("_");
 			const osmose_params = `item=${osmoseItem}&class=${osmoseClasss}`
 			const osmose_bbox = `${map.getBounds()._sw.lng}%2C${map.getBounds()._sw.lat}%2C${map.getBounds()._ne.lng}%2C${map.getBounds()._ne.lat}`
-			const osmose_export_url = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${osmose_params}&bbox=${osmose_bbox}`;				
+			const osmose_export_url = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${osmose_params}&bbox=${osmose_bbox}`;
 			this._container.innerHTML = `<a title="Télécharger un fichier kml pour contribuer depuis votre smartphone" href="${osmose_export_url}"> 📲 </a>`;
 			return this._container;
 		}
@@ -78,7 +79,22 @@ script.
 		];
 	}
 
-	function getDescription(feature) {
+	// Mark as done/false in Osmose
+	const filteredUuids = [];
+	function markOsmose(type, feature, popup) {
+		const uuid = feature.properties.uuid;
+		return () => {
+			// Send to Osmose
+			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3beta/issue/${uuid}/${type}`);
+
+			// Hide feature on map
+			popup.remove();
+			filteredUuids.push(uuid);
+			map.setFilter(feature.layer.id, ["!", ["in", ["get", "uuid"], ["literal", filteredUuids]]]);
+		};
+	}
+
+	function getDescription(feature, popup) {
 		const osmoseLabels = !{JSON.stringify(osmoseLabels)};
 		const p = feature.properties;
 		const resDiv = document.createElement("div");
@@ -144,6 +160,23 @@ script.
 				divLinks.appendChild(l);
 			});
 			resDiv.appendChild(divLinks);
+
+			const divButtons = document.createElement("div");
+			divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
+			divButtons.role = "group";
+			const divButtonDone = document.createElement("button");
+			divButtonDone.classList.add("btn", "btn-success");
+			divButtonDone.appendChild(document.createTextNode("✔ Résolu"));
+			divButtonDone.title = "Marquer cet élément comme résolu si vous avez corrigé le point dans OpenStreetMap";
+			divButtonDone.addEventListener("click", markOsmose("done", feature, popup));
+			divButtons.appendChild(divButtonDone);
+			const divButtonFalse = document.createElement("button");
+			divButtonFalse.classList.add("btn", "btn-warning");
+			divButtonFalse.appendChild(document.createTextNode("✘ Faux positif"));
+			divButtonFalse.title = "Marquer cet élément comme faux positif si le signalement n'est pas valide";
+			divButtonFalse.addEventListener("click", markOsmose("false", feature, popup));
+			divButtons.appendChild(divButtonFalse);
+			resDiv.appendChild(divButtons);
 		});
 
 		return resDiv;
@@ -154,14 +187,13 @@ script.
 		const features = map.queryRenderedFeatures(e.point);
 		if(!features || features.length === 0) { return; }
 
-		const description = getDescription(features[0]);
 		const coordinates = features[0].geometry.coordinates.slice();
-
 		while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
 			coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
 		}
 
 		const popup = new mapboxgl.Popup().setLngLat(coordinates);
+		const description = getDescription(features[0], popup);
 		if(typeof description === "string") { popup.setHTML(description); }
 		else { popup.setDOMContent(description); }
 		popup.addTo(map);

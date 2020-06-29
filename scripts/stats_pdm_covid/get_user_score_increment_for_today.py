@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import json
+import datetime
 
 init_file = "yesterday/covid.json"
 current_file = "today/covid_to_check.json"
@@ -18,7 +19,7 @@ with open(current_file, 'r') as cfile:
     current_objects = tt['features']
 
 covid_tags_to_check = ["opening_hours:covid19", "delivery:covid19", "takeaway:covid19", "description:covid19", "access:covid19" ]
-user_scores = {}
+
 init_objects_ids = [elem["properties"]["@id"] for elem in init_objects]
 
 for elem in current_objects:
@@ -30,11 +31,7 @@ for elem in current_objects:
         continue #pas de modif sur cet objet
     for tag_to_check in covid_tags_to_check:
         if tag_to_check not in elem["properties"] and tag_to_check in old_elem["properties"]:
-            #print (tag_to_check)
-            current_user = elem["properties"]["@user"]
-            if current_user not in user_scores:
-                user_scores[current_user] = 0
-            user_scores[current_user] += 1
+            ts = datetime.datetime.fromtimestamp(elem["properties"]["@timestamp"])
+            print("{},{},rm_covid".format(elem["properties"]["@uid"], ts.isoformat()))
 
-print(user_scores)
 

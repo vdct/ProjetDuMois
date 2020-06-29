@@ -4,9 +4,9 @@
         "id":        true,
         "version":   true,
         "changeset": false,
-        "timestamp": false,
+        "timestamp": true,
         "uid":       true,
-        "user":      true,
+        "user":      false,
         "way_nodes": false
     },
     "linear_tags":  true,

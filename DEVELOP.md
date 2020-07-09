@@ -50,26 +50,39 @@ Version basée sur les [fichiers historiques](https://osm-internal.download.geof
 mkdir diffs
 cd diffs
 
-# Extract interesting tags from history dump
-osmium tags-filter diffs/reunion-internal.osh.pbf -R nwr/delivery,delivery:covid19,takeaway,takeaway:covid19,opening_hours,opening_hours:covid19 -o diffs/filtered.osm.pbf
-
-# Output as OsmChange file
-osmium cat diffs/filtered.osm.pbf -o diffs/filtered.osc.gz
-
-# Convert OsmChange into CSV
-xsltproc db/osc2csv.xslt diffs/filtered.osc.gz > diffs/changes.csv
+# Extract interesting features from history dump
+OSH_FILE="diffs/bretagne-internal.osh.pbf"
+osmium tags-filter ${OSH_FILE} -R nwr/*:covid19 -f osc \
+	| xsltproc db/osc2csv.xslt - \
+	| awk -F "\"*,\"*" '{print $2}' \
+	| grep -v -E "^(osmid|)$" \
+	| sed -r 's#([nwr])[a-z]+/([0-9]+)#\1\2#g' \
+	| osmium getid ${OSH_FILE} -i - -f osc \
+	| xsltproc db/osc2csv.xslt - \
+	> diffs/changes.csv
 ```
 
-Version alternative basée sur les [fichiers diff](https://wiki.openstreetmap.org/wiki/Planet.osm/diffs).
+Importer dans PostgreSQL
 
-```bash
-# Get diff files
-osmupdate --minute --base-url=https://download.openstreetmap.fr/replication/merge/france_metro_dom_com_nc/ --keep-tempfiles 2020-05-01T00:00:00Z changes.osc.gz
+```sql
+CREATE TABLE osm_history_covid19(
+	action VARCHAR NOT NULL,
+	osmid VARCHAR NOT NULL,
+	version INT NOT NULL,
+	ts TIMESTAMP NOT NULL,
+	username VARCHAR NOT NULL,
+	userid BIGINT NOT NULL,
+	tags JSONB
+);
 
-# Create a CSV of all changes using XSLT
-xsltproc db/osc2csv.xslt diffs/changes.osc.gz > diffs/changes.csv
+\COPY osm_history_covid19 FROM '/home/adrien/Stockage/Code/ProjetDuMois/diffs/changes.csv' CSV HEADER QUOTE '"';
 
-# Curate CSV according to selected tags
-head -n 1 diffs/changes.csv > diffs/changes_project.csv
-grep -e '(""delivery""|""takeaway""|""opening_hours"")' diffs/changes.csv >> diffs/changes_project.csv
+CREATE INDEX osm_history_covid19_action_idx ON osm_history_covid19(action);
+CREATE INDEX osm_history_covid19_osmid_idx ON osm_history_covid19(osmid);
+CREATE INDEX osm_history_covid19_version_idx ON osm_history_covid19(version);
+```
+
+Requête d'analyse pour détecter les modifications utilisateurs
+
+```
 ```

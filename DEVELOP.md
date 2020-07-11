@@ -51,17 +51,6 @@ Pour mettre à jour quotidiennement la base avec les nouvelles contributions :
 npm run project:update
 ```
 
-Requête pour le leaderboard
-
-```sql
-SELECT uc.userid, un.username, uc.contribution, COUNT(*) AS amount
-FROM user_contributions uc
-JOIN user_names un ON uc.userid = un.userid
-WHERE uc.project = '2020-06_covid'
-GROUP BY uc.userid, un.username, uc.contribution
-ORDER BY COUNT(*) DESC
-```
-
 
 ## Site web
 

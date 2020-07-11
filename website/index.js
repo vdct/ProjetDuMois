@@ -10,6 +10,20 @@ const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
 const { filterProjects, queryParams, getMapStyle } = require('./utils');
+const { Pool } = require('pg');
+
+
+/*
+ * Connect to database
+ */
+
+const pool = new Pool({
+  user: CONFIG.DB_USER,
+  host: CONFIG.DB_HOST,
+  database: CONFIG.DB_NAME,
+  password: CONFIG.DB_PASS,
+  port: CONFIG.DB_PORT,
+});
 
 
 /*
@@ -49,34 +63,55 @@ app.get('/projects/:id/stats', (req, res) => {
 	}
 
 	const p = projects[req.params.id];
+	const allPromises = [];
 
 	// Fetch Osmose statistics
-	const osmosePromises = p.datasources
-		.filter(ds => ds.source === "osmose")
-		.map(ds => {
-			const params = { item: ds.item, class: ds.class, start_date: p.start_date, end_date: p.end_date, country: ds.country };
-			return fetch(`${CONFIG.OSMOSE_URL}/fr/errors/graph.json?${queryParams(params)}`)
-			.then(res => res.json())
-			.then(res => ({
-				label: ds.name,
-				data: Object.entries(res.data)
-					.map(e => ({ t: e[0], y: e[1] }))
-					.sort((a,b) => a.t.localeCompare(b.t)),
-				fill: false,
-				borderColor: ds.color || "red"
-			}));
-		});
-
-	Promise.all(osmosePromises)
+	allPromises.push(Promise.all(p.datasources
+	.filter(ds => ds.source === "osmose")
+	.map(ds => {
+		const params = { item: ds.item, class: ds.class, start_date: p.start_date, end_date: p.end_date, country: ds.country };
+		return fetch(`${CONFIG.OSMOSE_URL}/fr/errors/graph.json?${queryParams(params)}`)
+		.then(res => res.json())
+		.then(res => ({
+			label: ds.name,
+			data: Object.entries(res.data)
+				.map(e => ({ t: e[0], y: e[1] }))
+				.sort((a,b) => a.t.localeCompare(b.t)),
+			fill: false,
+			borderColor: ds.color || "red"
+		}));
+	}))
 	.then(results => {
 		const nbTasksStart = results.map(r => r.data[0].y).reduce((acc,cur) => acc + cur);
 		const nbTasksEnd = results.map(r => r.data[r.data.length-1].y).reduce((acc,cur) => acc + cur);
 
-		const stats = {
+		return {
 			chart: results,
 			pctTasksDone: Math.floor(100 - nbTasksEnd / nbTasksStart * 100)
 		};
-		res.send(stats);
+	}));
+
+	// Fetch user statistics from DB
+	allPromises.push(pool.query(`
+		SELECT uc.userid, un.username, uc.contribution, COUNT(*) AS amount
+		FROM user_contributions uc
+		JOIN user_names un ON uc.userid = un.userid
+		WHERE uc.project = $1
+		GROUP BY uc.userid, un.username, uc.contribution
+		ORDER BY COUNT(*) DESC
+	`, [req.params.id])
+	.then(results => {
+		return {
+			nbContributors: results.rows.length,
+			leaderboard: results.rows
+		};
+	}));
+
+	Promise.all(allPromises)
+	.then(results => {
+		let toSend = {};
+		results.forEach(r => Object.assign(toSend, r));
+		res.send(toSend);
 	});
 });
 

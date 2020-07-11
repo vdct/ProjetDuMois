@@ -24,27 +24,14 @@ div#statistics.blog-post
 		//- Leaderboard
 		div.col-md-5
 			h3 Classement
-			table.table
-				thead
-					tr
-						th(scope="col") #
-						th(scope="col") Pseudo
-						th(scope="col") Éditions
-						th(scope="col") Badges
-				tbody
-					-
-						const lipsum = [
-							{ user: "Foo1", edits: 7800, badges: [ "B1", "B2" ] },
-							{ user: "Foo2", edits: 4400, badges: [ "B2" ] },
-							{ user: "Foo3", edits: 1500, badges: [ "B1"] },
-							{ user: "Foo4", edits: 42, badges: [] }
-						]
-					each item, pos in lipsum
+			div.overflow-auto(style="height: 300px")
+				table.table.table-sm
+					thead
 						tr
-							td(scope="row")= pos+1
-							td= item.user
-							td= item.edits
-							td= item.badges.join(", ")
+							th(scope="col") #
+							th(scope="col") Pseudo
+							th(scope="col") Éditions
+					tbody#stats-leaderboard
 
 		//- Charts
 		div.col-md-7
@@ -57,6 +44,31 @@ script.
 	.then(res => {
 		// % of done tasks
 		document.getElementById("stats-pctdone").innerHTML = res.pctTasksDone+" %";
+
+		// Amount of contributors
+		document.getElementById("stats-contributors").innerHTML = res.nbContributors;
+
+		// Leaderboard
+		const leaderboardBody = document.getElementById("stats-leaderboard");
+		res.leaderboard.map((lb,i) => {
+			const tr = document.createElement("tr");
+
+			const td1 = document.createElement("td");
+			td1.setAttribute("scope", "row");
+			td1.appendChild(document.createTextNode(i+1));
+			tr.appendChild(td1);
+
+			const td2 = document.createElement("td");
+			td2.appendChild(document.createTextNode(lb.username));
+			tr.appendChild(td2);
+
+			const td3 = document.createElement("td");
+			td3.appendChild(document.createTextNode(lb.amount));
+			tr.appendChild(td3);
+
+			return tr;
+		})
+		.forEach(d => leaderboardBody.appendChild(d));
 
 		// Evolution chart
 		const ctx = document.getElementById("stats-chart").getContext("2d");

@@ -27,6 +27,9 @@ const promiser = (name, command) => {
 // Constants
 const project = filterProjects(projects).current;
 const OSH_PBF = CONFIG.WORK_DIR + '/extract.osh.pbf';
+const OSC_1 = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
+const OSC_IDS = CONFIG.WORK_DIR + '/extract_osm_ids.txt';
+const OSC2IDS = __dirname+'/osc2ids.xslt';
 const OSC2CSV = __dirname+'/osc2csv.xslt';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
 const COOKIES = CONFIG.WORK_DIR + '/cookie_output_file.txt';
@@ -61,14 +64,22 @@ promiser(
 	`curl -s -S -b "$(cat ${COOKIES} | cut -d ';' -f 1)" --output "${OSH_PBF}" "${CONFIG.OSH_PBF_URL}"`
 ))
 .then(() => promiser(
-	"Extract changes from OSH PBF",
-	`osmium tags-filter "${OSH_PBF}" -R ${project.database.osmium_tag_filter} -f osc \\
-	| xsltproc "${OSC2CSV}" - \\
-	| awk -F "\\"*,\\"*" '{print $2}' \\
-	| grep -v -E "^(osmid|)$" \\
-	| sed -r 's#([nwr])[a-z]+/([0-9]+)#\\1\\2#g' \\
-	| osmium getid ${OSH_PBF} -i - -f osc \\
-	| xsltproc "${OSC2CSV}" - \\
+	"Extract changes from OSH PBF (1st pass)",
+	`osmium tags-filter "${OSH_PBF}" -R ${project.database.osmium_tag_filter} -O -o "${OSC_1}"`
+))
+.then(() => promiser(
+	"Transform changes into list of OSM IDs",
+	`xsltproc "${OSC2IDS}" "${OSC_1}" \\
+	| sort | uniq \\
+	> "${OSC_IDS}"`
+))
+.then(() => promiser(
+	"Extract changes from OSH PBF (2nd pass)",
+	`osmium getid "${OSH_PBF}" -i "${OSC_IDS}" -O -o "${OSC_1}"`
+))
+.then(() => promiser(
+	"Transform changes into CSV file",
+	`xsltproc "${OSC2CSV}" "${OSC_1}" \\
 	> "${CSV_CHANGES}"`
 ))
 .then(() => promiser(
@@ -86,5 +97,9 @@ promiser(
 .then(() => promiser(
 	"Generate user contributions",
 	`${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"`
+))
+.then(() => promiser(
+	"Clean-up temporary files",
+	`rm -f "${OSC_IDS}" "${OSC_1}" "${CSV_CHANGES}"`
 ))
 .then(res => console.log("Done"));

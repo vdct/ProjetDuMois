@@ -4,5 +4,11 @@
 	"NOMINATIM_URL": "https://nominatim.openstreetmap.org",
 	"MAPILLARY_URL": "https://www.mapillary.com",
 	"REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
-	"JOSM_REMOTE_URL": "http://localhost:8111"
+	"JOSM_REMOTE_URL": "http://localhost:8111",
+	"DB_HOST": "localhost",
+	"DB_PORT": "5432",
+	"DB_USER": "postgres",
+	"DB_PASS": "postgres",
+	"DB_NAME": "pdm",
+	"WORK_DIR": "/tmp/pdm"
 }

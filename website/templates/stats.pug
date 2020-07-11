@@ -24,7 +24,8 @@ div#statistics.blog-post
 		//- Leaderboard
 		div.col-md-5
 			h3 Classement
-			div.overflow-auto(style="height: 300px")
+			p#stats-leaderboard-noauth Vous devez être connecté pour voir les statistiques détaillées
+			div#stats-leaderboard-container.d-none.overflow-auto(style="height: 300px")
 				table.table.table-sm
 					thead
 						tr
@@ -39,63 +40,84 @@ div#statistics.blog-post
 			canvas#stats-chart.chart-100w(height="300")
 
 script.
-	fetch("/projects/#{id}/stats")
-	.then(res => res.json())
-	.then(res => {
-		// % of done tasks
-		document.getElementById("stats-pctdone").innerHTML = res.pctTasksDone+" %";
+	function showStatistics() {
+		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
+		.then(res => res.json())
+		.then(res => {
+			// % of done tasks
+			document.getElementById("stats-pctdone").innerHTML = res.pctTasksDone+" %";
 
-		// Amount of contributors
-		document.getElementById("stats-contributors").innerHTML = res.nbContributors;
+			// Amount of contributors
+			document.getElementById("stats-contributors").innerHTML = res.nbContributors;
 
-		// Leaderboard
-		const leaderboardBody = document.getElementById("stats-leaderboard");
-		res.leaderboard.map((lb,i) => {
-			const tr = document.createElement("tr");
+			// Leaderboard
+			if(res.leaderboard) {
+				document.getElementById("stats-leaderboard-container").classList.remove("d-none");
+				document.getElementById("stats-leaderboard-noauth").classList.add("d-none");
+				const leaderboardBody = document.getElementById("stats-leaderboard");
+				res.leaderboard.map((lb,i) => {
+					const tr = document.createElement("tr");
 
-			const td1 = document.createElement("td");
-			td1.setAttribute("scope", "row");
-			td1.appendChild(document.createTextNode(i+1));
-			tr.appendChild(td1);
+					const td1 = document.createElement("td");
+					td1.setAttribute("scope", "row");
+					td1.appendChild(document.createTextNode(i+1));
+					tr.appendChild(td1);
 
-			const td2 = document.createElement("td");
-			td2.appendChild(document.createTextNode(lb.username));
-			tr.appendChild(td2);
+					const td2 = document.createElement("td");
+					td2.appendChild(document.createTextNode(lb.username));
+					tr.appendChild(td2);
 
-			const td3 = document.createElement("td");
-			td3.appendChild(document.createTextNode(lb.amount));
-			tr.appendChild(td3);
+					const td3 = document.createElement("td");
+					td3.appendChild(document.createTextNode(lb.amount));
+					tr.appendChild(td3);
 
-			return tr;
-		})
-		.forEach(d => leaderboardBody.appendChild(d));
-
-		// Evolution chart
-		const ctx = document.getElementById("stats-chart").getContext("2d");
-		const myChart = new Chart(ctx, {
-			type: "line",
-			data: {
-				datasets: res.chart
-			},
-			options: {
-				responsive: true,
-				scales: {
-					xAxes: [{
-						type: 'time',
-						bounds: 'ticks',
-						time: {
-							tooltipFormat: "DD/MM",
-							displayFormats: {
-								day: "DD/MM"
-							}
-						}
-					}],
-					yAxes: [{
-						ticks: {
-							beginAtZero: true
-						}
-					}]
-				}
+					return tr;
+				})
+				.forEach(d => leaderboardBody.appendChild(d));
 			}
+			else {
+				document.getElementById("stats-leaderboard-container").classList.add("d-none");
+				document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
+			}
+
+			// Evolution chart
+			const ctx = document.getElementById("stats-chart").getContext("2d");
+			const myChart = new Chart(ctx, {
+				type: "line",
+				data: {
+					datasets: res.chart
+				},
+				options: {
+					responsive: true,
+					scales: {
+						xAxes: [{
+							type: 'time',
+							bounds: 'ticks',
+							time: {
+								tooltipFormat: "DD/MM",
+								displayFormats: {
+									day: "DD/MM"
+								}
+							}
+						}],
+						yAxes: [{
+							ticks: {
+								beginAtZero: true
+							}
+						}]
+					}
+				}
+			});
 		});
+	}
+
+	window.addEventListener("osm_login", () => {
+		showStatistics();
 	});
+
+	window.addEventListener("osm_logout", () => {
+		document.getElementById("stats-leaderboard-container").classList.add("d-none");
+		document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
+	});
+
+	showStatistics();

@@ -2,6 +2,8 @@
 	"OSM_URL": "https://www.openstreetmap.org",
 	"OSM_USER": "user",
 	"OSM_PASS": "pass",
+	"OSM_API_KEY": "key",
+	"OSM_API_SECRET": "secret",
 	"OSMOSE_URL": "https://osmose.openstreetmap.fr",
 	"NOMINATIM_URL": "https://nominatim.openstreetmap.org",
 	"MAPILLARY_URL": "https://www.mapillary.com",

@@ -64,6 +64,7 @@ app.get('/projects/:id/stats', (req, res) => {
 
 	const p = projects[req.params.id];
 	const allPromises = [];
+	const osmUserAuthentified = typeof req.query.osm_user === "string" && req.query.osm_user.trim().length > 0;
 
 	// Fetch Osmose statistics
 	allPromises.push(Promise.all(p.datasources
@@ -103,7 +104,7 @@ app.get('/projects/:id/stats', (req, res) => {
 	.then(results => {
 		return {
 			nbContributors: results.rows.length,
-			leaderboard: results.rows
+			leaderboard: osmUserAuthentified ? results.rows : null
 		};
 	}));
 
@@ -138,6 +139,9 @@ app.get('/lib/:modname/:file', (req, res) => {
 		"chart.js": {
 			"chart.js": "dist/Chart.bundle.min.js",
 			"chart.css": "dist/Chart.min.css"
+		},
+		"osm-auth": {
+			"osmauth.js": "osmauth.min.js"
 		}
 	};
 

@@ -195,3 +195,8 @@ a.pdm-link:hover {
 	font-size: 1.3em;
 	background-color: #FFF59D;
 }
+
+#connect-osm:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}

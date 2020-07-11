@@ -21,3 +21,138 @@ style
 //- JS
 script(src="/lib/mapbox-gl/mapbox-gl.js")
 script(src="/lib/chart.js/chart.js")
+script(src="/lib/osm-auth/osmauth.js")
+
+//- Auth handler (runs on client)
+script.
+	function stringQs(str) {
+		const u = str.split('?');
+
+		if(u.length > 1) {
+			const p = u[1].split('#')[0];
+
+			return p.split('&').filter(function (pair) {
+				return pair !== '';
+			}).reduce(function(obj, pair){
+				var parts = pair.split('=');
+				obj[decodeURIComponent(parts[0])] = (null === parts[1]) ?
+					'' : decodeURIComponent(parts[1]);
+				return obj;
+			}, {});
+		}
+		else {
+			return {};
+		}
+	}
+
+	const authOpts = {
+		url: "#{CONFIG.OSM_URL}",
+		oauth_consumer_key: "#{CONFIG.OSM_API_KEY}",
+		oauth_secret: "#{CONFIG.OSM_API_SECRET}",
+		landing: window.location.href,
+		singlepage: true
+	};
+	const auth = osmAuth(authOpts);
+	let authWait;
+
+	const params = stringQs(window.location.href);
+	const token = params.oauth_token || localStorage.getItem("oauth_token") || null;
+
+	function checkAuth() {
+		if(auth.authenticated()) {
+			if(authWait) {
+				clearInterval(authWait);
+			}
+
+			//Get user details
+			auth.xhr({
+				method: 'GET',
+				path: '/api/0.6/user/details'
+			}, (err, details) => {
+				if(err) {
+					console.log(err);
+					logout();
+				}
+				else {
+					try {
+						window.osm_user = {
+							id: details.firstChild.childNodes[1].attributes.id.value,
+							name: details.firstChild.childNodes[1].attributes.display_name.value,
+							auth: auth
+						};
+
+						document.getElementById("connect-osm").innerHTML = window.osm_user.name;
+						document.getElementById("connect-osm").title = "Se déconnecter";
+						window.dispatchEvent(new Event("osm_login"));
+					}
+					catch(e) {
+						console.error(e);
+						logout();
+					}
+				}
+			});
+		}
+	}
+
+	function login() {
+		authOpts.landing = window.location.href + window.location.hash;
+		auth.options(authOpts);
+
+		if(!auth.authenticated()) {
+			auth.authenticate((err, res) => {
+				if(err) {
+					console.error(err);
+					alert("Une erreur s'est produite à la connexion, veuillez réessayer");
+					logout();
+				}
+				else {
+					checkAuth();
+				}
+			});
+		}
+	}
+
+	function logout() {
+		if(auth && auth.authenticated()) {
+			auth.logout();
+		}
+
+		window.osm_user = null;
+		document.getElementById("connect-osm").innerHTML = "Se connecter";
+		document.getElementById("connect-osm").title = null;
+		localStorage.removeItem("oauth_token");
+		window.dispatchEvent(new Event("osm_logout"));
+	}
+
+	if(token) {
+		auth.bootstrapToken(token, () => {
+			checkAuth();
+			window.history.pushState({}, "", window.location.href.replace("?oauth_token="+token, ""));
+			localStorage.setItem("oauth_token", token);
+		});
+	}
+	else {
+		//Check if we receive auth token
+		checkAuth();
+		authWait = setInterval(checkAuth.bind(this), 100);
+	}
+
+	window.addEventListener("load", () => {
+		document.getElementById("connect-osm").addEventListener("click", () => {
+			if(!auth.authenticated()) {
+				auth.authenticate((err, res) => {
+					if(err) {
+						console.error(err);
+						alert("Une erreur s'est produite à la connexion, veuillez réessayer");
+						logout();
+					}
+					else {
+						checkAuth();
+					}
+				});
+			}
+			else {
+				logout();
+			}
+		});
+	});

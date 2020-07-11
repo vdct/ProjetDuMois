@@ -22,7 +22,25 @@ npm install
 
 ## Configuration générale
 
-La configuration générale de l'outil est à renseigner dans `config.json`. Un modèle est proposé dans le fichier `config.example.json`.
+La configuration générale de l'outil est à renseigner dans `config.json`. Un modèle est proposé dans le fichier `config.example.json`. Les paramètres sont les suivants :
+
+* `OSM_USER` : nom d'utilisateur OpenStreetMap pour la récupération de l'historique des modifications avec métadonnées
+* `OSM_PASS` : mot de passe associé au compte utilisateur OSM
+* `OSM_API_KEY` : clé d'API OSM
+* `OSM_API_SECRET` : secret lié à la clé d'API OSM
+* `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
+* `DB_NAME` : nom de la base PostgreSQL (exemple `pdm`)
+* `DB_HOST` : nom d'hôte de la base PostgreSQL (exemple `localhost`)
+* `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)
+* `DB_USER` : nom d'utilisateur pour la base PostgreSQL (exemple `postgres`)
+* `DB_PASS` : mot de passe pour la base PostgreSQL (exemple `postgres`)
+* `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
+* `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
+* `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
+* `OSMOSE_URL` : instance Osmose à utiliser (exemple `https://osmose.openstreetmap.fr`)
+* `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
+* `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
+* `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
 
 
 ## Configuration des projets

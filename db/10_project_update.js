@@ -29,6 +29,7 @@ const project = filterProjects(projects).current;
 const OSH_PBF = CONFIG.WORK_DIR + '/extract.osh.pbf';
 const OSC2CSV = __dirname+'/osc2csv.xslt';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
+const COOKIES = CONFIG.WORK_DIR + '/cookie_output_file.txt';
 const PSQL = `psql postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}`;
 
 // Check if there is any project to analyse
@@ -46,12 +47,20 @@ catch(e) {
 	else { throw e; }
 }
 
-//TODO Download OSH.PBF file for analysis
-console.log("Download OSH PBF file");
-fs.copyFileSync('/home/adrien/Stockage/Code/ProjetDuMois/diffs/bretagne-internal.osh.pbf', OSH_PBF);
-
 // Launch every command
 promiser(
+	"Get cookies for authorized download of OSH PBF file",
+	`python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py \\
+	--osm-host ${CONFIG.OSM_URL} \\
+	-u "${CONFIG.OSM_USER}" -p "${CONFIG.OSM_PASS}" \\
+	-c ${CONFIG.OSH_PBF_URL.split("/").slice(0, 3).join("/")}/get_cookie \\
+	-o "${COOKIES}"`
+)
+.then(() => promiser(
+	"Download OSH PBF file",
+	`curl -s -S -b "$(cat ${COOKIES} | cut -d ';' -f 1)" --output "${OSH_PBF}" "${CONFIG.OSH_PBF_URL}"`
+))
+.then(() => promiser(
 	"Extract changes from OSH PBF",
 	`osmium tags-filter "${OSH_PBF}" -R ${project.database.osmium_tag_filter} -f osc \\
 	| xsltproc "${OSC2CSV}" - \\
@@ -61,7 +70,7 @@ promiser(
 	| osmium getid ${OSH_PBF} -i - -f osc \\
 	| xsltproc "${OSC2CSV}" - \\
 	> "${CSV_CHANGES}"`
-)
+))
 .then(() => promiser(
 	"Init changes table in database",
 	`${PSQL} -f ${__dirname}/11_project_init_tables.sql`

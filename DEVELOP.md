@@ -3,8 +3,11 @@
 ## Dépendances
 
 * NodeJS >= 9
-* Wget
+* Curl, Awk, Grep, Sed
 * PostgreSQL >= 10
+* Python 3
+* [Osmium](https://osmcode.org/osmium-tool/)
+* Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
 
 ## Installation
@@ -12,8 +15,14 @@
 ```bash
 git clone https://github.com/vdct/ProjetDuMois.git
 cd ProjetDuMois
+git submodule update --init
 npm install
 ```
+
+
+## Configuration générale
+
+La configuration générale de l'outil est à renseigner dans `config.json`. Un modèle est proposé dans le fichier `config.example.json`.
 
 
 ## Configuration des projets

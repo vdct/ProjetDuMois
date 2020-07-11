@@ -1,0 +1,3 @@
+[submodule "lib/sendfile_osm_oauth_protector"]
+	path = lib/sendfile_osm_oauth_protector
+	url = https://github.com/geofabrik/sendfile_osm_oauth_protector.git

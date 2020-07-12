@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --icu-data-dir=node_modules/full-icu website/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "project:update": "rm db/09_project_update_tmp.sh && node db/10_project_update.js"
+    "project:update": "rm -f db/09_project_update_tmp.sh && node db/10_project_update.js"
   },
   "repository": {
     "type": "git",

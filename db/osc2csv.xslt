@@ -6,7 +6,6 @@
 
 	<!-- Root -->
 	<xsl:template match="/osmChange">
-		<xsl:text>action,osmid,version,ts,user,userid,tags&newln;</xsl:text>
 		<xsl:apply-templates select="create/node" />
 		<xsl:apply-templates select="create/way" />
 		<xsl:apply-templates select="create/relation" />

@@ -62,16 +62,19 @@ for i in ${OSC_IDS_SPLIT}*; do
 	echo "--- Processing IDS $i"
 	osmium getid "${OSH_PBF}" -H -i "$i" -O -o "$i.osc.gz"
 done
-osmium merge-changes ${OSC_IDS_SPLIT}*.osc.gz -O -o "${OSC_1}"
+#osmium merge-changes ${OSC_IDS_SPLIT}*.osc.gz -O -o "${OSC_1}"
 ${separator}
 
 echo "==== Transform changes into CSV file"
-xsltproc "${OSC2CSV}" "${OSC_1}" > "${CSV_CHANGES}"
+rm -f "${CSV_CHANGES}"
+for i in ${OSC_IDS_SPLIT}*.osc.gz; do
+	xsltproc "${OSC2CSV}" "$i" >> "${CSV_CHANGES}"
+done
 ${separator}
 
 echo "==== Init changes table in database"
 ${PSQL} -f ${__dirname}/11_project_init_tables.sql
-${PSQL} -c "\\COPY osm_changes FROM '${CSV_CHANGES}' CSV HEADER;"
+${PSQL} -c "\\COPY osm_changes FROM '${CSV_CHANGES}' CSV"
 ${PSQL} -f ${__dirname}/12_project_post_import_changes.sql
 ${separator}
 

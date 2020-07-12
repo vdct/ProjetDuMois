@@ -12,7 +12,7 @@ FROM (
 	FROM osm_changes
 	WINDOW w AS (PARTITION BY osmid ORDER BY version)
 ) a
-WHERE prev_has_ohc19 AND curr_hasno_ohc19;
+WHERE prev_has_ohc19 AND curr_hasno_ohc19 AND ts_in_project(ts);
 
 -- Reindex for performance
 REINDEX TABLE user_contributions;

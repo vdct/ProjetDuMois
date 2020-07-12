@@ -5,7 +5,7 @@ CREATE TABLE osm_changes(
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,
 	ts TIMESTAMP NOT NULL,
-	username VARCHAR NOT NULL,
-	userid BIGINT NOT NULL,
+	username VARCHAR,
+	userid BIGINT,
 	tags JSONB
 );

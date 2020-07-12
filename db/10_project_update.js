@@ -62,12 +62,12 @@ for i in ${OSC_IDS_SPLIT}*; do
 	echo "--- Processing IDS $i"
 	osmium getid "${OSH_PBF}" -H -i "$i" -O -o "$i.osc.gz"
 done
-#osmium merge-changes ${OSC_IDS_SPLIT}*.osc.gz -O -o "${OSC_1}"
 ${separator}
 
 echo "==== Transform changes into CSV file"
 rm -f "${CSV_CHANGES}"
 for i in ${OSC_IDS_SPLIT}*.osc.gz; do
+	echo "--- Processing changes $i"
 	xsltproc "${OSC2CSV}" "$i" >> "${CSV_CHANGES}"
 done
 ${separator}
@@ -79,6 +79,7 @@ ${PSQL} -f ${__dirname}/12_project_post_import_changes.sql
 ${separator}
 
 echo "==== Generate user contributions"
+${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS $$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; $$ LANGUAGE plpgsql IMMUTABLE;"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
 ${separator}
 

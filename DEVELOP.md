@@ -76,6 +76,7 @@ Pour mettre à jour quotidiennement la base avec les nouvelles contributions :
 
 ```bash
 npm run project:update
+./db/09_project_update_tmp.sh
 ```
 
 

@@ -79,7 +79,7 @@ ${PSQL} -f ${__dirname}/12_project_post_import_changes.sql
 ${separator}
 
 echo "==== Generate user contributions"
-${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS $$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; $$ LANGUAGE plpgsql IMMUTABLE;"
+${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS \\$\\$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; \\$\\$ LANGUAGE plpgsql IMMUTABLE;"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
 ${separator}
 

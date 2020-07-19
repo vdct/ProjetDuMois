@@ -3,9 +3,7 @@
 ![](website/images/logo.png)
 
 
-Le tableau de bord __ProjetDuMois.fr__ a pour objectif de motiver la communauté de contributeurs [OpenStreetMap](https://openstreetmap.fr) en France lors de ses [projets du mois](https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month). Les projets du mois sont un élan donné pour améliorer une thématique dans OpenStreetMap, par exemple les bornes de véhicules électriques, les toilettes publiques, les gendarmeries... Le tableau de bord élaboré ici permet une vue d'ensemble des prouesses de la communauté et donne un côté ludique à la participation.
-
-__Le projet est en cours de développement__, et sera bientôt disponible à l'adresse [projetdumois.fr](https://projetdumois.fr).
+Le tableau de bord __[ProjetDuMois.fr](https://projetdumois.fr)__ a pour objectif de motiver la communauté de contributeurs [OpenStreetMap](https://openstreetmap.fr) en France lors de ses [projets du mois](https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month). Les projets du mois sont un élan donné pour améliorer une thématique dans OpenStreetMap, par exemple les bornes de véhicules électriques, les toilettes publiques, les gendarmeries... Le tableau de bord élaboré ici permet une vue d'ensemble des prouesses de la communauté et donne un côté ludique à la participation.
 
 
 ## Améliorer cet outil
@@ -25,6 +23,8 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 * Noémie Lehuby
 * Vincent de Château-Thierry
 * Et toutes les personnes qui gravitent autour du projet !
+
+[Retrouvez-nous également sur Twitter](https://twitter.com/projetdumois) !
 
 
 ## Licence

@@ -11,3 +11,6 @@ WHERE userid IS NOT NULL
 ORDER BY userid, ts DESC
 ON CONFLICT (userid)
 DO UPDATE SET username = EXCLUDED.username;
+
+-- Compute indexes
+REINDEX TABLE user_names;

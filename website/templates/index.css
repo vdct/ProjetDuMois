@@ -200,3 +200,8 @@ a.pdm-link:hover {
 	cursor: pointer;
 	text-decoration: underline;
 }
+
+img.stats-badge-mini {
+	height: 32px;
+	margin: 5px;
+}

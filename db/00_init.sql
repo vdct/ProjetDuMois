@@ -4,6 +4,8 @@ CREATE TABLE user_names(
 	username VARCHAR NOT NULL
 );
 
+CREATE INDEX user_names_userid_idx ON user_names(userid);
+
 -- User contributions through all projects
 CREATE TABLE user_contributions(
 	project VARCHAR NOT NULL,
@@ -14,3 +16,15 @@ CREATE TABLE user_contributions(
 
 CREATE INDEX user_contributions_project_idx ON user_contributions(project);
 CREATE INDEX user_contributions_userid_idx ON user_contributions(userid);
+
+-- User badges
+CREATE TABLE user_badges(
+	userid BIGINT NOT NULL,
+	project VARCHAR NOT NULL,
+	badge VARCHAR NOT NULL,
+	ts TIMESTAMP NOT NULL DEFAULT current_timestamp,
+	PRIMARY KEY (userid, project, badge)
+);
+
+CREATE INDEX user_badges_userid_idx ON user_badges(userid);
+CREATE INDEX user_badges_project_idx ON user_badges(project);

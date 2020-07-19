@@ -32,6 +32,7 @@ div#statistics.blog-post
 							th(scope="col") #
 							th(scope="col") Pseudo
 							th(scope="col") Éditions
+							th(scope="col") Badges
 					tbody#stats-leaderboard
 
 		//- Charts
@@ -40,6 +41,12 @@ div#statistics.blog-post
 			canvas#stats-chart.chart-100w(height="300")
 
 script.
+	const BADGES_NAMES = {
+		"contributed": "A participé au projet du mois",
+		"score_1st": "Première place au classement",
+		"score_2nd": "Deuxième place au classement",
+		"score_3rd": "Troisième place au classement"
+	};
 	function showStatistics() {
 		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
 		.then(res => res.json())
@@ -61,15 +68,28 @@ script.
 					const td1 = document.createElement("td");
 					td1.setAttribute("scope", "row");
 					td1.appendChild(document.createTextNode(i+1));
+					td1.classList.add("align-middle");
 					tr.appendChild(td1);
 
 					const td2 = document.createElement("td");
 					td2.appendChild(document.createTextNode(lb.username));
+					td2.classList.add("align-middle");
 					tr.appendChild(td2);
 
 					const td3 = document.createElement("td");
 					td3.appendChild(document.createTextNode(lb.amount));
+					td3.classList.add("align-middle");
 					tr.appendChild(td3);
+
+					const td4 = document.createElement("td");
+					lb.badges.forEach(badge => {
+						const img = document.createElement("img");
+						img.src = `/images/badges/${badge}.mini.svg`;
+						img.classList.add("stats-badge-mini", "align-middle");
+						img.title = BADGES_NAMES[badge];
+						td4.appendChild(img);
+					});
+					tr.appendChild(td4);
 
 					return tr;
 				})

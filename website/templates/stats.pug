@@ -82,7 +82,7 @@ script.
 					tr.appendChild(td3);
 
 					const td4 = document.createElement("td");
-					lb.badges.forEach(badge => {
+					lb.badges.sort().forEach(badge => {
 						const img = document.createElement("img");
 						img.src = `/images/badges/${badge}.mini.svg`;
 						img.classList.add("stats-badge-mini", "align-middle");

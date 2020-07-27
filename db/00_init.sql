@@ -28,3 +28,12 @@ CREATE TABLE user_badges(
 
 CREATE INDEX user_badges_userid_idx ON user_badges(userid);
 CREATE INDEX user_badges_project_idx ON user_badges(project);
+
+-- Features counts
+CREATE TABLE feature_counts(
+	project VARCHAR NOT NULL,
+	ts TIMESTAMP NOT NULL,
+	amount INT NOT NULL
+);
+
+CREATE INDEX feature_counts_project_idx ON feature_counts(project);

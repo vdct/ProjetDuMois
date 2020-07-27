@@ -1,4 +1,4 @@
-SET SESSION my.pdm.project_id = '2020-06_covid';
+SET SESSION my.pdm.project_id = '2020-09_aed';
 
 -- Clean-up user contributions
 DELETE FROM user_contributions
@@ -6,15 +6,20 @@ WHERE project = current_setting('my.pdm.project_id');
 
 -- Read contributions from osm_changes
 INSERT INTO user_contributions
-SELECT current_setting('my.pdm.project_id') AS project, userid, ts, 'rm_covid' AS contribution
+SELECT current_setting('my.pdm.project_id') AS project, userid, ts, 'add_aed' AS contribution
 FROM (
-	SELECT *,
-		lag(tags ? 'opening_hours:covid19') OVER w AS prev_has_ohc19,
-		NOT tags ? 'opening_hours:covid19' AS curr_hasno_ohc19
+	SELECT *
 	FROM osm_changes
-	WINDOW w AS (PARTITION BY osmid ORDER BY version)
-) a
-WHERE prev_has_ohc19 AND curr_hasno_ohc19 AND ts_in_project(ts);
+	WHERE version = 1 AND ts_in_project(ts) AND tags->>'emergency'='defibrillator'
+) a;
+
+INSERT INTO user_contributions
+SELECT current_setting('my.pdm.project_id') AS project, userid, ts, 'edit_aed' AS contribution
+FROM (
+	SELECT *
+	FROM osm_changes
+	WHERE version != 1 AND ts_in_project(ts) AND tags->>'emergency'='defibrillator'
+) a;
 
 -- Reindex for performance
 REINDEX TABLE user_contributions;
@@ -57,7 +62,7 @@ ON CONFLICT DO NOTHING;
 
 -- Meta
 INSERT INTO user_badges(userid, project, badge)
-SELECT DISTINCT userid, 'meta', 'covid19' AS badge
+SELECT DISTINCT userid, 'meta', 'aed' AS badge
 FROM user_contributions
 WHERE project = current_setting('my.pdm.project_id')
 ON CONFLICT DO NOTHING;

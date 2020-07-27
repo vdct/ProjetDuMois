@@ -92,6 +92,23 @@ app.get('/projects/:id/stats', (req, res) => {
 		};
 	}));
 
+	// Fetch feature counts
+	if(p.count) {
+		allPromises.push(pool.query(`
+			SELECT ts, amount
+			FROM feature_counts
+			WHERE project = $1
+		`, [req.params.id])
+		.then(results => ({
+			chart: [{
+				label: "Nombre dans OSM",
+				data: results.rows.map(r => ({ t: r.ts, y: r.amount })),
+				fill: false,
+				borderColor: "blue"
+			}]
+		})));
+	}
+
 	// Fetch user statistics from DB
 	allPromises.push(pool.query(`
 		SELECT uc.userid, un.username, uc.contribution, ub.badges, COUNT(*) AS amount
@@ -107,17 +124,20 @@ app.get('/projects/:id/stats', (req, res) => {
 		GROUP BY uc.userid, un.username, uc.contribution, ub.badges
 		ORDER BY COUNT(*) DESC
 	`, [req.params.id])
-	.then(results => {
-		return {
-			nbContributors: results.rows.length,
-			leaderboard: osmUserAuthentified ? results.rows : null
-		};
-	}));
+	.then(results => ({
+		nbContributors: results.rows.length,
+		leaderboard: osmUserAuthentified ? results.rows : null
+	})));
 
 	Promise.all(allPromises)
 	.then(results => {
 		let toSend = {};
-		results.forEach(r => Object.assign(toSend, r));
+		results.forEach(r => {
+			Object.entries(r).forEach(e => {
+				if(!toSend[e[0]]) { toSend[e[0]] = e[1]; }
+				else if(e[0] === "chart") { toSend.chart = toSend.chart.concat(e[1]); }
+			});
+		});
 		res.send(toSend);
 	});
 });

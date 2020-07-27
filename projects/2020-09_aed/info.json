@@ -1,0 +1,31 @@
+{
+	"id": "2020-09_aed",
+	"title": "Défibrillateurs",
+	"start_date": "2020-06-07",
+	"end_date": "2020-09-30",
+	"summary": "Les défibrillateurs automatiques externes (DAE) permettent de secourir les personnes lors d'un arrêt cardiaque. Ces équipements de premiers secours sont essentiels, pourtant leur localisation n'est pas toujours connue. Ce mois-ci, complétons ensemble OpenStreetMap pour offrir une liste exhaustive des défibrillateurs en France !",
+	"database": {
+		"osmium_tag_filter": "n/emergency=defibrillator"
+	},
+	"datasources": [
+		{
+			"source": "osmose",
+			"item": "8370", "country": "france*",
+			"name": "Défibrillateur à intégrer",
+			"color": "green",
+			"subtitles": {
+				"POSITION APPROXIMATIVE À VÉRIFIER": "Ce défibrillateur est positionné de manière approximative dans la base nationale GéoDAE, vérifiez sa position exacte sur le terrain puis ajoutez-le dans OSM."
+			}
+		}
+	],
+	"count": true,
+	"editors": {
+		"all": {
+			"comment": "Ajout de défibrillateurs automatiques externes",
+			"hashtags": "projetdumois,projetdumoisfr,pdm-defibrillateur"
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	}
+}

@@ -111,7 +111,7 @@ app.get('/projects/:id/stats', (req, res) => {
 
 	// Fetch user statistics from DB
 	allPromises.push(pool.query(`
-		SELECT uc.userid, un.username, uc.contribution, ub.badges, COUNT(*) AS amount
+		SELECT uc.userid, un.username, ub.badges, COUNT(*) AS amount
 		FROM user_contributions uc
 		JOIN user_names un ON uc.userid = un.userid
 		LEFT JOIN (
@@ -121,7 +121,7 @@ app.get('/projects/:id/stats', (req, res) => {
 			GROUP BY userid
 		) ub ON uc.userid = ub.userid
 		WHERE uc.project = $1
-		GROUP BY uc.userid, un.username, uc.contribution, ub.badges
+		GROUP BY uc.userid, un.username, ub.badges
 		ORDER BY COUNT(*) DESC
 	`, [req.params.id])
 	.then(results => ({

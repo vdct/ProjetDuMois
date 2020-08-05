@@ -40,22 +40,14 @@ function getDays() {
 const day = new Date().toISOString().split("T")[0];
 const counts = project.count ? `
 echo "==== Count features"
-# Filter only wanted features
+rm -rf "${OSCCOUNT}"
 osmium tags-filter "${OSH_PBF}" ${project.database.osmium_tag_filter} -O -o "${OSH4COUNT}"
-
-if [ -f "${OSCCOUNT}" ]; then
-	# Append today count
-	echo "${project.id},${day},\`osmium time-filter "${OSH4COUNT}" ${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1\`" \\
-		>> "${OSCCOUNT}"
-else
-	# Create counts for every day since start of project
-	days=(${getDays()})
-	for day in "\${days[@]}"; do
-		echo "Processing $day"
-		echo "${project.id},$day,\`osmium time-filter "${OSH4COUNT}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1\`" \\
-		>> "${OSCCOUNT}"
-	done
-fi
+days=(${getDays()})
+for day in "\${days[@]}"; do
+	echo "Processing $day"
+	echo "${project.id},$day,\`osmium time-filter "${OSH4COUNT}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1\`" \\
+	>> "${OSCCOUNT}"
+done
 
 # Insert CSV into database
 ${PSQL} -c "DELETE FROM feature_counts WHERE project = '${project.id}'"

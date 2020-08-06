@@ -23,6 +23,7 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 			});
 		project.idParams = queryParams(Object.assign({}, project.editors.all, project.editors.iD));
 		project.josmParams = queryParams(Object.assign({ changeset_comment: project.editors.all.comment, changeset_hashtags: project.editors.all.hashtags }, project.editors.JOSM));
+		project.icon = `/images/badges/${projectDir.split("_").pop()}.svg`;
 
 		projects[project.id] = project;
 	}

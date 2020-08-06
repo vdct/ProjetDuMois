@@ -41,19 +41,31 @@ app.set('views', __dirname+'/templates');
 // Index
 app.get('/', (req, res) => {
 	const p = filterProjects(projects);
-	const mapstyle = getMapStyle(p.current);
-	res.render('index', Object.assign({ mapstyle, CONFIG, past: p.past }, p.current));
+	const destId = p.current ? p.current.id : p.past.pop().id;
+	res.redirect(`/projects/${destId}`);
 });
 
-// Past project page
+// Project page
 app.get('/projects/:id', (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {
 		return res.status(404).send('Project ID not found');
 	}
 
 	const p = projects[req.params.id];
+	const all = filterProjects(projects);
+	const isActive = all.current && all.current.id === req.params.id;
+	res.render('project', Object.assign({ CONFIG, isActive, projects: all }, p));
+});
+
+// Project map editor
+app.get('/projects/:id/map', (req, res) => {
+	if(!req.params.id || !projects[req.params.id]) {
+		return res.status(404).send('Project ID not found');
+	}
+
+	const p = projects[req.params.id];
 	const mapstyle = getMapStyle(p);
-	res.render('project', Object.assign({ mapstyle, CONFIG }, p));
+	res.render('map_page', Object.assign({ mapstyle, CONFIG }, p));
 });
 
 // Project statistics

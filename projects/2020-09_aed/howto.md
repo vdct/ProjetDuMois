@@ -3,7 +3,7 @@ L'objectif est de compléter autant que possible la liste des défibrillateurs d
 * Vérifier et intégrer les défibrillateurs listés sur la carte : ceux-ci sont extraits de bases officielles ([GéoDAE](https://geodae.sante.gouv.fr/apropos), collectivités territoriales) mais peuvent être positionnés approximativement. Sur la base de votre connaissance locale ou de visites terrain, ajoutez-les dans OSM.
 * Parcourir votre quartier ou votre ville et trouver les défibrillateurs manquants : ceux-ci sont installés dans les [établissements recevant du public](https://solidarites-sante.gouv.fr/prevention-en-sante/preserver-sa-sante/article/les-defibrillateurs-automatises-externes-dae) (magasins, administrations, équipements sportifs...). Chaque commune dispose généralement d'au moins un défibrillateur en un lieu central. Les grandes villes en ont un peu partout.
 
-Pour ajouter un défibrillateur, les attributs principaux sont les suivants ([également sur le wiki](https://wiki.openstreetmap.org/wiki/FR:Tag:emergency%3Ddefibrillator)) :
+Pour ajouter un défibrillateur, les attributs principaux sont les suivants :
 
 * `emergency=defibrillator` : ceci est un défibrillateur (important)
 * `defibrillator:location=*` : description textuelle de la localisation (optionnel)

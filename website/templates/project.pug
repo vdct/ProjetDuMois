@@ -11,20 +11,56 @@ html(lang="fr")
 			//- Nav links
 			div.nav-scroller.py-1.mb-2
 				nav.nav.d-flex.justify-content-between
-					a.p-2.text-muted(href="/#summary") Ce mois-ci
-					a.p-2.text-muted(href="/#about") À propos
+					if !isActive
+						a.p-2.text-muted(href="/#summary") Ce mois-ci
+						a.p-2.text-muted(href="#summary") Résumé
+					else
+						a.p-2.text-muted(href="#summary") Au programme
+					a.p-2.text-muted(href="#contribute") Participer
+					a.p-2.text-muted(href="#statistics") Statistiques
+					a.p-2.text-muted(href="#about") À propos
+					a#connect-osm.p-2.text-muted Se connecter
 
 			//- Project summary
 			div#summary.jumbotron.p-4.p-md-5.text-white.rounded.bg-dark
 				div.col-md-8.px-0
-					h1.display-4.font-italic= title
-					p.display-4.text-capitalize= new Date(start_date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+					if isActive
+						h1.display-4.font-italic= `Au programme ce mois-ci : ${title}`
+					else
+						h1.display-4.font-italic= title
+						p.display-4.text-capitalize= new Date(start_date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 					p.lead.my-3= summary
+					p.lead.mb-0
+						a.text-white.font-weight-bold(href="#contribute") Participer
 
 		main.container(role="container")
 			div.blog-main
+				//- Contribute
+				div#contribute.blog-post
+					h2.blog-post-title Participer
+					a.pdm-wide-link.map(href=`/projects/${id}/map`) Commencer à contribuer
+					div.mt-3!= howto
+					a.pdm-wide-link.books(href=links.osmwiki target="_blank") Page du projet sur le wiki OpenStreetMap
+
 				//- Statistics
 				include stats.pug
 
-		//- Footer
-		include common_footer.pug
+		//- About
+		footer.blog-footer
+			div.container.text-left
+				div.row
+					div#about.blog-post.col-md-8
+						include:markdown-it ../../README.md
+					aside.col-md-4.blog-sidebar
+						div.p-4.mb-3.rounded
+							if past
+								h4.font-italic Projets passés
+								ol.list-unstyled
+									each pastProj in projects
+										li: a(href=`/projects/${pastProj.id}`)= pastProj.label
+									li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener") Davantage sur le wiki OSM
+							h4.font-italic En savoir plus
+							ul.list-unstyled.mb-0
+								li: a(href=CONFIG.REPOSITORY_URL rel="noopener") Code source du projet
+								li: a(href="https://openstreetmap.fr" rel="noopener") OpenStreetMap France
+			p Copyright 2020 ProjetDuMois.fr - Développé sous licence libre AGPL 3.0

@@ -17,7 +17,11 @@
 			"name": "Défibrillateur à intégrer",
 			"color": "green",
 			"subtitles": {
-				"POSITION APPROXIMATIVE À VÉRIFIER": "Ce défibrillateur est positionné de manière approximative dans la base nationale GéoDAE, vérifiez sa position exacte sur le terrain puis ajoutez-le dans OSM."
+				"POSITION APPROXIMATIVE À VÉRIFIER": "Il y a probablement un défibrillateur dans cette zone. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
+			},
+			"buttons": {
+				"done": "Ajouté",
+				"false": "Rien ici"
 			}
 		}
 	],

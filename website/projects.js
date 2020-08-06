@@ -11,11 +11,15 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 
 		// Add auto-computed metadata
 		project.osmoseLabels = {};
+		project.osmoseButtons = {};
 		project.datasources
 			.filter(ds => ds.source === "osmose")
-			.forEach(ds => project.osmoseLabels[`${ds.item}_${ds.class || "all"}`] = {
-				name: ds.name,
-				subtitles: ds.subtitles
+			.forEach(ds => {
+				project.osmoseLabels[`${ds.item}_${ds.class || "all"}`] = {
+					name: ds.name,
+					subtitles: ds.subtitles
+				};
+				project.osmoseButtons[`${ds.item}_${ds.class || "all"}`] = ds.buttons;
 			});
 		project.idParams = queryParams(Object.assign({}, project.editors.all, project.editors.iD));
 		project.josmParams = queryParams(Object.assign({ changeset_comment: project.editors.all.comment, changeset_hashtags: project.editors.all.hashtags }, project.editors.JOSM));

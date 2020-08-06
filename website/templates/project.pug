@@ -23,7 +23,8 @@ html(lang="fr")
 
 			//- Project summary
 			div#summary.jumbotron.p-4.p-md-5.text-white.rounded.bg-dark
-				img.float-right(src=icon alt="" width="130")
+				div.text-center
+					img.float-sm-none.float-md-right(src=icon alt="" width="130")
 				div.col-md-8.px-0
 					if isActive
 						h1.display-4.font-italic= `Au programme ce mois-ci : ${title}`

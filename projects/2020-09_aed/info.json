@@ -3,7 +3,7 @@
 	"title": "Défibrillateurs",
 	"start_date": "2020-07-28",
 	"end_date": "2020-09-30",
-	"summary": "Les défibrillateurs automatiques externes (DAE) permettent de secourir les personnes lors d'un arrêt cardiaque. Ces équipements de premiers secours sont essentiels, pourtant leur localisation n'est pas toujours connue. Ce mois-ci, complétons ensemble OpenStreetMap pour offrir une liste exhaustive des défibrillateurs en France !",
+	"summary": "Les défibrillateurs automatiques externes (DAE) permettent de secourir les personnes lors d'un arrêt cardiaque. Ces équipements de premiers secours sont essentiels, pourtant leur localisation n'est pas toujours connue. Ce mois-ci, complétons ensemble OpenStreetMap pour offrir une liste exhaustive des défibrillateurs en France ! #DéfiCoeur",
 	"links": {
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Defibrillateurs"
 	},
@@ -17,7 +17,7 @@
 			"name": "Défibrillateur à intégrer",
 			"color": "green",
 			"subtitles": {
-				"POSITION APPROXIMATIVE À VÉRIFIER": "Il y a probablement un défibrillateur dans cette zone. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
+				"POSITION APPROXIMATIVE À VÉRIFIER": "Il y a un défibrillateur dans cette zone. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
 			},
 			"buttons": {
 				"done": "Ajouté",
@@ -29,7 +29,7 @@
 	"editors": {
 		"all": {
 			"comment": "Ajout de défibrillateurs automatiques externes",
-			"hashtags": "projetdumois,projetdumoisfr,pdm-defibrillateur"
+			"hashtags": "projetdumois,projetdumoisfr,déficoeur"
 		},
 		"iD": {
 			"background": "fr.ign.bdortho"

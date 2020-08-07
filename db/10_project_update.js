@@ -103,6 +103,7 @@ if [ "$prev_md5" == "$new_md5" ]; then
 	rm -f "${OSH_PBF_FULL}"
 	mv "${OSH_PBF_FULL.replace(".osh.pbf", ".new.osh.pbf")}" "${OSH_PBF_FULL}"
 else
+	echo "==== Skip replication"
 	ln -s "${OSH_PBF}" "${OSH_PBF_FULL}"
 fi
 ${separator}

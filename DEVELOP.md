@@ -7,6 +7,7 @@
 * PostgreSQL >= 10
 * Python 3
 * [Osmium](https://osmcode.org/osmium-tool/)
+* [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 * Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
 

@@ -5,7 +5,9 @@ const { filterProjects } = require('../website/utils');
 
 // Constants
 const project = filterProjects(projects).current;
-const OSH_PBF = CONFIG.WORK_DIR + '/extract.osh.pbf';
+const OSH_PBF = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop();
+const OSH_PBF_FULL = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
+const OSH_POLY = OSH_PBF.replace("-internal.osh.pbf", ".poly");
 const OSC_1 = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
 const OSC_IDS = CONFIG.WORK_DIR + '/extract_osm_ids.txt';
 const OSC_IDS_SPLIT = CONFIG.WORK_DIR + '/extract_ids_';
@@ -13,8 +15,10 @@ const OSC2IDS = __dirname+'/osc2ids.xslt';
 const OSC2CSV = __dirname+'/osc2csv.xslt';
 const OSH4COUNT = CONFIG.WORK_DIR + '/count.osh.pbf';
 const OSCCOUNT = CONFIG.WORK_DIR + '/count.csv';
+const OSC_FULL = CONFIG.WORK_DIR + '/changes.osc.gz';
+const OSC_LOCAL = CONFIG.WORK_DIR + '/changes.local.osc.gz';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
-const COOKIES = CONFIG.WORK_DIR + '/cookie_output_file.txt';
+const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
 
@@ -77,11 +81,34 @@ python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py 
 ${separator}
 
 echo "==== Download OSH PBF file"
-curl -b "$(cat ${COOKIES} | cut -d ';' -f 1)" --output "${OSH_PBF}" "${CONFIG.OSH_PBF_URL}"
+prev_md5=""
+if [ -f "${OSH_PBF}" ]; then
+	prev_md5=$(md5sum "${OSH_PBF}")
+fi
+wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL}"
+wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL.replace("-internal.osh.pbf", ".poly")}"
+new_md5=$(md5sum "${OSH_PBF}")
+${separator}
+
+if [ "$prev_md5" == "$new_md5" ]; then
+	echo "==== Update OSH PBF file with replication files"
+	if [ -f "${OSH_PBF_FULL}" ]; then
+		prev_osh="${OSH_PBF_FULL}"
+	else
+		prev_osh="${OSH_PBF}"
+	fi
+	osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" "${OSC_FULL}"
+	osmium extract -p "${OSH_POLY}" -s simple "${OSC_FULL}" -O -o "${OSC_LOCAL}"
+	osmium apply-changes -H "$prev_osh" "${OSC_LOCAL}" -O -o "${OSH_PBF_FULL.replace(".osh.pbf", ".new.osh.pbf")}"
+	rm -f "${OSH_PBF_FULL}"
+	mv "${OSH_PBF_FULL.replace(".osh.pbf", ".new.osh.pbf")}" "${OSH_PBF_FULL}"
+else
+	ln -s "${OSH_PBF}" "${OSH_PBF_FULL}"
+fi
 ${separator}
 
 echo "==== Extract changes from OSH PBF (1st pass)"
-osmium tags-filter "${OSH_PBF}" -R ${project.database.osmium_tag_filter} -O -o "${OSC_1}"
+osmium tags-filter "${OSH_PBF_FULL}" -R ${project.database.osmium_tag_filter} -O -o "${OSC_1}"
 ${separator}
 
 echo "==== Transform changes into list of OSM IDs"
@@ -92,7 +119,7 @@ echo "==== Extract changes from OSH PBF (2nd pass)"
 split -l 5000 "${OSC_IDS}" "${OSC_IDS_SPLIT}"
 for i in ${OSC_IDS_SPLIT}*; do
 	echo "--- Processing IDS $i"
-	osmium getid "${OSH_PBF}" -H -i "$i" -O -o "$i.osc.gz"
+	osmium getid "${OSH_PBF_FULL}" -H -i "$i" -O -o "$i.osc.gz"
 done
 ${separator}
 
@@ -116,7 +143,7 @@ ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
 ${separator}
 ${counts}
 echo "==== Clean-up temporary files"
-rm -f "${OSC_IDS}" "${OSC_1}" "${CSV_CHANGES}" "${OSH4COUNT}" ${OSC_IDS_SPLIT}*
+rm -f "${OSC_IDS}" "${OSC_1}" "${CSV_CHANGES}" "${OSH4COUNT}" "${OSC_FULL}" "${OSC_LOCAL}" ${OSC_IDS_SPLIT}*
 ${separator}
 
 echo "Done"

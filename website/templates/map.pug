@@ -1,7 +1,10 @@
 div#map.map-main
+div#zoom-in.alert.alert-warning.font-weight-bold Zoomez ou lancez une recherche pour commencer
 
 //- This runs on client
 script.
+	const hasLocation = window.location.hash !== "";
+
 	// Map init
 	const map = new mapboxgl.Map({
 		container: 'map',
@@ -14,31 +17,25 @@ script.
 
 	map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
 
-	// Alert for zoom/search
-	class AlertControl {
-		onAdd(map) {
-			this._map = map;
-			this._container = document.createElement('div');
-			this._container.className = "mapboxgl-ctrl map-ctrl-custom map-ctrl-zoomin"+(map.getZoom() >= 7 ? " d-none": "");
-			this._container.textContent = 'Zoomez ou lancez une recherche pour commencer';
-
-			this._map.on("zoom", e => {
-				if(this._map.getZoom() >= 7) {
-					this._container.classList.add("d-none");
-				}
-				else {
-					this._container.classList.remove("d-none");
-				}
-			});
-
-			return this._container;
-		}
-
-		onRemove() {
-			this._container.parentNode.removeChild(this._container);
-			this._map = undefined;
-		}
+	// Geolocate
+	const geoloc = new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true } });
+	map.addControl(geoloc);
+	if(!hasLocation) {
+		map.on("load", () => geoloc.trigger());
 	}
+
+	// Alert for zoom/search
+	const zoomAlert = document.getElementById("zoom-in");
+	const toggleZoomAlert = () => {
+		if(map.getZoom() >= 7) {
+			zoomAlert.classList.add("d-none");
+		}
+		else {
+			zoomAlert.classList.remove("d-none");
+		}
+	};
+	toggleZoomAlert();
+	map.on("zoom", toggleZoomAlert);
 
 	// Button for KML exports
 	class ExportControl {
@@ -56,7 +53,6 @@ script.
 		}
 	}
 
-	map.addControl(new AlertControl(), "bottom-left");
 	map.addControl(new ExportControl(), "top-right");
 
 	// Click on feature

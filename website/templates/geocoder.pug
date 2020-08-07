@@ -1,5 +1,8 @@
-div.dropdown#boundary-search-container
-	input#boundary-search.form-control.dropdown-toggle(type="text" placeholder="Rechercher un lieu..." data-toggle="dropdown" data-display="static")
+div.input-group#boundary-search-container
+	div.input-group-prepend
+		span.input-group-text#search-bar-icon
+			i.fa.fa-search
+	input#boundary-search.form-control(type="text" placeholder="Rechercher un lieu...")
 
 script.
 	const searchTextField = document.getElementById("boundary-search");

@@ -1,8 +1,9 @@
 nav.navbar.navbar-expand-sm.navbar-light.bg-light.d-flex.justify-content-between.align-items-center.flex-nowrap
 	a.navbar-brand(href="./")
+		i.fa.fa-chevron-left.mr-2
 		img(src="/images/logo.png" alt="Projet du mois OpenStreetMap" title="Retour")
 
 	include geocoder.pug
 
 	form.form-inline
-		a#connect-osm.btn.btn-light.text-truncate(role="button") Se connecter
+		a#connect-osm.btn.btn-outline-secondary.text-truncate.ml-2(role="button")

@@ -165,24 +165,24 @@ app.get('/projects/:id/stats', (req, res) => {
 app.use('/images', express.static(__dirname+'/images'));
 
 // Libraries
-app.get('/lib/:modname/:file', (req, res) => {
-	const authorized = {
-		"bootstrap": {
-			"bootstrap.css": "dist/css/bootstrap.min.css"
-		},
-		"mapbox-gl": {
-			"mapbox-gl.js": "dist/mapbox-gl.js",
-			"mapbox-gl.css": "dist/mapbox-gl.css"
-		},
-		"chart.js": {
-			"chart.js": "dist/Chart.bundle.min.js",
-			"chart.css": "dist/Chart.min.css"
-		},
-		"osm-auth": {
-			"osmauth.js": "osmauth.min.js"
-		}
-	};
+const authorized = {
+	"bootstrap": {
+		"bootstrap.css": "dist/css/bootstrap.min.css"
+	},
+	"mapbox-gl": {
+		"mapbox-gl.js": "dist/mapbox-gl.js",
+		"mapbox-gl.css": "dist/mapbox-gl.css"
+	},
+	"chart.js": {
+		"chart.js": "dist/Chart.bundle.min.js",
+		"chart.css": "dist/Chart.min.css"
+	},
+	"osm-auth": {
+		"osmauth.js": "osmauth.min.js"
+	}
+};
 
+app.get('/lib/:modname/:file', (req, res) => {
 	if(!req.params.modname || !req.params.file) {
 		return res.status(400).send('Missing parameters');
 	}
@@ -206,6 +206,8 @@ app.get('/lib/:modname/:file', (req, res) => {
 		}
 	});
 });
+
+app.use('/lib/fontawesome', express.static(path.join(__dirname, '../node_modules/@fortawesome/fontawesome-free')));
 
 // 404
 app.use((req, res) => {

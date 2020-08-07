@@ -19,7 +19,7 @@ html(lang="fr")
 					a.p-2.text-muted(href="#contribute") Participer
 					a.p-2.text-muted(href="#statistics") Statistiques
 					a.p-2.text-muted(href="#about") À propos
-					a#connect-osm.p-2.text-muted Se connecter
+					a#connect-osm.p-2.text-muted
 
 			//- Project summary
 			div#summary.jumbotron.p-4.p-md-5.text-white.rounded.bg-dark
@@ -27,22 +27,28 @@ html(lang="fr")
 					img.float-sm-none.float-md-right(src=icon alt="" width="130")
 				div.col-md-8.px-0
 					if isActive
-						h1.display-4.font-italic= `Au programme ce mois-ci : ${title}`
+						h1.display-4.font-italic= `Le projet du mois OpenStreetMap : ${title}`
 					else
 						h1.display-4.font-italic= title
 						p.display-4.text-capitalize= new Date(start_date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 					p.lead.my-3= summary
 					p.lead.mb-0
-						a.text-white.font-weight-bold(href="#contribute") Participer
+						a.btn.btn-primary.btn-lg(role="button" href="#contribute") Participer
 
 		main.container(role="container")
 			div.blog-main
 				//- Contribute
 				div#contribute.blog-post
 					h2.blog-post-title Participer
-					a.pdm-wide-link.map(href=`/projects/${id}/map`) Commencer à contribuer
+					div.btn-over-wide
+						a.pdm-wide-link.map(href=`/projects/${id}/map`) Commencer à contribuer
+						a.btn.btn-light
+							i.fa.fa-expand
 					div.mt-3!= howto
-					a.pdm-wide-link.books(href=links.osmwiki target="_blank") Page du projet sur le wiki OpenStreetMap
+					div.btn-over-wide
+						a.pdm-wide-link.books(href=links.osmwiki target="_blank") Voir la documentation OpenStreetMap
+						a.btn.btn-light
+							i.fa.fa-book
 
 				//- Statistics
 				include stats.pug

@@ -149,11 +149,23 @@ a.pdm-link:hover {
 
 #connect-osm.btn:hover {
 	text-decoration: none;
+	color: white;
 }
 
 img.stats-badge-mini {
 	height: 32px;
 	margin: 5px;
+}
+
+div.btn-over-wide {
+	position: relative;
+}
+
+div.btn-over-wide a.btn {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+	pointer-events: none;
 }
 
 a.pdm-wide-link {
@@ -166,6 +178,7 @@ a.pdm-wide-link {
 	text-align: center;
 	line-height: 150px;
 	transition: opacity 0.2s;
+	border: 3px solid #222;
 }
 
 a.pdm-wide-link:hover {
@@ -195,13 +208,13 @@ a.navbar-brand img {
 	height: 40px;
 }
 
+a.navbar-brand:hover {
+	color: #aaa !important;
+}
+
 #boundary-search-container {
 	width: 100%;
 	max-width: 300px;
-}
-
-#boundary-search {
-	width: 100%;
 }
 
 /*
@@ -214,12 +227,6 @@ a.navbar-brand img {
 	bottom: 0;
 	left: 0;
 	right: 0;
-}
-
-@media (min-width: 992px) {
-	.map-main {
-		height: 600px;
-	}
 }
 
 .chart-100w {
@@ -260,4 +267,19 @@ a.navbar-brand img {
 	width: 21px;
 	height: 25px;
 	text-decoration: none !important;
+}
+
+#zoom-in {
+	position: absolute;
+	bottom: 0;
+	left: 5%;
+	right: 5%;
+	text-align: center;
+}
+
+@media (min-width: 768px) {
+	#zoom-in {
+		left: 25%;
+		right: 25%;
+	}
 }

@@ -17,6 +17,7 @@ link(rel="icon" href="/images/favicon.png")
 link(rel="stylesheet" type="text/css" href="/lib/bootstrap/bootstrap.css")
 link(rel="stylesheet" type="text/css" href="/lib/mapbox-gl/mapbox-gl.css")
 link(rel="stylesheet" type="text/css" href="/lib/chart.js/chart.css")
+link(rel="stylesheet" type="text/css" href="/lib/fontawesome/css/all.min.css")
 style
 	include index.css
 
@@ -27,6 +28,25 @@ script(src="/lib/osm-auth/osmauth.js")
 
 //- Auth handler (runs on client)
 script.
+	function toggleConnect(logged) {
+		const domConnect = document.getElementById("connect-osm");
+		domConnect.innerHTML = '';
+		if(logged) {
+			const icon = document.createElement("i");
+			icon.classList.add("fa", "fa-user", "mr-2");
+			domConnect.appendChild(icon);
+			domConnect.appendChild(document.createTextNode(window.osm_user.name));
+			domConnect.title = "Se déconnecter";
+		}
+		else {
+			const icon = document.createElement("i");
+			icon.classList.add("fa", "fa-sign-in-alt", "mr-2");
+			domConnect.appendChild(icon);
+			domConnect.appendChild(document.createTextNode("Se connecter"));
+			domConnect.title = null;
+		}
+	}
+
 	function stringQs(str) {
 		const u = str.split('?');
 
@@ -83,8 +103,7 @@ script.
 							auth: auth
 						};
 
-						document.getElementById("connect-osm").innerHTML = window.osm_user.name;
-						document.getElementById("connect-osm").title = "Se déconnecter";
+						toggleConnect(true);
 						window.dispatchEvent(new Event("osm_login"));
 					}
 					catch(e) {
@@ -120,8 +139,7 @@ script.
 		}
 
 		window.osm_user = null;
-		document.getElementById("connect-osm").innerHTML = "Se connecter";
-		document.getElementById("connect-osm").title = null;
+		toggleConnect(false);
 		localStorage.removeItem("oauth_token");
 		window.dispatchEvent(new Event("osm_logout"));
 	}
@@ -140,6 +158,7 @@ script.
 	}
 
 	window.addEventListener("load", () => {
+		toggleConnect(false);
 		document.getElementById("connect-osm").addEventListener("click", () => {
 			if(!auth.authenticated()) {
 				auth.authenticate((err, res) => {

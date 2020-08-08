@@ -179,6 +179,9 @@ const authorized = {
 	},
 	"osm-auth": {
 		"osmauth.js": "osmauth.min.js"
+	},
+	"osm-request": {
+		"osmrequest.js": "dist/OsmRequest.js"
 	}
 };
 

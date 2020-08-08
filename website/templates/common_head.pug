@@ -25,6 +25,7 @@ style
 script(src="/lib/mapbox-gl/mapbox-gl.js")
 script(src="/lib/chart.js/chart.js")
 script(src="/lib/osm-auth/osmauth.js")
+script(src="/lib/osm-request/osmrequest.js")
 
 //- Auth handler (runs on client)
 script.
@@ -73,6 +74,12 @@ script.
 		}
 	}
 
+	const osmApi = new OsmRequest({
+		endpoint: "#{CONFIG.OSM_URL}",
+		oauthConsumerKey: "#{CONFIG.OSM_API_KEY}",
+		oauthSecret: "#{CONFIG.OSM_API_SECRET}"
+	});
+
 	const authOpts = {
 		url: "#{CONFIG.OSM_URL}",
 		oauth_consumer_key: "#{CONFIG.OSM_API_KEY}",
@@ -109,6 +116,7 @@ script.
 							auth: auth
 						};
 
+						osmApi._auth = auth;
 						toggleConnect(true);
 						window.dispatchEvent(new Event("osm_login"));
 					}
@@ -145,6 +153,7 @@ script.
 		}
 
 		window.osm_user = null;
+		osmApi._auth = null;
 		toggleConnect(false);
 		localStorage.removeItem("oauth_token");
 		window.dispatchEvent(new Event("osm_logout"));

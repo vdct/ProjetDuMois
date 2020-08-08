@@ -23,13 +23,23 @@
 				"done": "Ajouté",
 				"false": "Rien ici"
 			}
+		},
+		{
+			"source": "notes",
+			"name": "Note à valider",
+			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
+			"color": "blue",
+			"terms": [ "défibrillateur", "defibrillateur" ],
+			"buttons": {
+				"close": "Ajouté"
+			}
 		}
 	],
 	"count": true,
 	"editors": {
 		"all": {
 			"comment": "Ajout de défibrillateurs automatiques externes",
-			"hashtags": "projetdumois,projetdumoisfr,déficoeur"
+			"hashtags": "projetdumois,projetdumoisfr,deficoeur"
 		},
 		"iD": {
 			"background": "fr.ign.bdortho"

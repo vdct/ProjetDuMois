@@ -27,23 +27,33 @@ exports.queryParams = (obj) => {
 
 // Map style JSON
 exports.getMapStyle = (p) => {
-	const osmoseSources = {};
-	const osmoseLayers = [];
+	const sources = { osm: {
+		type: "raster",
+		tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
+		maxzoom: 19,
+		attribution: "&copy; OpenStreetMap"
+	}};
+	const layers = [{
+		id: "osm",
+		source: "osm",
+		type: "raster"
+	}];
 
 	if(p) {
+		// Osmose
 		p.datasources
 		.filter(ds => ds.source === "osmose")
 		.forEach(ds => {
 			const id = `osmose_${ds.item}_${ds.class || "all"}`;
 			const params = { item: ds.item, class: ds.class, country: ds.country };
 
-			osmoseSources[id] = {
+			sources[id] = {
 				type: "vector",
 				tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3beta/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
 				minzoom: 7
 			};
 
-			osmoseLayers.push({
+			layers.push({
 				id: id,
 				source: id,
 				type: "circle",
@@ -60,25 +70,35 @@ exports.getMapStyle = (p) => {
 				}
 			});
 		});
+
+		// Notes
+		p.datasources
+		.filter(ds => ds.source === "notes")
+		.forEach((ds, dsid) => {
+			const id = `notes_${dsid}`;
+			sources[id] = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
+			layers.push({
+				id: id,
+				source: `notes_${dsid}`,
+				type: "circle",
+				paint: {
+					"circle-color": ds.color || "blue",
+					"circle-radius": [
+						"interpolate",
+						["linear"],
+						["zoom"],
+						11, 3,
+						19, 13
+					]
+				}
+			});
+		});
 	}
 
 	return {
 		version: 8,
 		name: "ProjetDuMois.fr",
-		sources: Object.assign({
-			osm: {
-				type: "raster",
-				tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
-				maxzoom: 19,
-				attribution: "&copy; OpenStreetMap"
-			}
-		}, osmoseSources),
-		layers: [
-			{
-				id: "osm",
-				source: "osm",
-				type: "raster"
-			}
-		].concat(osmoseLayers)
+		sources: sources,
+		layers: layers
 	};
 };

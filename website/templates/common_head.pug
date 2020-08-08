@@ -33,16 +33,22 @@ script.
 		domConnect.innerHTML = '';
 		if(logged) {
 			const icon = document.createElement("i");
-			icon.classList.add("fa", "fa-user", "mr-2");
+			icon.classList.add("fa", "fa-user");
+			const txt = document.createElement("span");
+			txt.appendChild(document.createTextNode(window.osm_user.name));
+			txt.classList.add("d-none", "d-sm-inline", "ml-2");
 			domConnect.appendChild(icon);
-			domConnect.appendChild(document.createTextNode(window.osm_user.name));
+			domConnect.appendChild(txt);
 			domConnect.title = "Se déconnecter";
 		}
 		else {
 			const icon = document.createElement("i");
-			icon.classList.add("fa", "fa-sign-in-alt", "mr-2");
+			icon.classList.add("fa", "fa-sign-in-alt");
+			const txt = document.createElement("span");
+			txt.appendChild(document.createTextNode("Se connecter"));
+			txt.classList.add("d-none", "d-sm-inline", "ml-2");
 			domConnect.appendChild(icon);
-			domConnect.appendChild(document.createTextNode("Se connecter"));
+			domConnect.appendChild(txt);
 			domConnect.title = null;
 		}
 	}

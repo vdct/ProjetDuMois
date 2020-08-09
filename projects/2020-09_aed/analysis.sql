@@ -35,29 +35,38 @@ FROM user_contributions
 WHERE project = current_setting('my.pdm.project_id')
 ON CONFLICT DO NOTHING;
 
--- 3 best contributors
+-- 3 best contributors (including ex aqueos)
 DELETE FROM user_badges
 WHERE project = current_setting('my.pdm.project_id') AND badge IN ('score_1st', 'score_2nd', 'score_3rd');
 
 INSERT INTO user_badges(userid, project, badge)
-SELECT
-	userid, project,
-	CASE
-		WHEN pos = 1 THEN 'score_1st'
-		WHEN pos = 2 THEN 'score_2nd'
-		WHEN pos = 3 THEN 'score_3rd'
-	END AS badge
-FROM (
-	SELECT row_number() over () AS pos, *
+WITH stats AS (
+	SELECT userid, project, COUNT(*) AS amount
+	FROM user_contributions
+	WHERE project = current_setting('my.pdm.project_id')
+	GROUP BY userid, project
+	ORDER BY COUNT(*) DESC
+), scores AS (
+	SELECT
+		CASE
+			WHEN pos = 1 THEN 'score_1st'
+			WHEN pos = 2 THEN 'score_2nd'
+			WHEN pos = 3 THEN 'score_3rd'
+		END AS badge,
+		amount
 	FROM (
-		SELECT userid, project, COUNT(*) AS amount
-		FROM user_contributions
-		WHERE project = current_setting('my.pdm.project_id')
-		GROUP BY userid, project
-		ORDER BY COUNT(*) DESC
-		LIMIT 3
+		SELECT row_number() over () AS pos, amount
+		FROM (
+			SELECT DISTINCT amount
+			FROM stats
+			ORDER BY amount DESC
+			LIMIT 3
+		) a
 	) a
-) a
+)
+SELECT userid, project, badge
+FROM stats
+JOIN scores ON scores.amount = stats.amount
 ON CONFLICT DO NOTHING;
 
 -- Meta

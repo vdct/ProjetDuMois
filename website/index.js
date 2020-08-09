@@ -53,7 +53,7 @@ app.get('/error/404', (req, res) => {
 // Project page
 app.get('/projects/:id', (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {
-		return res.status(404).send('Project ID not found');
+		return res.redirect('/error/404');
 	}
 
 	const p = projects[req.params.id];
@@ -65,7 +65,7 @@ app.get('/projects/:id', (req, res) => {
 // Project map editor
 app.get('/projects/:id/map', (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {
-		return res.status(404).send('Project ID not found');
+		return res.redirect('/error/404');
 	}
 
 	const p = projects[req.params.id];
@@ -76,7 +76,7 @@ app.get('/projects/:id/map', (req, res) => {
 // Project statistics
 app.get('/projects/:id/stats', (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {
-		return res.status(404).send('Project ID not found');
+		return res.redirect('/error/404');
 	}
 
 	const p = projects[req.params.id];

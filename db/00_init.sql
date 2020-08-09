@@ -37,3 +37,13 @@ CREATE TABLE feature_counts(
 );
 
 CREATE INDEX feature_counts_project_idx ON feature_counts(project);
+
+-- Note counts
+CREATE TABLE note_counts(
+	project VARCHAR NOT NULL,
+	ts TIMESTAMP NOT NULL,
+	open INT NOT NULL,
+	closed INT NOT NULL
+);
+
+CREATE INDEX note_counts_project_idx ON note_counts(project);

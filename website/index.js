@@ -104,8 +104,37 @@ app.get('/projects/:id/stats', (req, res) => {
 		};
 	}));
 
+	// Fetch notes counts
+	if(p.datasources.find(ds => ds.source === "notes")) {
+		allPromises.push(pool.query(`
+			SELECT ts, open, closed
+			FROM note_counts
+			WHERE project = $1
+			ORDER BY ts
+		`, [req.params.id])
+		.then(results => ({
+			chartNotes: [
+				{
+					label: "Ouvertes",
+					data: results.rows.map(r => ({ t: r.ts, y: r.open })),
+					fill: false,
+					borderColor: "red",
+					lineTension: 0
+				},
+				{
+					label: "Résolues",
+					data: results.rows.map(r => ({ t: r.ts, y: r.closed })),
+					fill: false,
+					borderColor: "green",
+					lineTension: 0
+				}
+   			],
+			closedNotes: results.rows.length > 0 && results.rows[results.rows.length-1].closed
+		})));
+	}
+
 	// Fetch feature counts
-	if(p.count) {
+	if(p.statistics.count) {
 		allPromises.push(pool.query(`
 			SELECT ts, amount
 			FROM feature_counts
@@ -117,7 +146,8 @@ app.get('/projects/:id/stats', (req, res) => {
 				data: results.rows.map(r => ({ t: r.ts, y: r.amount })),
 				fill: false,
 				borderColor: "blue"
-			}]
+			}],
+			count: results.rows.length > 0 && results.rows[results.rows.length-1].amount
 		})));
 	}
 

@@ -4,25 +4,33 @@ div#statistics.blog-post
 	//- Synthetic stats
 	div.row.mb-4
 		div.col-md-4
-			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
 				h3#stats-pctdone.mb-0 ?%
 				p.card-text.mb-auto des tâches terminées
 		div.col-md-4
-			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
 				h3#stats-contributors.mb-0 ?
-				p.card-text.mb-auto contributeurs
+				p.card-text.mb-auto participant·e·s
 		div.col-md-4
-			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
 				if new Date(end_date).getTime() >= Date.now()
 					h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
 					p.card-text.mb-auto jours restants
 				else
 					h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - new Date(start_date+"T00:00:00Z").getTime()) / (1000*3600*24))
 					p.card-text.mb-auto jours de contributions
+		div.col-md-4#stats-count-col
+			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				h3#stats-count.mb-0 ?
+				p.card-text.mb-auto #{title.toLowerCase()}
+		div.col-md-4#stats-notes-col
+			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				h3#stats-notes.mb-0 ?
+				p.card-text.mb-auto notes résolues
 
 	div.row
 		//- Leaderboard
-		div.col-md-5
+		div.col-12.mb-4
 			h3 Classement
 			p#stats-leaderboard-noauth Vous devez être connecté pour voir les statistiques détaillées
 			div#stats-leaderboard-container.d-none.overflow-auto(style="height: 300px")
@@ -36,9 +44,13 @@ div#statistics.blog-post
 					tbody#stats-leaderboard
 
 		//- Charts
-		div.col-md-7
+		div.col-lg-6.mb-2
 			h3 Évolution
 			canvas#stats-chart.chart-100w(height="300")
+
+		div.col-lg-6.mb-2#stats-chart-notes-container
+			h3 Notes
+			canvas#stats-chart-notes.chart-100w(height="300")
 
 script.
 	const BADGES_NAMES = {
@@ -98,6 +110,51 @@ script.
 			else {
 				document.getElementById("stats-leaderboard-container").classList.add("d-none");
 				document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
+			}
+
+			// Feature count
+			if(res.count) {
+				document.getElementById("stats-count").innerHTML = res.count;
+			}
+			else {
+				document.getElementById("stats-count-col").classList.add("d-none");
+			}
+
+			// Notes count + chart
+			if(res.chartNotes) {
+				document.getElementById("stats-notes").innerHTML = res.closedNotes;
+
+				const myChart = new Chart(document.getElementById("stats-chart-notes").getContext("2d"), {
+					type: "line",
+					data: {
+						datasets: res.chartNotes
+					},
+					options: {
+						responsive: true,
+						scales: {
+							xAxes: [{
+								type: 'time',
+								bounds: 'ticks',
+								time: {
+									tooltipFormat: "DD/MM",
+									displayFormats: {
+										day: "DD/MM"
+									}
+								}
+							}],
+							yAxes: [{
+								ticks: {
+									beginAtZero: true,
+									precision: 0
+								}
+							}]
+						}
+					}
+				});
+			}
+			else {
+				document.getElementById("stats-notes-col").classList.add("d-none");
+				document.getElementById("stats-chart-notes-container").classList.add("d-none");
 			}
 
 			// Evolution chart

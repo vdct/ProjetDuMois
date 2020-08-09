@@ -45,6 +45,11 @@ app.get('/', (req, res) => {
 	res.redirect(`/projects/${destId}`);
 });
 
+// 404
+app.get('/error/404', (req, res) => {
+	res.status(404).render('http404', { CONFIG });
+});
+
 // Project page
 app.get('/projects/:id', (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {
@@ -244,7 +249,7 @@ app.use('/lib/fontawesome', express.static(path.join(__dirname, '../node_modules
 
 // 404
 app.use((req, res) => {
-	res.status(404).send(req.originalUrl + ' not found')
+	res.redirect('/error/404');
 });
 
 // Start

@@ -160,21 +160,22 @@ script.
 		window.dispatchEvent(new Event("osm_logout"));
 	}
 
-	if(token) {
-		auth.bootstrapToken(token, () => {
-			checkAuth();
-			window.history.pushState({}, "", window.location.href.replace("?oauth_token="+token, ""));
-			localStorage.setItem("oauth_token", token);
-		});
-	}
-	else {
-		//Check if we receive auth token
-		checkAuth();
-		authWait = setInterval(checkAuth.bind(this), 100);
-	}
-
 	window.addEventListener("load", () => {
 		toggleConnect(false);
+
+		if(token) {
+			auth.bootstrapToken(token, () => {
+				checkAuth();
+				window.history.pushState({}, "", window.location.href.replace("?oauth_token="+token, ""));
+				localStorage.setItem("oauth_token", token);
+			});
+		}
+		else {
+			//Check if we receive auth token
+			checkAuth();
+			authWait = setInterval(checkAuth.bind(this), 100);
+		}
+
 		for(let domConnect of document.getElementsByClassName("connect-osm")) {
 			domConnect.addEventListener("click", () => {
 				if(!auth.authenticated()) {

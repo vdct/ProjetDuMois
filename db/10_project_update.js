@@ -5,7 +5,7 @@ const { filterProjects } = require('../website/utils');
 const fetch = require('node-fetch');
 
 // Constants
-const project = filterProjects(projects).current;
+let project = filterProjects(projects).current;
 const OSH_PBF = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop();
 const OSH_PBF_FULL = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
 const OSH_POLY = OSH_PBF.replace("-internal.osh.pbf", ".poly");
@@ -25,6 +25,10 @@ const PSQL = `psql postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HO
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
 
 // Check if there is any project to analyse
+const projectIdFromCli = process.argv.slice(2).pop();
+if(projectIdFromCli && projects[projectIdFromCli]) {
+	project = projects[projectIdFromCli];
+}
 if(!project) {
 	throw new Error("No project currently");
 }
@@ -101,7 +105,11 @@ osmium tags-filter "${OSH_PBF}" ${project.database.osmium_tag_filter} -O -o "${O
 days=(${getDays().map(d => `"${d}"`).join(" ")})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
-	echo "${project.id},$day,\`osmium time-filter "${OSH4COUNT}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1\`" \\
+	nbday=$(osmium time-filter "${OSH4COUNT}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1)
+	if [ "$nbday" == "" ]; then
+		nbday="0"
+	fi
+	echo "${project.id},$day,$nbday" \\
 	>> "${OSCCOUNT}"
 done
 
@@ -168,6 +176,7 @@ xsltproc "${OSC2IDS}" "${OSC_1}" | sort | uniq  > "${OSC_IDS}"
 ${separator}
 
 echo "==== Extract changes from OSH PBF (2nd pass)"
+rm -f ${OSC_IDS_SPLIT}*.osc.gz
 split -l 5000 "${OSC_IDS}" "${OSC_IDS_SPLIT}"
 for i in ${OSC_IDS_SPLIT}*; do
 	echo "--- Processing IDS $i"

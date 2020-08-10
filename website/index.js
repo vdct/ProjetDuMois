@@ -100,6 +100,8 @@ app.get('/projects/:id/stats', (req, res) => {
 		}));
 	}))
 	.then(results => {
+		if(!results || results.length === 0) { return {}; }
+
 		const nbTasksStart = results.map(r => r.data[0].y).reduce((acc,cur) => acc + cur);
 		const nbTasksEnd = results.map(r => r.data[r.data.length-1].y).reduce((acc,cur) => acc + cur);
 

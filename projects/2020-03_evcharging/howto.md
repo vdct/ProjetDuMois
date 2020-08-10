@@ -1,0 +1,1 @@
+Les bornes de recharge que nous recherchons ici sont toutes les installations sur le domaine public permettant la recharge des véhicules électriques. On les trouve particulièrement sur les parkings et à proximité d'axes routier dans tous les cas.

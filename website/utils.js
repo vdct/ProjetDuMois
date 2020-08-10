@@ -11,7 +11,9 @@ exports.filterProjects = (projects) => {
 		else if(new Date(project.end_date).getTime() < Date.now()) {
 			prjs.past.push({
 				id: project.id,
-				label: `${new Date(project.start_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'numeric' })} - ${project.title}`
+				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
+				title: project.title,
+				period: new Date(project.start_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'numeric' })
 			});
 		}
 	});

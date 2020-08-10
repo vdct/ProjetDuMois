@@ -1,0 +1,33 @@
+{
+	"id": "2018-07_substation",
+	"title": "Postes électriques",
+	"start_date": "2018-07-01",
+	"end_date": "2018-08-31",
+	"summary": "La récente mise à disposition de données ouvertes par les gestionnaires des réseaux de transport électrique et de distribution nous permettent de passer une nouvelle étape dans l'inventaire des réseaux de notre environnement. En outre, ce projet du mois va permettre de mieux qualifier une partie du bâti partiellement ajoutée au cadastre.",
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/postes_electriques"
+	},
+	"database": {
+		"osmium_tag_filter": "nw/power=substation"
+	},
+	"datasources": [
+		{ "source": "osmose", "item": "8280", "country": "france*", "name": "Poste à ajouter", "color": "red" }
+	],
+	"statistics": {
+		"count": true,
+		"feature_name": "postes électriques",
+		"osmose_tasks": "postes intégrés"
+	},
+	"editors": {
+		"all": {
+			"comment": "Intégration poste électrique",
+			"hashtags": "ProjetOSMDuMois,BalanceTonPoste"
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	},
+	"opendata": [
+		{ "title": "Carte des infrastructures dont postes électriques", "via": "OpenInfraMap", "url": "https://openinframap.org/#15/45.9120/6.1275/Power" }
+	]
+}

@@ -1,0 +1,30 @@
+{
+	"id": "2017-04_electionboard",
+	"title": "Panneaux électoraux",
+	"start_date": "2017-04-01",
+	"end_date": "2017-06-30",
+	"summary": "Ces dispositifs temporaires permettent de coller des affiches des différents candidats aux élections. Même si les panneaux sont amovibles, leur emplacement est permanent car ancré dans le sol.",
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/elections"
+	},
+	"database": {
+		"osmium_tag_filter": "n/advertising=board n/message=political"
+	},
+	"datasources": [],
+	"statistics": {
+		"count": true,
+		"feature_name": "panneaux"
+	},
+	"editors": {
+		"all": {
+			"comment": "Ajout panneau d'affichage électoral",
+			"hashtags": "ProjectOfTheMonth"
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	},
+	"opendata": [
+		{ "title": "Panneaux d'affichage électoral", "via": "Overpass Turbo", "url": "http://overpass-turbo.eu/s/o6j" }
+	]
+}

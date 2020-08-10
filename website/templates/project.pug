@@ -4,30 +4,29 @@ html(lang="fr")
 	head
 		include common_head.pug
 	body
-		div.container
-			//- Header
-			include common_header.pug
+		//- Header
+		include common_header.pug
 
-			//- Nav links
-			div.nav-scroller.py-1.mb-2
-				nav.nav.d-flex.justify-content-between
+		//- Nav links
+		nav.navbar.navbar-light.sticky-top.navbar-pdm
+			div.container.d-flex.p-0.px-sm-3.align-items-center.justify-content-between
+				div
 					if !isActive
-						a.p-2.text-muted(href="/#summary") Ce mois-ci
-						a.p-2.text-muted(href="#summary") Résumé
+						a.p-2.text-muted(href="/#summary") En ce moment
 					else
-						a.p-2.text-muted(href="#summary") Au programme
-					a.p-2.text-muted(href="#contribute") Participer
-					a.p-2.text-muted(href="#statistics") Statistiques
-					a.p-2.text-muted(href="#about") À propos
-					a#connect-osm.p-2.text-muted
+						a.p-2.text-muted(href="#contribute") Participer
+						a.p-2.text-muted(href="#statistics") Statistiques
+					a.p-2.text-muted(href="/#data") Données
+				a.connect-osm.btn.btn-sm.btn-outline-secondary.text-truncate.ml-2(role="button")
 
+		div.container.pb-5
 			//- Project summary
-			div#summary.jumbotron.p-4.p-md-5.text-white.rounded.bg-dark
+			div#summary.jumbotron.p-4.p-md-5.mb-3.text-white.rounded.bg-dark
 				div.text-center
 					img.float-sm-none.float-md-right(src=icon alt="" width="130")
 				div.col-md-8.px-0
 					if isActive
-						h1.display-4.font-italic= `Le projet du mois OpenStreetMap : ${title}`
+						h1.display-4.font-italic= `En ce moment : ${title.toLowerCase()}`
 					else
 						h1.display-4.font-italic= title
 						p.display-4.text-capitalize= new Date(start_date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
@@ -35,24 +34,25 @@ html(lang="fr")
 					p.lead.mb-0
 						a.btn.btn-primary.btn-lg(role="button" href="#contribute") Participer
 
-		main.container(role="container")
-			div.blog-main
-				//- Contribute
-				div#contribute.blog-post
-					h2.blog-post-title Participer
-					div.btn-over-wide
-						a.pdm-wide-link.map(href=`/projects/${id}/map`) Commencer à contribuer
-						a.btn.btn-light
-							i.fa.fa-expand
-					div.mt-3!= howto
-					div.btn-over-wide
-						a.pdm-wide-link.books.d-none.d-md-block(href=links.osmwiki target="_blank") Voir la documentation OpenStreetMap
-						a.pdm-wide-link.books.d-block.d-md-none(href=links.osmwiki target="_blank") Doc OpenStreetMap
-						a.btn.btn-light
-							i.fa.fa-book
+		div.container-fluid.py-5.mb-3.pdm-section-highlight
+			//- Contribute
+			div#contribute.container.blog-post
+				h2.blog-post-title Participer
+				div.btn-over-wide
+					a.pdm-wide-link.map(href=`/projects/${id}/map`) Commencer à contribuer
+					a.btn.btn-light
+						i.fa.fa-expand
+				div.mt-3!= howto
+				div.btn-over-wide
+					a.pdm-wide-link.books(href=links.osmwiki target="_blank") Documentation
+					a.btn.btn-light
+						i.fa.fa-book
 
-				//- Statistics
-				include stats.pug
+		//- Statistics
+		include stats.pug
+
+		div.d-flex.align-items-start(style="max-height: 250px; overflow: hidden")
+			img.w-100(src="/images/background.png")
 
 		//- About
 		footer.blog-footer

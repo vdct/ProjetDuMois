@@ -1,4 +1,6 @@
-/* stylelint-disable selector-list-comma-newline-after */
+body {
+	font-size: 1.05rem;
+}
 
 .blog-header {
 	line-height: 1;
@@ -6,18 +8,8 @@
 }
 
 .blog-header-logo {
-	font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-	font-size: 2.25rem;
 	max-width: 300px;
 	max-height: 120px;
-}
-
-.blog-header-logo:hover {
-	text-decoration: none;
-}
-
-h1, h2, h3, h4, h5, h6 {
-	font-family: "Playfair Display", Georgia, "Times New Roman", serif;
 }
 
 .display-4 {
@@ -29,60 +21,17 @@ h1, h2, h3, h4, h5, h6 {
 	}
 }
 
-.nav-scroller {
-	position: relative;
-	z-index: 2;
-	height: 2.75rem;
-	overflow-y: hidden;
-}
-
-.nav-scroller .nav {
-	display: -ms-flexbox;
-	display: flex;
-	-ms-flex-wrap: nowrap;
-	flex-wrap: nowrap;
-	padding-bottom: 1rem;
-	margin-top: -1px;
-	overflow-x: auto;
-	text-align: center;
-	white-space: nowrap;
-	-webkit-overflow-scrolling: touch;
-}
-
-.nav-scroller .nav-link {
-	padding-top: .75rem;
-	padding-bottom: .75rem;
-	font-size: .875rem;
-}
-
-.card-img-right {
-	height: 100%;
-	border-radius: 0 3px 3px 0;
-}
-
-.flex-auto {
-	-ms-flex: 0 0 auto;
-	flex: 0 0 auto;
-}
-
-.h-250 { height: 250px; }
-@media (min-width: 768px) {
-	.h-md-250 { height: 250px; }
-}
-
-/* Pagination */
-.blog-pagination {
-	margin-bottom: 4rem;
-}
-.blog-pagination > .btn {
-	border-radius: 2rem;
+.pdm-section-highlight {
+	border-top: 1px solid #f1f1f1;
+	border-bottom: 1px solid #f1f1f1;
+	background-color: #f6f6f6;
 }
 
 /*
 * Blog posts
 */
 .blog-post {
-	margin-bottom: 4rem;
+	margin-bottom: 2rem;
 }
 .blog-post-title {
 	margin-bottom: .25rem;
@@ -107,21 +56,6 @@ h1, h2, h3, h4, h5, h6 {
 	margin-bottom: 0;
 }
 
-.bd-placeholder-img {
-	font-size: 1.125rem;
-	text-anchor: middle;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
-}
-
-@media (min-width: 768px) {
-	.bd-placeholder-img-lg {
-		font-size: 3.5rem;
-	}
-}
-
 /*
  * Project
  */
@@ -137,17 +71,12 @@ a.pdm-link:hover {
 	text-decoration: underline;
 }
 
-.map-ctrl-zoomin {
-	font-size: 1.3em;
-	background-color: #FFF59D;
-}
-
-#connect-osm:hover {
+.connect-osm:hover {
 	cursor: pointer;
 	text-decoration: underline;
 }
 
-#connect-osm.btn:hover {
+.connect-osm.btn:hover {
 	text-decoration: none;
 	color: white;
 }
@@ -200,6 +129,12 @@ a.pdm-wide-link.map {
  * Navbar
  */
 
+.navbar-pdm {
+	background-color: white;
+	border-bottom: 1px solid #e5e5e5;
+	margin-bottom: 2rem;
+}
+
 a.navbar-brand {
 	padding: 0 !important;
 }
@@ -227,10 +162,6 @@ a.navbar-brand:hover {
 	bottom: 0;
 	left: 0;
 	right: 0;
-}
-
-.chart-100w {
-	width: 100%;
 }
 
 .map-ctrl-custom {

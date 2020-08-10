@@ -1,38 +1,41 @@
-div#statistics.blog-post
+div#statistics.blog-post.container.py-5
 	h2.blog-post-title.mb-3 Statistiques
 
 	//- Synthetic stats
 	div.row.mb-4
-		div.col-md-4
-			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+		div.col-md-4.mb-2
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 				h3#stats-pctdone.mb-0 ?%
-				p.card-text.mb-auto des tâches terminées
-		div.col-md-4
-			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				p.card-text.mb-auto des #{statistics.osmose_tasks}
+		div.col-md-4.mb-2
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 				h3#stats-contributors.mb-0 ?
-				p.card-text.mb-auto participant·e·s
-		div.col-md-4
-			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				p.card-text.mb-auto personnes ayant contribué
+		div.col-md-4.mb-2
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 				if new Date(end_date).getTime() >= Date.now()
 					h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
 					p.card-text.mb-auto jours restants
 				else
 					h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - new Date(start_date+"T00:00:00Z").getTime()) / (1000*3600*24))
 					p.card-text.mb-auto jours de contributions
-		div.col-md-4#stats-count-col
-			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+		div.col-md-4.mb-2#stats-count-col
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 				h3#stats-count.mb-0 ?
-				p.card-text.mb-auto #{title.toLowerCase()}
-		div.col-md-4#stats-notes-col
-			div.p-4.mb-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative
+				p.card-text.mb-auto #{title.toLowerCase()} dans OpenStreetMap
+		div.col-md-4.mb-2#stats-notes-col
+			div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 				h3#stats-notes.mb-0 ?
 				p.card-text.mb-auto notes résolues
 
 	div.row
 		//- Leaderboard
 		div.col-12.mb-4
-			h3 Classement
-			p#stats-leaderboard-noauth Vous devez être connecté pour voir les statistiques détaillées
+			h3 Podium
+			p#stats-leaderboard-noauth.text-center
+				| Connectez-vous pour voir le podium
+				br
+				button.connect-osm.btn.btn-primary.mt-2
 			div#stats-leaderboard-container.d-none.overflow-auto(style="height: 300px")
 				table.table.table-sm
 					thead
@@ -45,12 +48,12 @@ div#statistics.blog-post
 
 		//- Charts
 		div.col-lg-6.mb-2
-			h3 Évolution
-			canvas#stats-chart.chart-100w(height="300")
+			h3 Avancement
+			canvas#stats-chart.w-100(height="300")
 
 		div.col-lg-6.mb-2#stats-chart-notes-container
 			h3 Notes
-			canvas#stats-chart-notes.chart-100w(height="300")
+			canvas#stats-chart-notes.w-100(height="300")
 
 script.
 	const BADGES_NAMES = {

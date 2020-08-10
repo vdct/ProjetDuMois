@@ -4,17 +4,18 @@ html(lang="fr")
 	head
 		include common_head.pug
 	body
+		//- Header
+		include common_header.pug
+
+		//- Nav links
+		nav.navbar.navbar-light.sticky-top.navbar-pdm
+			div.container.d-flex.p-0.px-sm-3.align-items-center.justify-content-between
+				div
+					a.p-2.text-muted(href="/#summary") En ce moment
+					a.p-2.text-muted(href="/#data") Données
+				a.connect-osm.btn.btn-sm.btn-outline-secondary.text-truncate.ml-2(role="button")
+
 		div.container
-			//- Header
-			include common_header.pug
-
-			//- Nav links
-			div.nav-scroller.py-1.mb-2
-				nav.nav.d-flex.justify-content-between
-					a.p-2.text-muted(href="/#summary") Ce mois-ci
-					a.p-2.text-muted(href="/#about") À propos
-					a#connect-osm.p-2.text-muted
-
 			//- Wide image
 			a(href="/")
 				img.w-100.rounded-lg(src="/images/404.png" title="Retour à l'accueil" alt="Erreur 404 : rien que le désert ici...")

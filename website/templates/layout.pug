@@ -1,0 +1,25 @@
+//- Original template from https://getbootstrap.com/docs/4.5/examples/blog/
+doctype html
+html(lang="fr")
+	head
+		include common/head.pug
+	body
+		//- Header
+		include common/body_header.pug
+
+		//- Nav links
+		nav.navbar.navbar-light.sticky-top.navbar-pdm
+			div.container.d-flex.p-0.px-sm-3.align-items-center.justify-content-between
+				div
+					block navbar
+				a.connect-osm.btn.btn-sm.btn-outline-secondary.text-truncate.ml-2(role="button")
+
+		block content
+
+		div.d-flex.align-items-start(style="max-height: 250px; overflow: hidden")
+			img.w-100(src="/images/background.png")
+
+		//- About
+		footer.blog-footer
+			block footer
+				p Copyright 2020 ProjetDuMois.fr - Développé sous licence libre AGPL 3.0

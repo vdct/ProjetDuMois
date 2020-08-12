@@ -29,6 +29,7 @@ exports.queryParams = (obj) => {
 
 // Map style JSON
 exports.getMapStyle = (p) => {
+	const legend = [];
 	const sources = { osm: {
 		type: "raster",
 		tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
@@ -42,17 +43,39 @@ exports.getMapStyle = (p) => {
 	}];
 
 	if(p) {
+		const circlePaint = {
+			"circle-color": "white",
+			"circle-radius": [
+				"interpolate",
+				["linear"],
+				["zoom"],
+				7, 2,
+				11, 3,
+				19, 7
+			],
+			"circle-stroke-width": [
+				"interpolate",
+				["linear"],
+				["zoom"],
+				7, 2,
+				11, 3,
+				19, 7
+			]
+		};
+
 		// Osmose
 		p.datasources
 		.filter(ds => ds.source === "osmose")
 		.forEach(ds => {
 			const id = `osmose_${ds.item}_${ds.class || "all"}`;
 			const params = { item: ds.item, class: ds.class, country: ds.country };
+			const color = ds.color || "#b71c1c";
 
 			sources[id] = {
 				type: "vector",
-				tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3beta/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
-				minzoom: 7
+				tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
+				minzoom: 7,
+				maxzoom: 18
 			};
 
 			layers.push({
@@ -60,17 +83,10 @@ exports.getMapStyle = (p) => {
 				source: id,
 				type: "circle",
 				"source-layer": "issues",
-				paint: {
-					"circle-color": ds.color || "red",
-					"circle-radius": [
-						"interpolate",
-						["linear"],
-						["zoom"],
-						11, 3,
-						19, 13
-					]
-				}
+				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 			});
+
+			legend.push({ color, label: ds.name });
 		});
 
 		// Notes
@@ -78,29 +94,27 @@ exports.getMapStyle = (p) => {
 		.filter(ds => ds.source === "notes")
 		.forEach((ds, dsid) => {
 			const id = `notes_${dsid}`;
+			const color = ds.color || "#01579B";
 			sources[id] = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
+
 			layers.push({
 				id: id,
 				source: `notes_${dsid}`,
 				type: "circle",
-				paint: {
-					"circle-color": ds.color || "blue",
-					"circle-radius": [
-						"interpolate",
-						["linear"],
-						["zoom"],
-						11, 3,
-						19, 13
-					]
-				}
+				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 			});
+
+			legend.push({ color, label: ds.name });
 		});
 	}
 
 	return {
-		version: 8,
-		name: "ProjetDuMois.fr",
-		sources: sources,
-		layers: layers
+		mapstyle: {
+			version: 8,
+			name: "ProjetDuMois.fr",
+			sources: sources,
+			layers: layers
+		},
+		legend
 	};
 };

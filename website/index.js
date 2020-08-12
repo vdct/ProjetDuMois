@@ -47,7 +47,7 @@ app.get('/', (req, res) => {
 
 // 404
 app.get('/error/404', (req, res) => {
-	res.status(404).render('http404', { CONFIG });
+	res.status(404).render('pages/http404', { CONFIG });
 });
 
 // Project page
@@ -59,7 +59,7 @@ app.get('/projects/:id', (req, res) => {
 	const p = projects[req.params.id];
 	const all = filterProjects(projects);
 	const isActive = all.current && all.current.id === req.params.id;
-	res.render('project', Object.assign({ CONFIG, isActive, projects: all }, p));
+	res.render('pages/project', Object.assign({ CONFIG, isActive, projects: all }, p));
 });
 
 // Project map editor
@@ -70,7 +70,7 @@ app.get('/projects/:id/map', (req, res) => {
 
 	const p = projects[req.params.id];
 	const mapstyle = getMapStyle(p);
-	res.render('map_page', Object.assign({ mapstyle, CONFIG }, p));
+	res.render('pages/map', Object.assign({ CONFIG }, p, mapstyle));
 });
 
 // Project statistics

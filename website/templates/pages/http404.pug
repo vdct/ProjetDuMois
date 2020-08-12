@@ -1,0 +1,17 @@
+extends ../layout.pug
+
+
+block navbar
+	a.p-2.text-muted(href="/#summary") En ce moment
+	a.p-2.text-muted(href="/#data") Données
+
+
+block content
+	div.container
+		//- Wide image
+		a(href="/")
+			img.w-100.rounded-lg(src="/images/404.png" title="Retour à l'accueil" alt="Erreur 404 : rien que le désert ici...")
+
+		//- Where to go
+		div.lead.text-center.m-5
+			a(href="/") Accueil | Découvrir le projet du mois

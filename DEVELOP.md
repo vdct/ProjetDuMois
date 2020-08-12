@@ -59,9 +59,11 @@ Les propriétés dans `info.json` sont les suivantes :
 * `start_date` : date de début de la mission (format AAAA-MM-JJ)
 * `end_date` : date de fin de la mission (format AAAA-MM-JJ)
 * `summary` : résumé de la mission
-* `datasources` : liste des sources de données qui apparaissent sur la page (signalements Osmose)
-* `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+* `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
 * `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags))
+* `datasources` : liste des sources de données qui apparaissent sur la page (signalements Osmose, notes OSM)
+* `statistics` : configuration de l'affichage des statistiques sur la page du projet
+* `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 
 ## Base de données
@@ -92,3 +94,10 @@ npm run start
 ```
 
 Le site est visible à l'adresse [localhost:3000](http://localhost:3000).
+
+Les modèles Pug sont dans le sous-dossier `templates`. Celui-ci est organisé selon la logique suivante :
+
+* Dans `templates`, le modèle général `layout.pug` et son fichier CSS
+* Dans `common`, les éléments génériques à toutes les pages (`<head>`, en-tête, pied de page)
+* Dans `components`, les composants principaux qui peuplent les pages (carte, bloc statistiques...)
+* Dans `pages`, chacune des pages du site (accueil, carte, page projet...)

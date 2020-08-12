@@ -11,7 +11,15 @@
 		"osmium_tag_filter": "nw/power=substation"
 	},
 	"datasources": [
-		{ "source": "osmose", "item": "8280", "country": "france*", "name": "Poste à ajouter", "color": "red" }
+		{
+			"source": "osmose",
+			"item": "8280",
+			"country": "france*",
+			"name": "Poste à ajouter",
+			"subtitles": {
+				"": "Il y a un poste électrique à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
+			}
+		}
 	],
 	"statistics": {
 		"count": true,

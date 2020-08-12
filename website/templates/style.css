@@ -200,6 +200,25 @@ a.navbar-brand:hover {
 	text-decoration: none !important;
 }
 
+.map-ctrl-legend {
+	background-color: #fff;
+	border-radius: 3px;
+	box-shadow: 0 0 0 2px rgba(0,0,0,.1);
+	padding: 3px 5px;
+	font-size: 0.8rem;
+}
+
+.map-ctrl-legend > div {
+	display: flex;
+	align-items: center;
+	line-height: 1.5rem;
+}
+
+.map-ctrl-legend > div > span {
+	font-size: 2rem;
+	margin-right: 5px;
+}
+
 #zoom-in {
 	position: absolute;
 	bottom: 0;

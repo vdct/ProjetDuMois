@@ -44,16 +44,45 @@ script.
 			this._container = document.createElement('div');
 			this._container.className = "mapboxgl-ctrl map-ctrl-btn";
 			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
-			const [osmoseItem, osmoseClasss] = Object.keys(osmoseLabels)[0].split("_");
-			const osmose_params = `item=${osmoseItem}&class=${osmoseClasss}`
-			const osmose_bbox = `${map.getBounds()._sw.lng}%2C${map.getBounds()._sw.lat}%2C${map.getBounds()._ne.lng}%2C${map.getBounds()._ne.lat}`
-			const osmose_export_url = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${osmose_params}&bbox=${osmose_bbox}`;
-			this._container.innerHTML = `<a title="Télécharger un fichier kml pour contribuer depuis votre smartphone" href="${osmose_export_url}"> 📲 </a>`;
-			return this._container;
+			if(osmoseLabels && Object.keys(osmoseLabels).length > 0) {
+				const [osmoseItem, osmoseClasses] = Object.keys(osmoseLabels)[0].split("_");
+				const osmose_params = `item=${osmoseItem}&class=${osmoseClasses}`
+				const osmose_bbox = `${map.getBounds()._sw.lng}%2C${map.getBounds()._sw.lat}%2C${map.getBounds()._ne.lng}%2C${map.getBounds()._ne.lat}`
+				const osmose_export_url = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${osmose_params}&bbox=${osmose_bbox}`;
+				this._container.innerHTML = `<a title="Télécharger un fichier KML pour contribuer depuis votre smartphone" href="${osmose_export_url}"> 📲 </a>`;
+				return this._container;
+			}
+			else {
+				return document.createElement('div');
+			}
 		}
 	}
 
 	map.addControl(new ExportControl(), "top-right");
+
+	// Legend block
+	class LegendControl {
+		onAdd(map) {
+			this._map = map;
+			this._container = document.createElement('div');
+			this._container.className = "mapboxgl-ctrl map-ctrl-legend";
+
+			const legend = !{JSON.stringify(legend)};
+			legend.forEach(lg => {
+				const lgDom = document.createElement("div");
+				const lgSymbol = document.createElement("span");
+				lgSymbol.appendChild(document.createTextNode("●"));
+				lgSymbol.style.color = lg.color;
+				lgDom.appendChild(lgSymbol);
+				lgDom.appendChild(document.createTextNode(lg.label));
+				this._container.appendChild(lgDom);
+			});
+
+			return this._container;
+		}
+	}
+
+	map.addControl(new LegendControl(), "top-left");
 
 	// Display notes layers if any
 	const notesSources = !{JSON.stringify(datasources.filter(ds => ds.source === "notes"))};
@@ -157,7 +186,7 @@ script.
 		const uuid = feature.properties.uuid;
 		return () => {
 			// Send to Osmose
-			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3beta/issue/${uuid}/${type}`);
+			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${uuid}/${type}`);
 
 			// Hide feature on map
 			popup.remove();
@@ -195,24 +224,38 @@ script.
 		if(p.uuid) {
 			resDiv.innerHTML = `<div class="d-flex align-items-center justify-content-center" style="height: 240px; width: 240px"><span class="spinner-border text-primary" role="status" style="width: 5rem; height: 5rem;"></span></div>`;
 
-			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3beta/issue/${p.uuid}`)
+			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${p.uuid}`)
 			.then(res => res.json())
 			.then(meta => {
 				const labels = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || { name: meta.title.auto };
 				const buttons = osmoseButtons[`${meta.item}_${meta.class}`] || osmoseButtons[`${meta.item}_all`] || { "done": "Résolu", "false": "Faux positif" };
 
-				let tags = meta.new_elems && meta.new_elems.length > 0 ? meta.new_elems[0].add.map(kv => kv.k+"="+kv.v).join("\n") : "";
+				let tags = [];
+				if(
+					meta.new_elems && meta.new_elems.length > 0
+					&& meta.new_elems[0].add && meta.new_elems[0].add.length > 0
+				) {
+					tags = meta.new_elems[0].add;
+				}
+				else if(
+					meta.elems && meta.elems.length > 0
+					&& meta.elems[0].fixes && meta.elems[0].fixes.length > 0
+					&& meta.elems[0].fixes[0].add && meta.elems[0].fixes[0].add.length > 0
+				) {
+					tags = meta.elems[0].fixes[0].add;
+				}
+
 				if(tags.length > 0) {
 					tags = `
 						<div class="form-group m-0 mb-1">
-							<label class="m-0" for="exampleFormControlTextarea1">Attributs</label>
-							<textarea class="form-control form-control-sm" rows="3">${tags}</textarea>
+							<label class="m-0" for="exampleFormControlTextarea1">Attributs à ajouter</label>
+							<textarea class="form-control form-control-sm" rows="3">${tags.map(kv => kv.k+"="+kv.v).join("\n")}</textarea>
 						</div>`;
 				}
 
-				let subtitle = meta.subtitle.auto;
+				let subtitle = meta.subtitle ? meta.subtitle.auto : "";
 				if(labels.subtitles) {
-					const subtitles = Object.keys(labels.subtitles).filter(s => meta.subtitle.auto.includes(s)).map(s => labels.subtitles[s]);
+					const subtitles = Object.keys(labels.subtitles).filter(s => subtitle.includes(s)).map(s => labels.subtitles[s]);
 					if(subtitles.length > 0) { subtitle = subtitles[0]; }
 				}
 

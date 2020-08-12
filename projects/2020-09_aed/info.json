@@ -15,7 +15,6 @@
 			"source": "osmose",
 			"item": "8370", "country": "france*",
 			"name": "Défibrillateur à intégrer",
-			"color": "green",
 			"subtitles": {
 				"POSITION APPROXIMATIVE À VÉRIFIER": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
 			},
@@ -26,9 +25,8 @@
 		},
 		{
 			"source": "notes",
-			"name": "Note à valider",
+			"name": "Note à traiter",
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"color": "blue",
 			"terms": [ "défibrillateur", "defibrillateur" ],
 			"buttons": {
 				"close": "Ajouté"

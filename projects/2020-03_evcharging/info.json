@@ -11,8 +11,8 @@
 		"osmium_tag_filter": "nw/amenity=charging_station"
 	},
 	"datasources": [
-		{ "source": "osmose", "item": "8411", "country": "france*", "name": "Borne à compléter", "color": "green" },
-		{ "source": "osmose", "item": "8410", "country": "france*", "name": "Borne à importer", "color": "red" }
+		{ "source": "osmose", "item": "8411", "country": "france*", "name": "Borne à compléter", "color": "#4A148C" },
+		{ "source": "osmose", "item": "8410", "country": "france*", "name": "Borne à importer" }
 	],
 	"statistics": {
 		"count": true,

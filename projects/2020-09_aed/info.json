@@ -8,7 +8,11 @@
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Defibrillateurs"
 	},
 	"database": {
-		"osmium_tag_filter": "n/emergency=defibrillator"
+		"osmium_tag_filter": "n/emergency=defibrillator",
+		"imposm": {
+			"types": ["point"],
+			"mapping": { "emergency": ["defibrillator"] }
+		}
 	},
 	"datasources": [
 		{

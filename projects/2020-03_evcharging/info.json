@@ -8,7 +8,11 @@
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/bornes_vehicules_electriques"
 	},
 	"database": {
-		"osmium_tag_filter": "nw/amenity=charging_station"
+		"osmium_tag_filter": "nw/amenity=charging_station",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": { "amenity": ["charging_station"] }
+		}
 	},
 	"datasources": [
 		{ "source": "osmose", "item": "8411", "country": "france*", "name": "Borne à compléter", "color": "#4A148C" },

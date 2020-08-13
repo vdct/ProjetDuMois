@@ -8,7 +8,11 @@
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/postes_electriques"
 	},
 	"database": {
-		"osmium_tag_filter": "nw/power=substation"
+		"osmium_tag_filter": "nw/power=substation",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": { "power": ["substation"] }
+		}
 	},
 	"datasources": [
 		{

@@ -8,7 +8,11 @@
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Gendarmerie_nationale"
 	},
 	"database": {
-		"osmium_tag_filter": "nwr/amenity=police"
+		"osmium_tag_filter": "nwr/amenity=police",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": { "amenity": ["police"] }
+		}
 	},
 	"datasources": [
 		{ "source": "osmose", "item": "8191", "country": "france*", "name": "Gendarmerie à compléter", "color": "#4A148C" },

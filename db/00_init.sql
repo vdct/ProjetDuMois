@@ -47,3 +47,7 @@ CREATE TABLE note_counts(
 );
 
 CREATE INDEX note_counts_project_idx ON note_counts(project);
+
+-- Extensions for Imposm
+CREATE EXTENSION postgis;
+CREATE EXTENSION hstore;

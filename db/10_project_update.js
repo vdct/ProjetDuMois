@@ -4,10 +4,16 @@ const projects = require('../website/projects');
 const { filterProjects } = require('../website/utils');
 const fetch = require('node-fetch');
 
+/*
+ * Generates 09_project_update_tmp.sh script
+ * in order to update project statistics and data daily
+ */
+
 // Constants
 let project = filterProjects(projects).current;
 const OSH_PBF = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop();
 const OSH_PBF_FULL = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
+const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
 const OSH_POLY = OSH_PBF.replace("-internal.osh.pbf", ".poly");
 const OSC_1 = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
 const OSC_IDS = CONFIG.WORK_DIR + '/extract_osm_ids.txt';
@@ -116,18 +122,14 @@ done
 # Insert CSV into database
 ${PSQL} -c "DELETE FROM feature_counts WHERE project = '${project.id}'"
 ${PSQL} -c "\\COPY feature_counts FROM '${OSCCOUNT}' CSV"
-${PSQL} -c "REINDEX TABLE feature_counts"
-${separator}
-` : '';
+${separator}` : '';
 
 // Notes count (optional)
 const noteCounts = notesSources.length > 0 ? `
 echo "==== Count notes"
 ${PSQL} -c "DELETE FROM note_counts WHERE project = '${project.id}'"
 ${PSQL} -c "\\COPY note_counts FROM '${CSV_NOTES}' CSV"
-${PSQL} -c "REINDEX TABLE note_counts"
-${separator}
-` : '';
+${separator}` : '';
 
 // Full script
 const script = `#!/bin/bash
@@ -202,8 +204,18 @@ echo "==== Generate user contributions"
 ${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS \\$\\$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; \\$\\$ LANGUAGE plpgsql IMMUTABLE;"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
 ${separator}
+
+echo "==== Write current state of OSM data as OSM.PBF"
+osmium time-filter "${OSH_PBF_FULL}" -O -o "${OSM_PBF_LATEST}"
+${separator}
+
 ${counts}
 ${noteCounts}
+
+echo "==== Optimize database"
+${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"
+${separator}
+
 echo "==== Clean-up temporary files"
 rm -f "${OSC_IDS}" "${OSC_1}" "${CSV_CHANGES}" "${OSH4COUNT}" "${OSC_FULL}" "${OSC_LOCAL}" ${OSC_IDS_SPLIT}*
 ${separator}

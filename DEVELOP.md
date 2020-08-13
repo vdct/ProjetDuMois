@@ -8,6 +8,7 @@
 * Python 3
 * [Osmium](https://osmcode.org/osmium-tool/)
 * [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
+* [Imposm](https://imposm.org/) >= 3
 * Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
 
@@ -61,6 +62,7 @@ Les propriétés dans `info.json` sont les suivantes :
 * `summary` : résumé de la mission
 * `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
 * `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags))
+* `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs)
 * `datasources` : liste des sources de données qui apparaissent sur la page (signalements Osmose, notes OSM)
 * `statistics` : configuration de l'affichage des statistiques sur la page du projet
 * `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
@@ -73,6 +75,9 @@ La base de données s'appuie sur PostgreSQL. Pour créer la base :
 ```bash
 psql -c "CREATE DATABASE pdm"
 psql -d pdm -f db/00_init.sql
+
+npm run features:update
+./db/21_features_update_tmp.sh init
 ```
 
 Pour mettre à jour quotidiennement la base avec les nouvelles contributions :
@@ -80,6 +85,13 @@ Pour mettre à jour quotidiennement la base avec les nouvelles contributions :
 ```bash
 npm run project:update
 ./db/09_project_update_tmp.sh
+```
+
+Pour mettre à jour régulièrement les données depuis OSM :
+
+```bash
+npm run features:update
+./db/21_features_update_tmp.sh
 ```
 
 

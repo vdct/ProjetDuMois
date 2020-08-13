@@ -1,4 +1,4 @@
 /node_modules
 /diffs
 /config.json
-/db/09_project_update_tmp.sh
+/db/*_tmp.sh

@@ -8,7 +8,11 @@
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/elections"
 	},
 	"database": {
-		"osmium_tag_filter": "n/advertising=board n/message=political"
+		"osmium_tag_filter": "n/advertising=board n/message=political",
+		"imposm": {
+			"types": ["point"],
+			"mapping": { "advertising": ["board"], "message": ["political"] }
+		}
 	},
 	"datasources": [],
 	"statistics": {

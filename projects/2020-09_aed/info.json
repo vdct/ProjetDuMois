@@ -35,6 +35,11 @@
 			"buttons": {
 				"close": "Ajouté"
 			}
+		},
+		{
+			"source": "osm",
+			"name": "Défibrillateurs dans OSM",
+			"description": "Ce défibrillateur existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
 		}
 	],
 	"statistics": {

@@ -25,6 +25,8 @@ const yamlData = {
 	tables: {},
 	tags: { load_all: true }
 };
+const cleanViewsSQL = [];
+const viewsSQL = [];
 
 Object.entries(projects).forEach(e => {
 	const [ id, project ] = e;
@@ -38,14 +40,19 @@ Object.entries(projects).forEach(e => {
 		]
 	};
 
-	if(project.database.imposm.types.length === 1) {
-		yamlData.tables[id.split("_").pop()] = Object.assign({ type: project.database.imposm.types[0] }, tableData);
-	}
-	else {
-		project.database.imposm.types.forEach(type => {
-			yamlData.tables[`${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
-		});
-	}
+	project.database.imposm.types.forEach(type => {
+		yamlData.tables[`${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
+	});
+
+	cleanViewsSQL.push(`DROP VIEW IF EXISTS project_${id.split("_").pop()}`);
+	viewsSQL.push(
+		`CREATE OR REPLACE VIEW project_${id.split("_").pop()} AS `
+		+ project.database.imposm.types.map(type => {
+			const osmid = type === "point" ? "CONCAT('node/', osm_id) AS osm_id" : "CASE WHEN osm_id < 0 THEN CONCAT('relation/', -osm_id) ELSE CONCAT('way/', osm_id) END AS osm_id";
+			const geom = type === "point" ? "geom::GEOMETRY(Point, 3857)" : "ST_PointOnSurface(geom)::GEOMETRY(Point, 3857) AS geom";
+			return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, ${geom} FROM project_${id.split("_").pop()}_${type}`
+		}).join(" UNION ALL ")
+	);
 });
 
 fs.writeFile(IMPOSM_YML, yaml.safeDump(yamlData), err => {
@@ -53,6 +60,10 @@ fs.writeFile(IMPOSM_YML, yaml.safeDump(yamlData), err => {
 		throw new Error(err);
 	}
 });
+
+// View for multi-type layers
+const cleanViewsSQLFull = cleanViewsSQL.length > 0 ? cleanViewsSQL.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t") : "";
+const viewsSQLFull = viewsSQL.length > 0 ? viewsSQL.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t") : "";
 
 
 // Script text
@@ -71,22 +82,6 @@ if [ "$mode" == "" ]; then
 	mode="update"
 fi
 
-if [ "$mode" == "init" ]; then
-	echo "==== Initial import with Imposm"
-	mkdir -p "${IMPOSM_CACHE_DIR}"
-	imposm import -mapping "${IMPOSM_YML}" \\
-		-read "${OSM_PBF_LATEST}" \\
-		-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
-		-diff -diffdir "${IMPOSM_DIFF_DIR}"
-
-	imposm import -write \\
-		-connection "${PSQL_DB}?prefix=project_" \\
-		-mapping "${IMPOSM_YML}" \\
-		-cachedir "${IMPOSM_CACHE_DIR}" \\
-		-dbschema-import public -diff
-	${separator}
-fi
-
 echo "==== Get latest changes"
 osmupdate --keep-tempfiles --trust-tempfiles \\
 	-t="${CONFIG.WORK_DIR}/osmupdate/" \\
@@ -100,12 +95,29 @@ rm -f "${OSM_PBF_LATEST}"
 mv "${OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf")}" "${OSM_PBF_LATEST}"
 ${separator}
 
-echo "==== Apply latest changes to database"
-imposm diff -mapping "${IMPOSM_YML}" \\
-	-cachedir "${IMPOSM_CACHE_DIR}" \\
-	-dbschema-production public \\
-	-connection "${PSQL_DB}?prefix=project_" \\
-	"${OSC_LOCAL}"
+if [ "$mode" == "init" ]; then
+	echo "==== Initial import with Imposm"
+	${cleanViewsSQLFull}
+	mkdir -p "${IMPOSM_CACHE_DIR}"
+	imposm import -mapping "${IMPOSM_YML}" \\
+		-read "${OSM_PBF_LATEST}" \\
+		-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
+		-diff -diffdir "${IMPOSM_DIFF_DIR}"
+
+	imposm import -write \\
+		-connection "${PSQL_DB}?prefix=project_" \\
+		-mapping "${IMPOSM_YML}" \\
+		-cachedir "${IMPOSM_CACHE_DIR}" \\
+		-dbschema-import public -diff
+	${viewsSQLFull}
+else
+	echo "==== Apply latest changes to database"
+	imposm diff -mapping "${IMPOSM_YML}" \\
+		-cachedir "${IMPOSM_CACHE_DIR}" \\
+		-dbschema-production public \\
+		-connection "${PSQL_DB}?prefix=project_" \\
+		"${OSC_LOCAL}"
+fi
 ${separator}
 
 echo "==== Clean-up temporary files"

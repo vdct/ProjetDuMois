@@ -16,7 +16,12 @@
 	},
 	"datasources": [
 		{ "source": "osmose", "item": "8411", "country": "france*", "name": "Borne à compléter", "color": "#4A148C" },
-		{ "source": "osmose", "item": "8410", "country": "france*", "name": "Borne à importer" }
+		{ "source": "osmose", "item": "8410", "country": "france*", "name": "Borne à importer" },
+		{
+			"source": "osm",
+			"name": "Borne dans OSM",
+			"description": "Cette borne existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		}
 	],
 	"statistics": {
 		"count": true,

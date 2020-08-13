@@ -9,6 +9,7 @@
 * [Osmium](https://osmcode.org/osmium-tool/)
 * [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 * [Imposm](https://imposm.org/) >= 3
+* [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
 * Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
 
@@ -43,6 +44,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
 * `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
 * `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
+* `PDM_TILES_URL` : URL d'accès au service *pg_tileserv*, qui met à disposition les couches dans votre base de données
 
 
 ## Configuration des projets

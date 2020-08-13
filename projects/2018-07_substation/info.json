@@ -23,6 +23,11 @@
 			"subtitles": {
 				"": "Il y a un poste électrique à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
 			}
+		},
+		{
+			"source": "osm",
+			"name": "Poste dans OSM",
+			"description": "Ce poste électrique existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
 		}
 	],
 	"statistics": {

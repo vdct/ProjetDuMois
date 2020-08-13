@@ -99,8 +99,33 @@ exports.getMapStyle = (p) => {
 
 			layers.push({
 				id: id,
-				source: `notes_${dsid}`,
+				source: id,
 				type: "circle",
+				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
+			});
+
+			legend.push({ color, label: ds.name });
+		});
+
+		// OSM
+		p.datasources
+		.filter(ds => ds.source === "osm")
+		.forEach((ds, dsid) => {
+			const id = `osm_${dsid}`;
+			const color = ds.color || "#2E7D32";
+			const layer = `public.project_${p.id.split("_").pop()}`;
+			sources[id] = {
+				type: "vector",
+				tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+				minzoom: 7,
+				maxzoom: 14
+			};
+
+			layers.push({
+				id: id,
+				source: id,
+				type: "circle",
+				"source-layer": layer,
 				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 			});
 

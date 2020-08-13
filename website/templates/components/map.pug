@@ -148,6 +148,17 @@ script.
 		];
 	}
 
+	function getLinksOsm(f) {
+		const [ lon, lat ] = f.geometry.coordinates;
+
+		return [
+			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&select=${f.properties.osm_id.replace("/", "")}&#{josmParams}`] },
+			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit?${f.properties.osm_id.split("/").join("=")}#map=20/${lat}/${lon}&#{idParams}` },
+			{ title: "OSM", href: `#{CONFIG.OSM_URL}/${f.properties.osm_id}` },
+			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lon}&z=18` }
+		];
+	}
+
 	function linksToDom(links, container) {
 		container.classList.add("text-center");
 		links.forEach((l,i) => {
@@ -213,15 +224,18 @@ script.
 		}
 	}
 
+	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
+
 	// Create DOM structure for popup
 	function getDescription(feature, popup) {
-		const osmoseLabels = !{JSON.stringify(osmoseLabels)};
-		const osmoseButtons = !{JSON.stringify(osmoseButtons)};
 		const p = feature.properties;
 		const resDiv = document.createElement("div");
 
 		// Retrieve metadata on Osmose API
 		if(p.uuid) {
+			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
+			const osmoseButtons = !{JSON.stringify(osmoseButtons)};
+
 			resDiv.innerHTML = `<div class="d-flex align-items-center justify-content-center" style="height: 240px; width: 240px"><span class="spinner-border text-primary" role="status" style="width: 5rem; height: 5rem;"></span></div>`;
 
 			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${p.uuid}`)
@@ -334,6 +348,21 @@ script.
 			divButtonComment.target = "_blank";
 			divButtons.appendChild(divButtonComment);
 			resDiv.appendChild(divButtons);
+		}
+		// OSM features
+		else if(p.tags) {
+			const tags = JSON.parse(p.tags);
+			const osmSource = osmSources[parseInt(feature.source.split("_")[1])];
+
+			resDiv.innerHTML = `
+				<h5 class="m-0">${p.name || tags.ref || osmSource.name}</h5>
+				<p class="m-0 mb-2">${osmSource.description}</p>
+				<div class="form-group m-0 mb-1">
+					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
+					<textarea class="form-control form-control-sm" rows="3">${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+				</div>`;
+
+			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
 		}
 		else {
 			resDiv.innerHTML = "<ul>"+Object.entries(p).map(e => "<li>"+e.join(" : ")+"</li>").join("")+"</ul>";

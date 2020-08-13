@@ -14,7 +14,13 @@
 			"mapping": { "advertising": ["board"], "message": ["political"] }
 		}
 	},
-	"datasources": [],
+	"datasources": [
+		{
+			"source": "osm",
+			"name": "Panneau dans OSM",
+			"description": "Ce panneau électoral existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		}
+	],
 	"statistics": {
 		"count": true,
 		"feature_name": "panneaux"

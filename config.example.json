@@ -10,6 +10,7 @@
 	"REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
 	"JOSM_REMOTE_URL": "http://localhost:8111",
 	"OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf",
+	"PDM_TILES_URL": "http://localhost:7800",
 	"DB_HOST": "localhost",
 	"DB_PORT": "5432",
 	"DB_USER": "postgres",

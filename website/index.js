@@ -96,7 +96,8 @@ app.get('/projects/:id/stats', (req, res) => {
 				.map(e => ({ t: e[0], y: e[1] }))
 				.sort((a,b) => a.t.localeCompare(b.t)),
 			fill: false,
-			borderColor: ds.color || "red"
+			borderColor: ds.color || "red",
+			lineTension: 0
 		}));
 	}))
 	.then(results => {
@@ -152,7 +153,8 @@ app.get('/projects/:id/stats', (req, res) => {
 				label: "Nombre dans OSM",
 				data: results.rows.map(r => ({ t: r.ts, y: r.amount })),
 				fill: false,
-				borderColor: "blue"
+				borderColor: "blue",
+				lineTension: 0
 			}],
 			count: results.rows.length > 0 && results.rows[results.rows.length-1].amount
 		})));

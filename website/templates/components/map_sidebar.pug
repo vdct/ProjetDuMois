@@ -1,0 +1,52 @@
+div#pdm-map-sidebar.pdm-hidden
+	button.toggle-map-sidebar.btn.btn-outline-secondary.btn-sm.mt-2(type="button" title="Afficher/masquer la barre latérale")
+		i.fa.fa-bars
+
+	div.overflow-auto.h-100
+		div.pdm-sidebar-default.m-3
+			div.map-legend
+				h5 Légende
+				each lg in legend
+					div
+						span(style=`color: ${lg.color}`) ●
+						| #{lg.label}
+
+		div.pdm-sidebar-feature.m-3
+
+script.
+	const sidebarDom = document.getElementById("pdm-map-sidebar");
+	if(window.innerWidth >= 768) { sidebarDom.classList.remove("pdm-hidden"); }
+
+	// Close sidebar button
+	sidebarDom.querySelector(".toggle-map-sidebar").addEventListener("click", () => {
+		sidebarDom.classList.toggle("pdm-hidden");
+		setTimeout(() => window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } })), 500);
+		showMarker();
+	});
+
+	// Change visible panel
+	const panelDefaultDom = sidebarDom.querySelector(".pdm-sidebar-default");
+	const panelFeatureDom = sidebarDom.querySelector(".pdm-sidebar-feature");
+
+	window.addEventListener("pdm_sidebar_use", e => {
+		if(e.detail.open) {
+			sidebarDom.classList.remove("pdm-hidden");
+		}
+		switch(e.detail.panel) {
+			case "feature":
+				if(typeof e.detail.content === "string") {
+					panelFeatureDom.innerHTML = e.detail.content;
+				}
+				else if(e.detail.content) {
+					panelFeatureDom.innerHTML = '';
+					panelFeatureDom.appendChild(e.detail.content);
+				}
+				panelDefaultDom.classList.add("d-none");
+				panelFeatureDom.classList.remove("d-none");
+				break;
+
+			default:
+				panelFeatureDom.classList.add("d-none");
+				panelDefaultDom.classList.remove("d-none");
+		}
+	});

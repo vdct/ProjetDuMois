@@ -200,21 +200,13 @@ a.navbar-brand:hover {
 	text-decoration: none !important;
 }
 
-.map-ctrl-legend {
-	background-color: #fff;
-	border-radius: 3px;
-	box-shadow: 0 0 0 2px rgba(0,0,0,.1);
-	padding: 3px 5px;
-	font-size: 0.8rem;
-}
-
-.map-ctrl-legend > div {
+.map-legend > div {
 	display: flex;
 	align-items: center;
 	line-height: 1.5rem;
 }
 
-.map-ctrl-legend > div > span {
+.map-legend > div > span {
 	font-size: 2rem;
 	margin-right: 5px;
 }
@@ -225,11 +217,59 @@ a.navbar-brand:hover {
 	left: 5%;
 	right: 5%;
 	text-align: center;
+	z-index: 10;
 }
 
 @media (min-width: 768px) {
 	#zoom-in {
 		left: 25%;
 		right: 25%;
+	}
+}
+
+/*
+ * Map sidebar
+ */
+
+#pdm-map-sidebar {
+	position: absolute;
+	top: 55px;
+	left: 0;
+	bottom: 0;
+	width: 100%;
+	z-index: 1000;
+	background-color: white;
+	transition: left 0.5s;
+}
+
+#pdm-map-sidebar.pdm-hidden {
+	left: -100%;
+}
+
+#pdm-map-sidebar .toggle-map-sidebar {
+	position: absolute;
+	right: 10px;
+	background-color: white;
+}
+
+#pdm-map-sidebar.pdm-hidden .toggle-map-sidebar {
+	right: -37px;
+}
+
+#pdm-map-sidebar .toggle-map-sidebar:hover {
+	background-color: #6c757d
+}
+
+@media (min-width: 576px) {
+	#pdm-map-sidebar {
+		width: 300px;
+	}
+
+	#pdm-map-sidebar.pdm-hidden {
+		left: -300px;
+	}
+
+	#pdm-map-sidebar .toggle-map-sidebar {
+		right: -37px;
 	}
 }

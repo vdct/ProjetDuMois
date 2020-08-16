@@ -46,7 +46,7 @@ script.
 			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
 			if(osmoseLabels && Object.keys(osmoseLabels).length > 0) {
 				const [osmoseItem, osmoseClasses] = Object.keys(osmoseLabels)[0].split("_");
-				const osmose_params = `item=${osmoseItem}&class=${osmoseClasses}`
+				const osmose_params = `item=${osmoseItem}&class=${osmoseClasses !== "all" ? osmoseClasses : ""}`
 				const osmose_bbox = `${map.getBounds()._sw.lng}%2C${map.getBounds()._sw.lat}%2C${map.getBounds()._ne.lng}%2C${map.getBounds()._ne.lat}`
 				const osmose_export_url = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${osmose_params}&bbox=${osmose_bbox}`;
 				this._container.innerHTML = `<a title="Télécharger un fichier KML pour contribuer depuis votre smartphone" href="${osmose_export_url}"> 📲 </a>`;
@@ -59,30 +59,6 @@ script.
 	}
 
 	map.addControl(new ExportControl(), "top-right");
-
-	// Legend block
-	class LegendControl {
-		onAdd(map) {
-			this._map = map;
-			this._container = document.createElement('div');
-			this._container.className = "mapboxgl-ctrl map-ctrl-legend";
-
-			const legend = !{JSON.stringify(legend)};
-			legend.forEach(lg => {
-				const lgDom = document.createElement("div");
-				const lgSymbol = document.createElement("span");
-				lgSymbol.appendChild(document.createTextNode("●"));
-				lgSymbol.style.color = lg.color;
-				lgDom.appendChild(lgSymbol);
-				lgDom.appendChild(document.createTextNode(lg.label));
-				this._container.appendChild(lgDom);
-			});
-
-			return this._container;
-		}
-	}
-
-	map.addControl(new LegendControl(), "top-left");
 
 	// Display notes layers if any
 	const notesSources = !{JSON.stringify(datasources.filter(ds => ds.source === "notes"))};
@@ -193,21 +169,21 @@ script.
 
 	// Mark as done/false in Osmose
 	const filteredUuids = [];
-	function markOsmose(type, feature, popup) {
+	function markOsmose(type, feature) {
 		const uuid = feature.properties.uuid;
 		return () => {
 			// Send to Osmose
 			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${uuid}/${type}`);
 
 			// Hide feature on map
-			popup.remove();
+			showMarker();
 			filteredUuids.push(uuid);
 			map.setFilter(feature.layer.id, ["!", ["in", ["get", "uuid"], ["literal", filteredUuids]]]);
 		};
 	}
 
 	// Close note on OSM
-	function closeNote(p, popup) {
+	function closeNote(p) {
 		if(window.osm_user && osmApi) {
 			osmApi.closeNote(p.id, "Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)")
 			.then(() => {
@@ -215,7 +191,7 @@ script.
 				const notes = source._data;
 				notes.features = notes.features.filter(f => f.properties.id !== p.id);
 				source.setData(notes);
-				popup.remove();
+				showMarker();
 			})
 			.catch(e => {
 				alert("Une erreur s'est produite lors de la modification de la note");
@@ -226,8 +202,8 @@ script.
 
 	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
 
-	// Create DOM structure for popup
-	function getDescription(feature, popup) {
+	// Create DOM structure for feature description
+	function getDescription(feature) {
 		const p = feature.properties;
 		const resDiv = document.createElement("div");
 
@@ -288,13 +264,13 @@ script.
 				divButtonDone.classList.add("btn", "btn-success");
 				divButtonDone.appendChild(document.createTextNode("✔ "+buttons.done));
 				divButtonDone.title = "Marquer cet élément comme \""+buttons.done+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
-				divButtonDone.addEventListener("click", markOsmose("done", feature, popup));
+				divButtonDone.addEventListener("click", markOsmose("done", feature));
 				divButtons.appendChild(divButtonDone);
 				const divButtonFalse = document.createElement("button");
 				divButtonFalse.classList.add("btn", "btn-warning");
 				divButtonFalse.appendChild(document.createTextNode("✘ "+buttons.false));
 				divButtonFalse.title = "Marquer cet élément comme \""+buttons.false+"\" si le signalement n'est pas valide";
-				divButtonFalse.addEventListener("click", markOsmose("false", feature, popup));
+				divButtonFalse.addEventListener("click", markOsmose("false", feature));
 				divButtons.appendChild(divButtonFalse);
 				resDiv.appendChild(divButtons);
 			});
@@ -318,7 +294,7 @@ script.
 			const divButtonDone = document.createElement("button");
 			divButtonDone.classList.add("btn", "btn-success");
 			divButtonDone.appendChild(document.createTextNode("✔ "+noteSource.buttons.close));
-			divButtonDone.addEventListener("click", () => closeNote(p, popup));
+			divButtonDone.addEventListener("click", () => closeNote(p));
 			const labelConnected = "Marquer cet élément comme \""+noteSource.buttons.close+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
 			const labelDisconnected = "Vous devez être connecté pour marquer la note comme résolue.";
 			if(!window.osm_user) {
@@ -371,22 +347,39 @@ script.
 		return resDiv;
 	}
 
+	// Show/hide feature marker
+	let featureMarker;
+	function showMarker(coords) {
+		if(!coords && featureMarker) {
+			featureMarker.remove();
+			featureMarker = null;
+		}
+		else if(coords && featureMarker) {
+			featureMarker.setLngLat(coords);
+		}
+		else if(coords) {
+			featureMarker = new mapboxgl.Marker({ color: "red" }).setLngLat(coords).addTo(map);
+		}
+	}
+
 	// Handle map click
 	function clickFeature(e) {
 		if(!map || !e) { return; }
 		const features = map.queryRenderedFeatures(e.point);
-		if(!features || features.length === 0) { return; }
 
-		const coordinates = features[0].geometry.coordinates.slice();
-		while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-			coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+		if(!features || features.length === 0) {
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } }));
+			showMarker();
 		}
+		else {
+			const coordinates = features[0].geometry.coordinates.slice();
+			while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+				coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+			}
 
-		const popup = new mapboxgl.Popup().setLngLat(coordinates);
-		const description = getDescription(features[0], popup);
-		if(typeof description === "string") { popup.setHTML(description); }
-		else { popup.setDOMContent(description); }
-		popup.addTo(map);
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", content: getDescription(features[0]) } }));
+			showMarker(coordinates);
+		}
 	}
 
 	map.on("click", clickFeature);

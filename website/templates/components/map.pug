@@ -1,5 +1,10 @@
 div#map.map-main
-div#zoom-in.alert.alert-warning.font-weight-bold Zoomez ou lancez une recherche pour commencer
+div#zoom-in.alert.alert-warning.map-alert.font-weight-bold Zoomez ou lancez une recherche pour commencer
+div#edit-feature-location.alert.alert-primary.map-alert.d-none
+	| Déplacer la carte pour positionner l'objet à créer
+	div.btn-group.btn-block.mt-1
+		button.btn.btn-success.w-50(role="button") Valider
+		button.btn.btn-warning.w-50(role="button") Annuler
 
 //- This runs on client
 script.
@@ -62,32 +67,90 @@ script.
 
 	// Display notes layers if any
 	const notesSources = !{JSON.stringify(datasources.filter(ds => ds.source === "notes"))};
-	if(notesSources.length > 0) {
-		notesSources.forEach((noteSource, nsid) => {
-			const promises = noteSource.terms.map(term => osmApi.fetchNotesSearch(term, 'json', 10000, 0));
+	function loadNotesOnMap() {
+		if(notesSources.length > 0) {
+			notesSources.forEach((noteSource, nsid) => {
+				const promises = noteSource.terms.map(term => osmApi.fetchNotesSearch(term, 'json', 10000, 0));
 
-			Promise.all(promises).then(results => {
-				// Merge and dedupe notes
-				const notes = { type: "FeatureCollection", features: [] };
-				const existingNotesIds = [];
+				Promise.all(promises).then(results => {
+					// Merge and dedupe notes
+					const notes = { type: "FeatureCollection", features: [] };
+					const existingNotesIds = [];
 
-				results
-				.map(res => JSON.parse(res))
-				.forEach(res => {
-					res.features.forEach(feature => {
-						if(feature.properties.status === "open" && !existingNotesIds.includes(feature.properties.id)) {
-							feature.properties.pdm_note_source = nsid;
-							notes.features.push(feature);
-							existingNotesIds.push(feature.properties.id);
-						}
+					results
+					.map(res => JSON.parse(res))
+					.forEach(res => {
+						res.features.forEach(feature => {
+							if(feature.properties.status === "open" && !existingNotesIds.includes(feature.properties.id)) {
+								feature.properties.pdm_note_source = nsid;
+								notes.features.push(feature);
+								existingNotesIds.push(feature.properties.id);
+							}
+						});
 					});
-				});
 
-				// Add to map
-				map.getSource(`notes_${nsid}`).setData(notes);
+					// Add to map
+					map.getSource(`notes_${nsid}`).setData(notes);
+				});
 			});
-		});
+		}
 	}
+	loadNotesOnMap();
+
+	// Show/hide feature marker
+	let featureMarker;
+	function showMarker(coords) {
+		if(!coords && featureMarker) {
+			featureMarker.remove();
+			featureMarker = null;
+		}
+		else if(coords && featureMarker) {
+			featureMarker.setLngLat(coords);
+		}
+		else if(coords) {
+			featureMarker = new mapboxgl.Marker({ color: "red" }).setLngLat(coords).addTo(map);
+		}
+	}
+
+
+	//
+	// Marker for feature location
+	//
+
+	const markerEditorDom = document.getElementById("edit-feature-location");
+	const markerEditorValidDom = markerEditorDom.querySelector(".btn-success");
+	const markerEditorCancelDom = markerEditorDom.querySelector(".btn-warning");
+	const mapMoveListener = e => showMarker(map.getCenter());
+	let lastCallbackFeatureLocation = null;
+
+	function cancelAskFeatureLocation() {
+		markerEditorDom.classList.add("d-none");
+		if(lastCallbackFeatureLocation) {
+			markerEditorValidDom.removeEventListener("click", lastCallbackFeatureLocation);
+			lastCallbackFeatureLocation = null;
+			map.off("move", mapMoveListener);
+			showMarker();
+		}
+	}
+
+	function askFeatureLocation(callback) {
+		if(lastCallbackFeatureLocation) { cancelAskFeatureLocation(); }
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }))
+		markerEditorDom.classList.remove("d-none");
+
+		// Move marker
+		showMarker(map.getCenter());
+		map.on("move", mapMoveListener);
+
+		lastCallbackFeatureLocation = e => {
+			callback(featureMarker.getLngLat());
+			cancelAskFeatureLocation();
+		};
+
+		markerEditorValidDom.addEventListener("click", lastCallbackFeatureLocation);
+	}
+
+	markerEditorCancelDom.addEventListener("click", cancelAskFeatureLocation);
 
 
 	//
@@ -177,6 +240,7 @@ script.
 
 			// Hide feature on map
 			showMarker();
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
 			filteredUuids.push(uuid);
 			map.setFilter(feature.layer.id, ["!", ["in", ["get", "uuid"], ["literal", filteredUuids]]]);
 		};
@@ -192,6 +256,7 @@ script.
 				notes.features = notes.features.filter(f => f.properties.id !== p.id);
 				source.setData(notes);
 				showMarker();
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
 			})
 			.catch(e => {
 				alert("Une erreur s'est produite lors de la modification de la note");
@@ -282,7 +347,7 @@ script.
 			resDiv.innerHTML = `
 				<h5 class="m-0">${noteSource.name}</h5>
 				<p class="m-0 mb-2">${noteSource.description}</p>
-				<p class="m-0 mb-2" style="font-size: 1.0rem;"><em>${cmts[0].text}</em></p>
+				<div class="m-0 mb-2 font-italic" style="font-size: 1.0rem;">${cmts[0].html}</div>
 				${cmts.length > 1 ? `<p class="m-0 text-right"><a href="#{CONFIG.OSM_URL}/note/${p.id}" target="_blank">+ ${cmts.length-1} autre(s) commentaire(s)</a></p>`: ''}`;
 
 			resDiv.appendChild(linksToDom(getLinksNote(feature), document.createElement("div")));
@@ -335,7 +400,7 @@ script.
 				<p class="m-0 mb-2">${osmSource.description}</p>
 				<div class="form-group m-0 mb-1">
 					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
-					<textarea class="form-control form-control-sm" rows="3">${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}">${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
 				</div>`;
 
 			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
@@ -347,31 +412,21 @@ script.
 		return resDiv;
 	}
 
-	// Show/hide feature marker
-	let featureMarker;
-	function showMarker(coords) {
-		if(!coords && featureMarker) {
-			featureMarker.remove();
-			featureMarker = null;
-		}
-		else if(coords && featureMarker) {
-			featureMarker.setLngLat(coords);
-		}
-		else if(coords) {
-			featureMarker = new mapboxgl.Marker({ color: "red" }).setLngLat(coords).addTo(map);
-		}
-	}
-
 	// Handle map click
 	function clickFeature(e) {
 		if(!map || !e) { return; }
 		const features = map.queryRenderedFeatures(e.point);
 
 		if(!features || features.length === 0) {
-			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } }));
-			showMarker();
+			if(!lastCallbackFeatureLocation) {
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } }));
+				showMarker();
+			}
 		}
 		else {
+			if(lastCallbackFeatureLocation) {
+				cancelAskFeatureLocation();
+			}
 			const coordinates = features[0].geometry.coordinates.slice();
 			while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
 				coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;

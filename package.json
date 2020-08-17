@@ -33,7 +33,7 @@
     "marked": "^1.1.0",
     "node-fetch": "^2.6.0",
     "osm-auth": "^1.0.2",
-    "osm-request": "^1.2.8",
+    "osm-request": "^1.2.9",
     "pg": "^8.3.0",
     "pug": "^3.0.0"
   }

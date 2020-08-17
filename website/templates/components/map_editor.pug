@@ -1,0 +1,192 @@
+h5(style="font-size: 1.1rem")= editors.pdm.add.title
+p.text-muted
+	small#pdm-editor-mode
+
+form#pdm-editor-form
+	if editors.pdm && editors.pdm.add && editors.pdm.add.fields
+		each field in editors.pdm.add.fields
+			if field.type !== "hidden"
+				div.form-group
+					label(for=`pdm-editor_${field.tag}`)= field.name
+
+					if ["text", "number", "email"].includes(field.type)
+						input.form-control(id=`pdm-editor_${field.tag}` name=field.tag type=field.type required=(!field.optional || false))
+					else if field.type === "textarea"
+						textarea.form-control(id=`pdm-editor_${field.tag}` rows="3" name=field.tag required=(!field.optional || false))
+					else if field.type === "select"
+						select.form-control(id=`pdm-editor_${field.tag}` name=field.tag required=(!field.optional || false))
+							option(value="")
+							each kv in field.values
+								option(value=kv.v)= kv.l
+					else if field.type === "3states"
+						div
+							div.form-check.form-check-inline
+								input.form-check-input(type="radio" name=field.tag value="yes" id=`pdm-editor_${field.tag}_yes` required=(!field.optional || false))
+								label.form-check-label(for=`pdm-editor_${field.tag}_yes`) Oui
+							div.form-check.form-check-inline
+								input.form-check-input(type="radio" name=field.tag value="no" id=`pdm-editor_${field.tag}_no` required=(!field.optional || false))
+								label.form-check-label(for=`pdm-editor_${field.tag}_no`) Non
+							div.form-check.form-check-inline
+								input.form-check-input(type="radio" name=field.tag value="" id=`pdm-editor_${field.tag}_unknown` checked required=(!field.optional || false))
+								label.form-check-label(for=`pdm-editor_${field.tag}_unknown`) Ne sais pas
+
+					if field.description
+						small.form-text.text-muted= field.description
+
+		div.btn-group.btn-block(role="group")
+			button.btn.btn-success.w-50(type="submit" title="Envoyer les informations sur OpenStreetMap") Créer
+			button#pdm-editor-cancel.btn.btn-warning.w-50(type="button" title="Retourner à la carte sans envoyer à OpenStreetMap") Annuler
+
+div#pdm-editor-wait.text-center.d-none
+	span.spinner-border.text-primary(role="status" style="width: 5rem; height: 5rem;")
+	p.text-muted Envoi en cours, veuillez patienter
+
+div#pdm-editor-done.d-none
+	p Votre contribution a bien été prise en compte, merci pour votre participation !
+	button#pdm-editor-done-btnmap.btn.btn-outline-primary.btn-block.d-md-none(type="button") Retour à la carte
+	button#pdm-editor-done-btnok.btn.btn-outline-primary.btn-block.d-none.d-md-block(type="button") OK
+
+script.
+	const editorModeDom = document.getElementById("pdm-editor-mode");
+	const editorFormDom = document.getElementById("pdm-editor-form");
+	const editorWaitDom = document.getElementById("pdm-editor-wait");
+	const editorDoneDom = document.getElementById("pdm-editor-done");
+	let currentEditorCoordinates = null;
+
+	// Show proper editing mode (note or feature)
+	function showEditingMode() {
+		if(window.osm_user) { editorModeDom.innerHTML = "Vous êtes connecté : ce formulaire va créer un point directement dans OpenStreetMap"; }
+		else { editorModeDom.innerHTML = "Vous n'êtes pas connecté : ce formulaire va créer une note dans OpenStreetMap"; }
+	}
+	window.addEventListener("osm_login", showEditingMode);
+	window.addEventListener("osm_logout", showEditingMode);
+
+	// First editing step : ask location on map
+	function onStartNewFeature() {
+		askFeatureLocation(onNewFeatureLocated);
+	}
+
+	// Show prompt before leaving page
+	function askBeforeUnload(e) {
+		e.preventDefault();
+		e.returnValue = "Si vous quittez la page, les modifications en cours seront perdus.";
+		return e.returnValue;
+	}
+
+	// Second step : once located, ask for details
+	function onNewFeatureLocated(coordinates) {
+		currentEditorCoordinates = coordinates;
+		editorFormDom.reset();
+		editorFormDom.addEventListener("submit", onFormSubmit);
+		editorFormDom.classList.remove("d-none");
+		editorWaitDom.classList.add("d-none");
+		editorDoneDom.classList.add("d-none");
+		window.addEventListener("beforeunload", askBeforeUnload);
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "editor", open: true } }));
+		setTimeout(() => showMarker(coordinates), 500);
+	}
+
+	// Third step : location + form set, check and send to OSM
+	function onFormSubmit(e) {
+		e.preventDefault();
+		showMarker();
+		const formData = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[1] && kv[1].toString().trim() !== ""));
+		const fixedTags = Object.fromEntries(editors.pdm.add.fields.filter(f => f.type === "hidden").map(f => Object.entries(f.tags)).flat());
+		const tagsToApply = Object.assign({}, fixedTags, formData);
+
+		if(osmApi && currentEditorCoordinates.lat && currentEditorCoordinates.lng && Object.keys(tagsToApply).length > 0) {
+			// Show wait message
+			editorFormDom.classList.add("d-none");
+			editorWaitDom.classList.remove("d-none");
+			editorDoneDom.classList.add("d-none");
+
+			// Handle as new OSM feature
+			if(window.osm_user && window.osm_user.id && window.osm_user.auth) {
+				// Look for changeset (either reuse existing or create new one)
+				let changesetId = localStorage.getItem("changeset_#{id}");
+				let getChangeset;
+
+				const getChangesetPromise = () => osmApi.createChangeset('ProjetDuMois.fr', editors.all.comment, {
+					host: window.location,
+					locale: navigator.languages ? navigator.languages[0] : navigator.language,
+					hashtags: editors.all.hashtags.split(",").map(h => "#"+h).join(";")
+				}).then(res => {
+					changesetId = res;
+					localStorage.setItem("changeset_#{id}", changesetId);
+					return true;
+				});
+
+				if(changesetId && !isNaN(parseInt(changesetId))) {
+					getChangeset = osmApi.isChangesetStillOpen(changesetId)
+					.then(res => {
+						if(!isNaN(res)) { return true; }
+						else { throw new Error("Not opened"); }
+					})
+					.catch(e => {
+						console.error(e);
+						return getChangesetPromise();
+					});
+				}
+				else {
+					getChangeset = getChangesetPromise();
+				}
+
+				getChangeset
+				.then(() => (
+					osmApi.sendElement(
+						osmApi.createNodeElement(currentEditorCoordinates.lat, currentEditorCoordinates.lng, tagsToApply),
+						changesetId
+					)
+					.then(() => {
+						editorFormDom.classList.add("d-none");
+						editorWaitDom.classList.add("d-none");
+						editorDoneDom.classList.remove("d-none");
+						new mapboxgl.Marker({ color: "#2E7D32" }).setLngLat(currentEditorCoordinates).addTo(map);
+						cancelAddNewFeature(false, true);
+					})
+				))
+				.catch(e => {
+					console.error(e);
+					alert("Une erreur s'est produite, merci de réessayer plus tard");
+					cancelAddNewFeature();
+				});
+			}
+			// Handle as anonymous note
+			else {
+				const noteText = `${editors.all.comment}\n\nAttributs renseignés :\n${Object.entries(tagsToApply).map(e => e.join("=")).join("\n")}\n\nPlus d'infos sur la résolution de cette note : #{links.osmwiki}\nVia ProjetDuMois.fr ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
+
+				osmApi._auth = { skip: true };
+				osmApi.createNote(currentEditorCoordinates.lat, currentEditorCoordinates.lng, noteText)
+				.then(() => {
+					editorFormDom.classList.add("d-none");
+					editorWaitDom.classList.add("d-none");
+					editorDoneDom.classList.remove("d-none");
+					loadNotesOnMap();
+					cancelAddNewFeature(false, true);
+				})
+				.catch(e => {
+					console.error(e);
+					alert("Une erreur s'est produite, merci de réessayer plus tard");
+					cancelAddNewFeature();
+				});
+			}
+		}
+		else {
+			alert("Des données sont manquantes, merci de réessayer");
+			onStartNewFeature();
+		}
+	}
+
+	// Reset map and sidebar on cancel / done
+	function cancelAddNewFeature(close = true, keepPanel = false) {
+		currentEditorCoordinates = null;
+		showMarker();
+		window.removeEventListener("beforeunload", askBeforeUnload);
+		if(!keepPanel) {
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default", close } }));
+		}
+	}
+
+	document.getElementById("pdm-editor-cancel").addEventListener("click", cancelAddNewFeature);
+	document.getElementById("pdm-editor-done-btnmap").addEventListener("click", cancelAddNewFeature);
+	document.getElementById("pdm-editor-done-btnok").addEventListener("click", e => cancelAddNewFeature(false));

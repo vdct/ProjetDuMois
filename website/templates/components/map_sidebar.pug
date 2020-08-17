@@ -1,8 +1,13 @@
 div#pdm-map-sidebar.pdm-hidden
-	button.toggle-map-sidebar.btn.btn-outline-secondary.btn-sm.mt-2(type="button" title="Afficher/masquer la barre latérale")
-		i.fa.fa-bars
+	div.btn-group-vertical.pdm-sidebar-buttons(role="group")
+		button.toggle-map-sidebar.btn.btn-outline-secondary.btn-sm.mt-2(type="button" title="Afficher/masquer la barre latérale")
+			i.fa.fa-bars
+		if editors.pdm && editors.pdm.add
+			button.editor-add-btn.btn.btn-outline-primary.btn-sm(type="button" title=editors.pdm.add.title)
+				i.fa.fa-map-marked-alt
 
 	div.overflow-auto.h-100
+		//- Default panel showing legend
 		div.pdm-sidebar-default.m-3
 			div.map-legend
 				h5 Légende
@@ -11,7 +16,12 @@ div#pdm-map-sidebar.pdm-hidden
 						span(style=`color: ${lg.color}`) ●
 						| #{lg.label}
 
-		div.pdm-sidebar-feature.m-3
+		//- Display details of a single feature
+		div.pdm-sidebar-feature.m-3.d-none
+
+		//- Display feature editor
+		div.pdm-sidebar-editor.m-3.d-none
+			include map_editor.pug
 
 script.
 	const sidebarDom = document.getElementById("pdm-map-sidebar");
@@ -21,16 +31,28 @@ script.
 	sidebarDom.querySelector(".toggle-map-sidebar").addEventListener("click", () => {
 		sidebarDom.classList.toggle("pdm-hidden");
 		setTimeout(() => window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } })), 500);
+		cancelAskFeatureLocation();
 		showMarker();
 	});
+
+	// Add feature button
+	const editors = !{JSON.stringify(editors)};
+	if(editors.pdm && editors.pdm.add) {
+		sidebarDom.querySelector(".editor-add-btn").addEventListener("click", onStartNewFeature);
+	}
 
 	// Change visible panel
 	const panelDefaultDom = sidebarDom.querySelector(".pdm-sidebar-default");
 	const panelFeatureDom = sidebarDom.querySelector(".pdm-sidebar-feature");
+	const panelEditorDom = sidebarDom.querySelector(".pdm-sidebar-editor");
 
 	window.addEventListener("pdm_sidebar_use", e => {
 		if(e.detail.open) {
 			sidebarDom.classList.remove("pdm-hidden");
+		}
+		if(e.detail.close) {
+			sidebarDom.classList.add("pdm-hidden");
+			e.detail.panel = "default";
 		}
 		switch(e.detail.panel) {
 			case "feature":
@@ -42,11 +64,19 @@ script.
 					panelFeatureDom.appendChild(e.detail.content);
 				}
 				panelDefaultDom.classList.add("d-none");
+				panelEditorDom.classList.add("d-none");
 				panelFeatureDom.classList.remove("d-none");
+				break;
+
+			case "editor":
+				panelDefaultDom.classList.add("d-none");
+				panelFeatureDom.classList.add("d-none");
+				panelEditorDom.classList.remove("d-none");
 				break;
 
 			default:
 				panelFeatureDom.classList.add("d-none");
+				panelEditorDom.classList.add("d-none");
 				panelDefaultDom.classList.remove("d-none");
 		}
 	});

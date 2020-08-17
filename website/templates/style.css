@@ -211,7 +211,7 @@ a.navbar-brand:hover {
 	margin-right: 5px;
 }
 
-#zoom-in {
+.map-alert {
 	position: absolute;
 	bottom: 0;
 	left: 5%;
@@ -221,7 +221,7 @@ a.navbar-brand:hover {
 }
 
 @media (min-width: 768px) {
-	#zoom-in {
+	.map-alert {
 		left: 25%;
 		right: 25%;
 	}
@@ -246,17 +246,20 @@ a.navbar-brand:hover {
 	left: -100%;
 }
 
-#pdm-map-sidebar .toggle-map-sidebar {
+#pdm-map-sidebar .pdm-sidebar-buttons {
 	position: absolute;
 	right: 10px;
+}
+
+#pdm-map-sidebar .pdm-sidebar-buttons button {
 	background-color: white;
 }
 
-#pdm-map-sidebar.pdm-hidden .toggle-map-sidebar {
-	right: -37px;
+#pdm-map-sidebar.pdm-hidden .pdm-sidebar-buttons {
+	right: -42px;
 }
 
-#pdm-map-sidebar .toggle-map-sidebar:hover {
+#pdm-map-sidebar .pdm-sidebar-buttons button:hover {
 	background-color: #6c757d
 }
 
@@ -269,7 +272,7 @@ a.navbar-brand:hover {
 		left: -300px;
 	}
 
-	#pdm-map-sidebar .toggle-map-sidebar {
-		right: -37px;
+	#pdm-map-sidebar .pdm-sidebar-buttons {
+		right: -42px;
 	}
 }

@@ -49,8 +49,25 @@
 	},
 	"editors": {
 		"all": {
-			"comment": "Ajout de défibrillateurs automatiques externes",
+			"comment": "Ajout de défibrillateur automatique externe",
 			"hashtags": "projetdumois,projetdumoisfr,deficoeur"
+		},
+		"pdm": {
+			"add": {
+				"title": "Ajouter un défibrillateur manquant",
+				"fields": [
+					{ "type": "hidden", "tags": { "emergency": "defibrillator" } },
+					{ "type": "3states", "name": "À l'intérieur d'un bâtiment ?", "tag": "indoor" },
+					{ "type": "textarea", "name": "Localisation précise", "tag": "defibrillator:location", "description": "Exemple : derrière le comptoir de l'accueil" },
+					{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
+					{ "type": "number", "name": "Niveau où le trouver", "tag": "level", "description": "0 pour RDC, 1 pour 1er étage... uniquement en intérieur", "optional": true },
+					{ "type": "select", "name": "Qui peut y accéder ?", "tag": "access", "optional": true, "values": [
+						{ "v": "yes", "l": "Tout le monde" },
+						{ "v": "customers", "l": "Clients uniquement" },
+						{ "v": "private", "l": "Personnes autorisées uniquement" }
+					] }
+				]
+			}
 		},
 		"iD": {
 			"background": "fr.ign.bdortho"

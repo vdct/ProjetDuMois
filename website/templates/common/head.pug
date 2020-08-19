@@ -22,39 +22,16 @@ style
 	include ../style.css
 
 //- JS
+script(src="/lib/bootstrap.native/bootstrap.js")
 script(src="/lib/mapbox-gl/mapbox-gl.js")
 script(src="/lib/chart.js/chart.js")
 script(src="/lib/osm-auth/osmauth.js")
 script(src="/lib/osm-request/osmrequest.js")
 
+include ../components/user_button
+
 //- Auth handler (runs on client)
 script.
-	function toggleConnect(logged) {
-		for(let domConnect of document.getElementsByClassName("connect-osm")) {
-			domConnect.innerHTML = '';
-			if(logged) {
-				const icon = document.createElement("i");
-				icon.classList.add("fa", "fa-user");
-				const txt = document.createElement("span");
-				txt.appendChild(document.createTextNode(window.osm_user.name));
-				txt.classList.add("d-none", "d-sm-inline", "ml-2");
-				domConnect.appendChild(icon);
-				domConnect.appendChild(txt);
-				domConnect.title = "Se déconnecter";
-			}
-			else {
-				const icon = document.createElement("i");
-				icon.classList.add("fa", "fa-sign-in-alt");
-				const txt = document.createElement("span");
-				txt.appendChild(document.createTextNode("Se connecter"));
-				txt.classList.add("d-none", "d-sm-inline", "ml-2");
-				domConnect.appendChild(icon);
-				domConnect.appendChild(txt);
-				domConnect.title = "Se connecter";
-			}
-		}
-	}
-
 	function stringQs(str) {
 		const u = str.split('?');
 
@@ -118,7 +95,6 @@ script.
 						};
 
 						osmApi._auth = auth;
-						toggleConnect(true);
 						window.dispatchEvent(new Event("osm_login"));
 					}
 					catch(e) {
@@ -155,14 +131,11 @@ script.
 
 		window.osm_user = null;
 		osmApi._auth = null;
-		toggleConnect(false);
 		localStorage.removeItem("oauth_token");
 		window.dispatchEvent(new Event("osm_logout"));
 	}
 
 	window.addEventListener("load", () => {
-		toggleConnect(false);
-
 		if(token) {
 			auth.bootstrapToken(token, () => {
 				checkAuth();
@@ -174,25 +147,5 @@ script.
 			//Check if we receive auth token
 			checkAuth();
 			authWait = setInterval(checkAuth.bind(this), 100);
-		}
-
-		for(let domConnect of document.getElementsByClassName("connect-osm")) {
-			domConnect.addEventListener("click", () => {
-				if(!auth.authenticated()) {
-					auth.authenticate((err, res) => {
-						if(err) {
-							console.error(err);
-							alert("Une erreur s'est produite à la connexion, veuillez réessayer");
-							logout();
-						}
-						else {
-							checkAuth();
-						}
-					});
-				}
-				else {
-					logout();
-				}
-			});
 		}
 	});

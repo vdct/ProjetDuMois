@@ -1,0 +1,104 @@
+script.
+	window.addEventListener("osm_login", e => {
+		for(let domConnect of document.getElementsByClassName("connect-osm")) {
+			domConnect.innerHTML = '';
+			const icon = document.createElement("i");
+			icon.classList.add("fa", "fa-user");
+			const txt = document.createElement("span");
+			txt.appendChild(document.createTextNode(window.osm_user.name));
+			txt.classList.add("d-none", "d-sm-inline", "ml-2");
+			domConnect.appendChild(icon);
+			domConnect.appendChild(txt);
+			domConnect.title = "Se déconnecter";
+		}
+
+		for(let domConnect of document.getElementsByClassName("pdm-user-button")) {
+			domConnect.firstChild.classList.add("d-none");
+			domConnect.lastChild.classList.remove("d-none");
+			domConnect.lastChild.firstChild.lastChild.innerHTML = window.osm_user.name;
+		}
+	});
+
+	window.addEventListener("osm_logout", e => {
+		for(let domConnect of document.getElementsByClassName("connect-osm")) {
+			domConnect.innerHTML = '';
+			const icon = document.createElement("i");
+			icon.classList.add("fa", "fa-sign-in-alt");
+			const txt = document.createElement("span");
+			txt.appendChild(document.createTextNode("Se connecter"));
+			txt.classList.add("d-none", "d-sm-inline", "ml-2");
+			domConnect.appendChild(icon);
+			domConnect.appendChild(txt);
+			domConnect.title = "Se connecter";
+		}
+
+		for(let domConnect of document.getElementsByClassName("pdm-user-button")) {
+			domConnect.firstChild.classList.remove("d-none");
+			domConnect.lastChild.classList.add("d-none");
+		}
+	});
+
+	window.addEventListener("load", e => {
+		for(let domConnect of document.getElementsByClassName("disconnect-osm-ub")) {
+			domConnect.addEventListener("click", () => {
+				logout();
+			});
+		}
+
+		for(let domConnect of document.getElementsByClassName("connect-osm-ub")) {
+			domConnect.addEventListener("click", () => {
+				auth.authenticate((err, res) => {
+					if(err) {
+						console.error(err);
+						alert("Une erreur s'est produite à la connexion, veuillez réessayer");
+						logout();
+					}
+					else {
+						checkAuth();
+					}
+				});
+			});
+		}
+
+		for(let domConnect of document.getElementsByClassName("connect-osm")) {
+			domConnect.addEventListener("click", () => {
+				if(!auth.authenticated()) {
+					auth.authenticate((err, res) => {
+						if(err) {
+							console.error(err);
+							alert("Une erreur s'est produite à la connexion, veuillez réessayer");
+							logout();
+						}
+						else {
+							checkAuth();
+						}
+					});
+				}
+				else {
+					logout();
+				}
+			});
+		}
+	});
+
+mixin user_button
+	div.pdm-user-button
+		button.connect-osm-ub.btn.btn-sm.btn-outline-secondary.text-truncate.ml-2(role="button" title="Se connecter")
+			i.fa.fa-sign-in-alt
+			span.d-none.d-sm-inline.ml-1 Se connecter
+
+		div.dropdown.d-none
+			button.btn.btn-sm.btn-outline-secondary.dropdown-toggle.text-truncate.ml-2(role="button" title="Menu" data-toggle="dropdown")
+				i.fa.fa-user
+				span.d-none.d-sm-inline.ml-1 Utilisateur
+			div.dropdown-menu(style="left: -50px")
+				a.dropdown-item(href="#")
+					i.fa.fa-medal.mr-1
+					| Mes badges
+				div.dropdown-divider
+				a.disconnect-osm-ub.dropdown-item
+					i.fa.fa-sign-out-alt.mr-1
+					| Se déconnecter
+
+mixin user_connect
+	button.connect-osm.btn.btn-primary

@@ -208,6 +208,9 @@ const authorized = {
 	"bootstrap": {
 		"bootstrap.css": "dist/css/bootstrap.min.css"
 	},
+	"bootstrap.native": {
+		"bootstrap.js": "dist/bootstrap-native.min.js"
+	},
 	"mapbox-gl": {
 		"mapbox-gl.js": "dist/mapbox-gl.js",
 		"mapbox-gl.css": "dist/mapbox-gl.css"

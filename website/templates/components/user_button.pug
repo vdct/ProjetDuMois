@@ -16,6 +16,7 @@ script.
 			domConnect.firstChild.classList.add("d-none");
 			domConnect.lastChild.classList.remove("d-none");
 			domConnect.lastChild.firstChild.lastChild.innerHTML = window.osm_user.name;
+			domConnect.querySelector(".pdm-user-page-btn").setAttribute("href", `/users/${encodeURIComponent(window.osm_user.name)}`);
 		}
 	});
 
@@ -92,7 +93,7 @@ mixin user_button
 				i.fa.fa-user
 				span.d-none.d-sm-inline.ml-1 Utilisateur
 			div.dropdown-menu(style="left: -50px")
-				a.dropdown-item(href="#")
+				a.dropdown-item.pdm-user-page-btn(href="")
 					i.fa.fa-medal.mr-1
 					| Mes badges
 				div.dropdown-divider

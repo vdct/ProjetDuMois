@@ -139,7 +139,7 @@ script.
 		if(token) {
 			auth.bootstrapToken(token, () => {
 				checkAuth();
-				window.history.pushState({}, "", window.location.href.replace("?oauth_token="+token, ""));
+				window.history.replaceState(null, null, window.location.href.replace("?oauth_token="+token, ""));
 				localStorage.setItem("oauth_token", token);
 			});
 		}

@@ -8,9 +8,10 @@ block navbar
 
 block content
 	div.container
+		h2 Erreur #{httpcode}
 		//- Wide image
 		a(href="/")
-			img.w-100.rounded-lg(src="/images/404.png" title="Retour à l'accueil" alt="Erreur 404 : rien que le désert ici...")
+			img.w-100.rounded-lg(src="/images/httperror.jpg" title="Retour à l'accueil" alt="Erreur #{httpcode} : rien que le désert ici...")
 
 		//- Where to go
 		div.lead.text-center.m-5

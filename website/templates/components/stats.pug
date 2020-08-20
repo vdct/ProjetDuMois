@@ -92,7 +92,10 @@ script.
 					tr.appendChild(td1);
 
 					const td2 = document.createElement("td");
-					td2.appendChild(document.createTextNode(lb.username));
+					const td2Link = document.createElement("a");
+					td2Link.href=`/users/${encodeURIComponent(lb.username)}`;
+					td2Link.appendChild(document.createTextNode(lb.username));
+					td2.appendChild(td2Link);
 					td2.classList.add("align-middle");
 					tr.appendChild(td2);
 

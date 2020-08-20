@@ -69,11 +69,4 @@ FROM stats
 JOIN scores ON scores.amount = stats.amount
 ON CONFLICT DO NOTHING;
 
--- Meta
-INSERT INTO user_badges(userid, project, badge)
-SELECT DISTINCT userid, 'meta', 'police' AS badge
-FROM user_contributions
-WHERE project = current_setting('my.pdm.project_id')
-ON CONFLICT DO NOTHING;
-
 REINDEX TABLE user_badges;

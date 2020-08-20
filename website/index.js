@@ -9,7 +9,7 @@ const path = require('path');
 const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
-const { filterProjects, queryParams, getMapStyle } = require('./utils');
+const { filterProjects, queryParams, getMapStyle, getBadgesDetails } = require('./utils');
 const { Pool } = require('pg');
 
 
@@ -45,9 +45,10 @@ app.get('/', (req, res) => {
 	res.redirect(`/projects/${destId}`);
 });
 
-// 404
-app.get('/error/404', (req, res) => {
-	res.status(404).render('pages/http404', { CONFIG });
+// HTTP errors
+app.get('/error/:code', (req, res) => {
+	const httpcode = req.params.code && !isNaN(req.params.code) ? req.params.code : "400";
+	res.status(httpcode).render('pages/error', { CONFIG, httpcode });
 });
 
 // Project page
@@ -190,6 +191,36 @@ app.get('/projects/:id/stats', (req, res) => {
 			});
 		});
 		res.send(toSend);
+	});
+});
+
+// User page
+app.get('/users/:name', (req, res) => {
+	if(!req.params.name) {
+		return res.redirect('/error/404');
+	}
+
+	// Find user in database
+	pool.query(`SELECT userid FROM user_names WHERE username = $1`, [ req.params.name ])
+	.then(res1 => {
+		if(res1.rows.length === 1) {
+			const userid = res1.rows[0].userid;
+
+			// Fetch badges
+			pool.query("SELECT project, badge FROM user_badges WHERE userid = $1", [ userid ])
+			.then(res2 => {
+				res.render('pages/user', { CONFIG, username: req.params.name, userid, badges: getBadgesDetails(projects, res2.rows) });
+			})
+			.catch(e => {
+				res.redirect('/error/500');
+			});
+		}
+		else {
+			res.redirect('/error/404');
+		}
+	})
+	.catch(e => {
+		res.redirect('/error/500');
 	});
 });
 

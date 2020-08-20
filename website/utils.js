@@ -143,3 +143,33 @@ exports.getMapStyle = (p) => {
 		legend
 	};
 };
+
+// Get badges description
+exports.getBadgesDetails = (projects, badgesRows) => {
+	const commonBadges = {
+		"contributed": { name: "A participé" },
+		"score_1st": { name: "1ère position au classement" },
+		"score_2nd": { name: "2ème position au classement" },
+		"score_3rd": { name: "3ème position au classement" },
+		"allbest": { name: "A le plus de contributions au total" }
+	};
+
+	const badges = { "meta": { project: { name: "Général", image: "/images/favicon.svg" }, badges: [] } };
+	badgesRows.forEach(row => {
+		if(!badges[row.project]) {
+			badges[row.project] = {
+				project: { name: projects[row.project].title, date: projects[row.project].start_date, image: projects[row.project].icon },
+				badges: []
+			};
+		}
+
+		badges[row.project].badges.push(Object.assign({ id: row.badge }, commonBadges[row.badge] || projects[row.project].badges[row.badge]));
+	});
+
+	// Meta badges
+	if(Object.keys(badges).length -1 === Object.keys(projects).length) {
+		badges.meta.badges.push({ id: "all", name: "A participé à tous les projets" });
+	}
+
+	return badges;
+};

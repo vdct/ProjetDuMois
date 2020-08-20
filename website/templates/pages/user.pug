@@ -1,0 +1,76 @@
+extends ../layout.pug
+
+
+block navbar
+	a.p-2.text-muted(href="/#summary") En ce moment
+	a.p-2.text-muted(href="/#statistics") Statistiques
+	a.p-2.text-muted(href="/#data") Données
+
+
+block content
+	div.container
+		//- Name + picture
+		div.d-flex.align-items-center.mb-4
+			div#user-load.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
+			img#user-pic.img-thumbnail.d-none(src="" alt="" style="max-width: 64px; max-height: 64px")
+			div.ml-3
+				h2.mb-0= username
+				a(href=`${CONFIG.OSM_URL}/user/${username}` target="_blank") Profil OpenStreetMap
+				| &nbsp;-&nbsp;
+				a(href=`${CONFIG.OSM_URL}/message/new/${username}` target="_blank") Contacter
+
+		//- Contribution statistics
+		div.row.mb-4.no-gutters
+			div.col-md-4.mb-2.p-1
+				div.p-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
+					p.m-0
+						span#stats-changeset.d-block ?
+						small.d-block groupes de modifications
+			div.col-md-4.mb-2.p-1
+				div.p-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
+					p.m-0
+						small.d-block Inscrit sur OSM le
+						span#stats-account.d-block ?
+			div.col-md-4.mb-2.p-1
+				div.p-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
+					p.m-0
+						span#stats-projects= Object.keys(badges).length
+						small.d-block participations aux projets du mois
+
+		//- Badges
+		h3 Badges obtenus
+		each badgeProject in Object.keys(badges).sort((a,b) => b.localeCompare(a))
+			div.mb-3.border-top.mt-2.pt-2
+				h4(style="font-size: 1.4rem")
+					| #{badges[badgeProject].project.name}
+					if badges[badgeProject].project.date
+						small.text-muted &nbsp;(#{new Date(badges[badgeProject].project.date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })})
+
+				div.row
+					each badge in badges[badgeProject].badges
+						div.col-12.col-sm.text-center.mb-2
+							img.mr-2(src=`/images/badges/${badge.id === "contributed" ? badgeProject.split("_").pop() : badge.id}.svg` alt="" style="max-width: 72px")
+							p.m-0= badge.name
+
+	script.
+		const userLoadDom = document.getElementById("user-load");
+		const userPicDom = document.getElementById("user-pic");
+
+		osmApi.fetchUser(#{userid})
+		.then(details => {
+			userLoadDom.classList.add("d-none");
+
+			// Picture
+			if(details.img && details.img.href) {
+				userPicDom.src = details.img.href;
+				userPicDom.classList.remove("d-none");
+			}
+
+			// Small stats
+			document.getElementById("stats-changeset").innerHTML = details.changesets && details.changesets.count ? details.changesets.count : "0";
+			document.getElementById("stats-account").innerHTML = new Date(details.account_created).toLocaleDateString(navigator.locale, { day: 'numeric', month: 'long', year: 'numeric' });
+		})
+		.catch(e => {
+			console.error(e);
+			userLoadDom.classList.add("d-none");
+		});

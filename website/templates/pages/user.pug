@@ -58,13 +58,17 @@ block content
 
 		osmApi.fetchUser(#{userid})
 		.then(details => {
-			userLoadDom.classList.add("d-none");
-
 			// Picture
 			if(details.img && details.img.href) {
 				userPicDom.src = details.img.href;
-				userPicDom.classList.remove("d-none");
 			}
+			else {
+				userPicDom.src = "/images/badges/contributed.mini.svg";
+			}
+			userPicDom.addEventListener("load", e => {
+				userPicDom.classList.remove("d-none");
+				userLoadDom.classList.add("d-none");
+			});
 
 			// Small stats
 			document.getElementById("stats-changeset").innerHTML = details.changesets && details.changesets.count ? details.changesets.count : "0";

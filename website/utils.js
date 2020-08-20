@@ -167,8 +167,11 @@ exports.getBadgesDetails = (projects, badgesRows) => {
 	});
 
 	// Meta badges
-	if(Object.keys(badges).length -1 === Object.keys(projects).length) {
+	if(Object.keys(badges).length - 1 === Object.keys(projects).length) {
 		badges.meta.badges.push({ id: "all", name: "A participé à tous les projets" });
+	}
+	if(badges.meta.badges.length === 0) {
+		delete badges.meta;
 	}
 
 	return badges;

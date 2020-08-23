@@ -37,7 +37,7 @@
 				"POSITION APPROXIMATIVE À VÉRIFIER": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
 			},
 			"buttons": {
-				"done": "Ajouté",
+				"done": "C'est fait",
 				"false": "Rien ici"
 			}
 		},
@@ -47,7 +47,7 @@
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
 			"terms": [ "défibrillateur", "defibrillateur" ],
 			"buttons": {
-				"close": "Ajouté"
+				"close": "C'est fait"
 			}
 		},
 		{

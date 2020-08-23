@@ -265,12 +265,31 @@ script.
 		}
 	}
 
+	// Generate add to map button
+	function createAddFeatureButton(container, classes = "") {
+		if(editors.pdm && editors.pdm.add) {
+			const button = document.createElement("button");
+			button.classList.add("editor-add-btn", "btn", "btn-primary", ...classes.split(" "));
+			button.setAttribute("type", "button");
+			button.setAttribute("title", editors.pdm.add.title);
+
+			const span = document.createElement("span");
+			span.classList.add("d-inline-block", "mr-3", "container-svg-fa");
+			span.style.height = "24px";
+			fetch("/images/marker_plus.svg").then(res => res.text()).then(res => span.innerHTML = res);
+			button.appendChild(span);
+
+			button.appendChild(document.createTextNode(editors.pdm.add.title));
+			button.addEventListener("click", onStartNewFeature);
+			container.appendChild(button);
+		}
+	}
+
 	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
 	const osmCompareSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm-compare"))};
 
 	// Create DOM structure for feature description
 	function getDescription(feature) {
-		console.log(feature);
 		const s = feature.source;
 		const p = feature.properties;
 		const resDiv = document.createElement("div");
@@ -323,6 +342,7 @@ script.
 					${tags}`;
 
 				resDiv.appendChild(linksToDom(getLinksOsmose(meta), document.createElement("div")));
+				createAddFeatureButton(resDiv, "btn-block mt-3 mb-1");
 
 				const divButtons = document.createElement("div");
 				divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
@@ -354,13 +374,14 @@ script.
 				${cmts.length > 1 ? `<p class="m-0 text-right"><a href="#{CONFIG.OSM_URL}/note/${p.id}" target="_blank">+ ${cmts.length-1} autre(s) commentaire(s)</a></p>`: ''}`;
 
 			resDiv.appendChild(linksToDom(getLinksNote(feature), document.createElement("div")));
+			createAddFeatureButton(resDiv, "btn-block mt-3 mb-1");
 
 			const divButtons = document.createElement("div");
 			divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
 			divButtons.role = "group";
 
 			const divButtonDone = document.createElement("button");
-			divButtonDone.classList.add("btn", "btn-success");
+			divButtonDone.classList.add("btn", "btn-success", "w-50");
 			divButtonDone.appendChild(document.createTextNode("✔ "+noteSource.buttons.close));
 			divButtonDone.addEventListener("click", () => closeNote(p));
 			const labelConnected = "Marquer cet élément comme \""+noteSource.buttons.close+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
@@ -384,7 +405,7 @@ script.
 			divButtons.appendChild(divButtonDone);
 
 			const divButtonComment = document.createElement("a");
-			divButtonComment.classList.add("btn", "btn-secondary");
+			divButtonComment.classList.add("btn", "btn-secondary", "w-50");
 			divButtonComment.role = "button";
 			divButtonComment.appendChild(document.createTextNode("💬 Commenter"));
 			divButtonComment.title = "Participer à la discussion sur cette note";
@@ -419,6 +440,7 @@ script.
 				<p class="m-0 mb-2">${osmSource.description}</p>`;
 
 			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
+			createAddFeatureButton(resDiv, "btn-block mt-2");
 		}
 		else {
 			resDiv.innerHTML = "<ul>"+Object.entries(p).map(e => "<li>"+e.join(" : ")+"</li>").join("")+"</ul>";

@@ -31,6 +31,15 @@ a.dropdown-item:not([href]):hover {
 	cursor: pointer;
 }
 
+.container-svg-fa {
+	line-height: 1;
+}
+
+.container-svg-fa svg {
+	max-width: 100%;
+	max-height: 100%;
+}
+
 /*
 * Blog posts
 */
@@ -155,6 +164,13 @@ a.navbar-brand:hover {
 	width: 100%;
 	max-width: 300px;
 }
+
+@media (max-width: 576px) {
+	#boundary-search {
+		border-radius: 0.25rem !important;
+	}
+}
+
 
 /*
  * Map

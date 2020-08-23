@@ -1,6 +1,7 @@
-h5(style="font-size: 1.1rem")= editors.pdm.add.title
-p.text-muted
-	small#pdm-editor-mode
+if editors.pdm && editors.pdm.add
+	h5(style="font-size: 1.1rem")= editors.pdm.add.title
+	p.text-muted
+		small#pdm-editor-mode
 
 form#pdm-editor-form
 	if editors.pdm && editors.pdm.add && editors.pdm.add.fields
@@ -55,8 +56,10 @@ script.
 
 	// Show proper editing mode (note or feature)
 	function showEditingMode() {
-		if(window.osm_user) { editorModeDom.innerHTML = "Vous êtes connecté : ce formulaire va créer un point directement dans OpenStreetMap"; }
-		else { editorModeDom.innerHTML = "Vous n'êtes pas connecté : ce formulaire va créer une note dans OpenStreetMap"; }
+		if(editorModeDom) {
+			if(window.osm_user) { editorModeDom.innerHTML = "Vous êtes connecté : ce formulaire va créer un point directement dans OpenStreetMap"; }
+			else { editorModeDom.innerHTML = "Vous n'êtes pas connecté : ce formulaire va créer une note dans OpenStreetMap"; }
+		}
 	}
 	window.addEventListener("osm_login", showEditingMode);
 	window.addEventListener("osm_logout", showEditingMode);
@@ -187,6 +190,8 @@ script.
 		}
 	}
 
-	document.getElementById("pdm-editor-cancel").addEventListener("click", cancelAddNewFeature);
-	document.getElementById("pdm-editor-done-btnmap").addEventListener("click", cancelAddNewFeature);
-	document.getElementById("pdm-editor-done-btnok").addEventListener("click", e => cancelAddNewFeature(false));
+	if(editorModeDom) {
+		document.getElementById("pdm-editor-cancel").addEventListener("click", cancelAddNewFeature);
+		document.getElementById("pdm-editor-done-btnmap").addEventListener("click", cancelAddNewFeature);
+		document.getElementById("pdm-editor-done-btnok").addEventListener("click", e => cancelAddNewFeature(false));
+	}

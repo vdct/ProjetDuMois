@@ -38,7 +38,7 @@ script.
 	sidebarDom.querySelector(".toggle-map-sidebar").addEventListener("click", () => {
 		sidebarDom.classList.toggle("pdm-hidden");
 		cancelAskFeatureLocation();
-		cancelAddNewFeature();
+		cancelAddNewFeature(null, true);
 	});
 
 	// Add feature button

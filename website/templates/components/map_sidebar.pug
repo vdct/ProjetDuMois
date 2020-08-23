@@ -37,9 +37,8 @@ script.
 	// Close sidebar button
 	sidebarDom.querySelector(".toggle-map-sidebar").addEventListener("click", () => {
 		sidebarDom.classList.toggle("pdm-hidden");
-		setTimeout(() => window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } })), 500);
 		cancelAskFeatureLocation();
-		showMarker();
+		cancelAddNewFeature();
 	});
 
 	// Add feature button

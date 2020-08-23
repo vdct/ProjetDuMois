@@ -81,7 +81,7 @@ script.
 		editorFormDom.classList.remove("d-none");
 		editorWaitDom.classList.add("d-none");
 		editorDoneDom.classList.add("d-none");
-		window.addEventListener("beforeunload", askBeforeUnload);
+		window.onbeforeunload = askBeforeUnload;
 		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "editor", open: true } }));
 		setTimeout(() => showMarker(coordinates), 500);
 	}
@@ -181,7 +181,7 @@ script.
 	function cancelAddNewFeature(close = true, keepPanel = false) {
 		currentEditorCoordinates = null;
 		showMarker();
-		window.removeEventListener("beforeunload", askBeforeUnload);
+		window.onbeforeunload = null;
 		if(!keepPanel) {
 			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default", close } }));
 		}

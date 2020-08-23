@@ -27,7 +27,7 @@ const OSC_LOCAL = CONFIG.WORK_DIR + '/changes.local.osc.gz';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
 const CSV_NOTES = CONFIG.WORK_DIR + '/notes.csv';
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
-const PSQL = `psql postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}`;
+const PSQL = `psql "postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
 
 // Check if there is any project to analyse

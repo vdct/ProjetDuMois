@@ -103,6 +103,7 @@ if(notesSources.length > 0) {
 const separator = `echo "-------------------------------------------------------------------"
 echo ""`;
 
+
 // Feature counts script (optional)
 const counts = project.statistics.count ? `
 echo "==== Count features"
@@ -124,12 +125,14 @@ ${PSQL} -c "DELETE FROM feature_counts WHERE project = '${project.id}'"
 ${PSQL} -c "\\COPY feature_counts FROM '${OSCCOUNT}' CSV"
 ${separator}` : '';
 
+
 // Notes count (optional)
 const noteCounts = notesSources.length > 0 ? `
 echo "==== Count notes"
 ${PSQL} -c "DELETE FROM note_counts WHERE project = '${project.id}'"
 ${PSQL} -c "\\COPY note_counts FROM '${CSV_NOTES}' CSV"
 ${separator}` : '';
+
 
 // Full script
 const script = `#!/bin/bash

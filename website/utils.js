@@ -63,12 +63,40 @@ exports.getMapStyle = (p) => {
 			]
 		};
 
+		// OSM Compare
+		p.datasources
+		.filter(ds => "osm-compare" === ds.source)
+		.forEach((ds, dsid) => {
+			const id = `${ds.source}_${dsid}`;
+			const color = ds.color || "#FF7043"; // Orange
+			const layer = `public.project_${p.id.split("_").pop()}_compare_tiles`;
+			sources[id] = {
+				type: "vector",
+				tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+				minzoom: 7,
+				maxzoom: 14
+			};
+
+			layers.push({
+				id: id,
+				source: id,
+				type: "circle",
+				"source-layer": layer,
+				paint: {
+					"circle-color": color,
+					"circle-radius": [ "interpolate", ["linear"], ["zoom"], 7, 2, 11, 3, 13, 5, 19, 12 ]
+				}
+			});
+
+			legend.push({ color, label: ds.name });
+		});
+
 		// OSM
 		p.datasources
-		.filter(ds => ds.source === "osm")
+		.filter(ds => "osm" === ds.source)
 		.forEach((ds, dsid) => {
-			const id = `osm_${dsid}`;
-			const color = ds.color || "#2E7D32";
+			const id = `${ds.source}_${dsid}`;
+			const color = ds.color || "#2E7D32"; // Green
 			const layer = `public.project_${p.id.split("_").pop()}`;
 			sources[id] = {
 				type: "vector",
@@ -94,7 +122,7 @@ exports.getMapStyle = (p) => {
 		.forEach(ds => {
 			const id = `osmose_${ds.item}_${ds.class || "all"}`;
 			const params = { item: ds.item, class: ds.class, country: ds.country };
-			const color = ds.color || "#b71c1c";
+			const color = ds.color || "#b71c1c"; // Red
 
 			sources[id] = {
 				type: "vector",
@@ -119,7 +147,7 @@ exports.getMapStyle = (p) => {
 		.filter(ds => ds.source === "notes")
 		.forEach((ds, dsid) => {
 			const id = `notes_${dsid}`;
-			const color = ds.color || "#01579B";
+			const color = ds.color || "#01579B"; // Blue
 			sources[id] = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
 
 			layers.push({

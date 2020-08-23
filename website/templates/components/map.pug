@@ -266,14 +266,17 @@ script.
 	}
 
 	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
+	const osmCompareSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm-compare"))};
 
 	// Create DOM structure for feature description
 	function getDescription(feature) {
+		console.log(feature);
+		const s = feature.source;
 		const p = feature.properties;
 		const resDiv = document.createElement("div");
 
 		// Retrieve metadata on Osmose API
-		if(p.uuid) {
+		if(s.startsWith("osmose_")) {
 			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
 			const osmoseButtons = !{JSON.stringify(osmoseButtons)};
 
@@ -341,7 +344,7 @@ script.
 			});
 		}
 		// Notes from OSM
-		else if(p.comments) {
+		else if(s.startsWith("notes_")) {
 			const noteSource = notesSources[p.pdm_note_source];
 			const cmts = typeof p.comments === "object" ? p.comments : JSON.parse(p.comments);
 			resDiv.innerHTML = `
@@ -391,7 +394,7 @@ script.
 			resDiv.appendChild(divButtons);
 		}
 		// OSM features
-		else if(p.tags) {
+		else if(s.startsWith("osm_")) {
 			const tags = JSON.parse(p.tags);
 			const osmSource = osmSources[parseInt(feature.source.split("_")[1])];
 
@@ -402,6 +405,18 @@ script.
 					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
 					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}">${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
 				</div>`;
+
+			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
+		}
+		// OSM comparison features
+		else if(s.startsWith("osm-compare_")) {
+			const tags = JSON.parse(p.tags);
+			const osmSource = osmCompareSources[parseInt(feature.source.split("_")[1])];
+
+			resDiv.innerHTML = `
+				<h5 class="m-0">${osmSource.name}</h5>
+				${p.name || tags.ref ? `<small class="text-muted">${p.name || tags.ref}</small>` : ''}
+				<p class="m-0 mb-2">${osmSource.description}</p>`;
 
 			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
 		}

@@ -12,6 +12,20 @@
 		"imposm": {
 			"types": ["point"],
 			"mapping": { "emergency": ["defibrillator"] }
+		},
+		"compare": {
+			"types": ["point", "polygon"],
+			"mapping": {
+				"aeroway": ["aerodrome"],
+				"amenity": ["college","university","ferry_terminal","cinema","community_centre","theatre","conference_centre","townhall"],
+				"highway": ["services"],
+				"leisure": ["ice_rink","sports_centre","stadium","water_park"],
+				"railway": ["station"],
+				"shop": ["department_store","mall","supermarket","wholesale"],
+				"tourism": ["camp_site","hotel","museum","theme_park","zoo"],
+				"information": ["office"]
+			},
+			"radius": 100
 		}
 	},
 	"datasources": [
@@ -40,6 +54,11 @@
 			"source": "osm",
 			"name": "Défibrillateurs dans OSM",
 			"description": "Ce défibrillateur existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		},
+		{
+			"source": "osm-compare",
+			"name": "Défibrillateur potentiel",
+			"description": "Ce lieu est susceptible de disposer d'un défibrillateur. Vous pouvez vérifier sur place la localisation de l'appareil et l'ajouter à OSM."
 		}
 	],
 	"statistics": {

@@ -3,7 +3,7 @@
 ## Dépendances
 
 * NodeJS >= 9
-* Curl, Awk, Grep, Sed
+* Curl, Awk, Grep, Sed, xsltproc
 * PostgreSQL >= 10
 * Python 3
 * [Osmium](https://osmcode.org/osmium-tool/)

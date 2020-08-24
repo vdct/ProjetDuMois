@@ -34,7 +34,7 @@
 			"item": "8370", "country": "france*",
 			"name": "Défibrillateur à intégrer",
 			"subtitles": {
-				"POSITION APPROXIMATIVE À VÉRIFIER": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
+				"fallback": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
 			},
 			"buttons": {
 				"done": "C'est fait",

@@ -293,6 +293,11 @@ a.navbar-brand:hover {
 	background-color: #6c757d
 }
 
+#pdm-map-sidebar .alert.alert-info {
+	font-size: 0.9rem;
+	padding: 0.5rem 1.0rem;
+}
+
 @media (min-width: 576px) {
 	#pdm-map-sidebar {
 		width: 300px;
@@ -305,4 +310,8 @@ a.navbar-brand:hover {
 	#pdm-map-sidebar .pdm-sidebar-buttons {
 		right: -42px;
 	}
+}
+
+.pdm-note-comment p {
+	margin: 0;
 }

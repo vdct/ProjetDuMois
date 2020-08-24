@@ -337,7 +337,7 @@ script.
 					tags = `
 						<div class="form-group m-0 mb-1">
 							<label class="m-0" for="exampleFormControlTextarea1">Attributs à ajouter</label>
-							<textarea class="form-control form-control-sm" rows="3">${tags.map(kv => kv.k+"="+kv.v).join("\n")}</textarea>
+							<textarea class="form-control form-control-sm" rows="${tags.length}" readonly>${tags.map(kv => kv.k+"="+kv.v).join("\n")}</textarea>
 						</div>`;
 				}
 
@@ -345,11 +345,12 @@ script.
 				if(labels.subtitles) {
 					const subtitles = Object.keys(labels.subtitles).filter(s => subtitle.includes(s)).map(s => labels.subtitles[s]);
 					if(subtitles.length > 0) { subtitle = subtitles[0]; }
+					else if(labels.subtitles.fallback) { subtitle = labels.subtitles.fallback; }
 				}
 
 				resDiv.innerHTML = `
-					<h5 class="m-0">${labels.name}</h5>
-					<p class="m-0 mb-2">${subtitle.replace(/\n/g, "<br />")}</p>
+					<h5>${labels.name}</h5>
+					<div class="alert alert-info">${subtitle.replace(/\n/g, "<br />")}</div>
 					${tags}`;
 
 				resDiv.appendChild(linksToDom(getLinksOsmose(meta), document.createElement("div")));
@@ -380,11 +381,17 @@ script.
 		else if(s.startsWith("notes_")) {
 			const noteSource = notesSources[p.pdm_note_source];
 			const cmts = typeof p.comments === "object" ? p.comments : JSON.parse(p.comments);
+			const notesStatuses = { "opened": "Ouvert", "closed": "Fermé", "reopened": "Réouvert", "commented": "Commentaire" };
+
 			resDiv.innerHTML = `
-				<h5 class="m-0">${noteSource.name}</h5>
-				<p class="m-0 mb-2">${noteSource.description}</p>
-				<div class="m-0 mb-2 font-italic" style="font-size: 1.0rem;">${cmts[0].html}</div>
-				${cmts.length > 1 ? `<p class="m-0 text-right"><a href="#{CONFIG.OSM_URL}/note/${p.id}" target="_blank">+ ${cmts.length-1} autre(s) commentaire(s)</a></p>`: ''}`;
+				<h5>${noteSource.name}</h5>
+				<div class="alert alert-info">${noteSource.description}</div>
+				${cmts.map(cmt => `<div class="border-bottom pdm-note-comment pb-2 mb-2">
+					<div class="text-muted" style="font-size: 0.9rem">
+						${notesStatuses[cmt.action]} par ${cmt.user} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString()}
+					</div>
+					${cmt.html}
+				</div>`).join("")}`;
 
 			resDiv.appendChild(linksToDom(getLinksNote(feature), document.createElement("div")));
 			createAddFeatureButton(resDiv, "btn-block mt-3 mb-1");
@@ -433,11 +440,11 @@ script.
 			const osmSource = osmSources[parseInt(feature.source.split("_")[1])];
 
 			resDiv.innerHTML = `
-				<h5 class="m-0">${p.name || tags.ref || osmSource.name}</h5>
-				<p class="m-0 mb-2">${osmSource.description}</p>
+				<h5>${p.name || tags.ref || osmSource.name}</h5>
+				<div class="alert alert-info">${osmSource.description}</div>
 				<div class="form-group m-0 mb-1">
 					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
-					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}">${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
 				</div>`;
 
 			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
@@ -448,9 +455,13 @@ script.
 			const osmSource = osmCompareSources[parseInt(feature.source.split("_")[1])];
 
 			resDiv.innerHTML = `
-				<h5 class="m-0">${osmSource.name}</h5>
-				${p.name || tags.ref ? `<small class="text-muted">${p.name || tags.ref}</small>` : ''}
-				<p class="m-0 mb-2">${osmSource.description}</p>`;
+				<h5>${osmSource.name}</h5>
+				<div class="alert alert-info">${osmSource.description}</div>
+				${p.name || tags.ref ? `<p>${p.name || tags.ref}</p>` : ''}
+				<div class="form-group m-0 mb-1">
+					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
+					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+				</div>`;
 
 			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
 			createAddFeatureButton(resDiv, "btn-block mt-2");

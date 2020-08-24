@@ -2,7 +2,7 @@ extends ../layout.pug
 
 
 block navbar
-	if !isActive
+	if !isActive && !isNext
 		a.p-2.text-muted(href="/#summary") En ce moment
 	else
 		a.p-2.text-muted(href="#contribute") Participer
@@ -19,6 +19,8 @@ block content
 			div.col-md-8.px-0
 				if isActive
 					h1.display-4.font-italic= `En ce moment : ${title.toLowerCase()}`
+				else if isNext
+					h1.display-4.font-italic= `Prochainement : ${title.toLowerCase()}`
 				else
 					h1.display-4.font-italic= title
 					p.display-4.text-capitalize= new Date(start_date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
@@ -30,7 +32,9 @@ block content
 		//- Contribute
 		div#contribute.container.blog-post
 			h2.blog-post-title Participer
-			if !isActive
+			if isNext
+				p Ce projet du mois commencera officiellement le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.
+			else if !isActive
 				p Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.
 			div.btn-over-wide
 				a.pdm-wide-link.map(href=`/projects/${id}/map`) Commencer à contribuer
@@ -44,13 +48,26 @@ block content
 
 	//- Statistics
 	div.container-fluid.py-5.mb-3.pdm-section-highlight
-		include ../components/stats.pug
+		div#statistics.blog-post.container
+			h2.blog-post-title.mb-3 Statistiques
+
+			if isNext
+				p Les statistiques d'avancement seront affichées lors du lancement officiel du projet du mois le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}.
+			else
+				include ../components/stats.pug
 
 	//- Data
 	div#data.container.blog-post.py-5
 		h2.blog-post-title Données
-		if isActive
-			p Retrouvez les précédents projets du mois, leurs outils, statistiques et données.
+		if !isNext
+			p L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :
+			ul
+				each datalink in opendata
+					li: a(href=datalink.url)
+						| #{datalink.title}
+						small &nbsp;(via #{datalink.via})
+
+		p Retrouvez les précédents projets du mois, leurs outils, statistiques et données.
 			div.row.align-items-center
 				each pastProj in projects.past.reverse()
 					div.col-md-6.col-lg-4.h-100
@@ -61,13 +78,6 @@ block content
 								a.text-decoration-none(href=`/projects/${pastProj.id}`)
 									| #{pastProj.title}
 									span.text-muted.d-block= pastProj.period
-		else
-			p L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :
-			ul
-				each datalink in opendata
-					li: a(href=datalink.url)
-						| #{datalink.title}
-						small &nbsp;(via #{datalink.via})
 
 
 block prepend footer

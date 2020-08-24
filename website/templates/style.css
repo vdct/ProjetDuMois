@@ -171,6 +171,16 @@ a.navbar-brand:hover {
 	}
 }
 
+.pdm-user-button .dropdown-menu.show {
+	left: -50px;
+}
+
+@media (max-width: 576px) {
+	.pdm-user-button .dropdown-menu.show {
+		left: -130px;
+	}
+}
+
 
 /*
  * Map

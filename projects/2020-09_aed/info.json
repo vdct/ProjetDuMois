@@ -1,7 +1,7 @@
 {
 	"id": "2020-09_aed",
 	"title": "Défibrillateurs",
-	"start_date": "2020-07-28",
+	"start_date": "2020-09-01",
 	"end_date": "2020-09-30",
 	"summary": "Les défibrillateurs automatiques externes (DAE) permettent de secourir les personnes lors d'un arrêt cardiaque. Ces équipements de premiers secours sont essentiels, pourtant leur localisation n'est pas toujours connue. Ce mois-ci, complétons ensemble OpenStreetMap pour offrir une liste exhaustive des défibrillateurs en France ! #DéfiCoeur",
 	"links": {
@@ -91,5 +91,8 @@
 		"iD": {
 			"background": "fr.ign.bdortho"
 		}
-	}
+	},
+	"opendata": [
+		{ "title": "Défibrillateurs automatiques externes", "via": "data.gouv.fr", "url": "https://www.data.gouv.fr/fr/datasets/defibrillateurs-automatiques-externes-issus-dopenstreetmap/" }
+	]
 }

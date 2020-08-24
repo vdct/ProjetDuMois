@@ -2,11 +2,14 @@ const CONFIG = require('../config.json');
 
 // Get current+past projects
 exports.filterProjects = (projects) => {
-	const prjs = { past: [], current: null };
+	const prjs = { past: [], current: null, next: null };
 	Object.values(projects).forEach(project => {
 		// Check dates
 		if(new Date(project.start_date).getTime() <= Date.now() && Date.now() <= new Date(project.end_date).getTime()) {
 			prjs.current = project;
+		}
+		else if(Date.now() <= new Date(project.start_date).getTime()) {
+			prjs.next = project;
 		}
 		else if(new Date(project.end_date).getTime() < Date.now()) {
 			prjs.past.push({

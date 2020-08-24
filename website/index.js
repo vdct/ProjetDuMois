@@ -41,7 +41,7 @@ app.set('views', __dirname+'/templates');
 // Index
 app.get('/', (req, res) => {
 	const p = filterProjects(projects);
-	const destId = p.current ? p.current.id : p.past.pop().id;
+	const destId = p.current ? p.current.id : (p.next ? p.next.id : p.past.pop().id);
 	res.redirect(`/projects/${destId}`);
 });
 
@@ -60,7 +60,8 @@ app.get('/projects/:id', (req, res) => {
 	const p = projects[req.params.id];
 	const all = filterProjects(projects);
 	const isActive = all.current && all.current.id === req.params.id;
-	res.render('pages/project', Object.assign({ CONFIG, isActive, projects: all }, p));
+	const isNext = all.next && all.next.id === req.params.id;
+	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, projects: all }, p));
 });
 
 // Project map editor
@@ -102,7 +103,7 @@ app.get('/projects/:id/stats', (req, res) => {
 		}));
 	}))
 	.then(results => {
-		if(!results || results.length === 0) { return {}; }
+		if(!results || results.length === 0 || results.filter(r => r.data && r.data.length > 0).length === 0) { return {}; }
 
 		const nbTasksStart = results.map(r => r.data[0].y).reduce((acc,cur) => acc + cur);
 		const nbTasksEnd = results.map(r => r.data[r.data.length-1].y).reduce((acc,cur) => acc + cur);

@@ -34,7 +34,7 @@ block content
 			div.col-md-4.mb-2.p-1
 				div.p-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 					p.m-0
-						span#stats-projects= Object.keys(badges).length
+						span#stats-projects= Object.keys(badges).filter(b => b !== "meta").length
 						small.d-block participations aux projets du mois
 
 		//- Badges

@@ -22,6 +22,7 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 * Florian Lainez
 * Noémie Lehuby
 * Vincent de Château-Thierry
+* Jocelyn Jaubert et l'équipe technique d'[OpenStreetMap France](https://openstreetmap.fr) qui assurent l'hébergement
 * Et toutes les personnes qui gravitent autour du projet !
 
 [Retrouvez-nous également sur Twitter](https://twitter.com/projetdumois) !

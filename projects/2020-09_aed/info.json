@@ -45,7 +45,7 @@
 			"source": "notes",
 			"name": "Note à traiter",
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"terms": [ "défibrillateur", "defibrillateur" ],
+			"terms": [ "défibrillateur", "defibrillateur", "dae" ],
 			"buttons": {
 				"close": "C'est fait"
 			}

@@ -65,9 +65,56 @@ Les propriétés dans `info.json` sont les suivantes :
 * `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
 * `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags))
 * `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs)
-* `datasources` : liste des sources de données qui apparaissent sur la page (signalements Osmose, notes OSM)
+* `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
+* `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
 * `statistics` : configuration de l'affichage des statistiques sur la page du projet
 * `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+
+### Sources de données
+
+Plusieurs sources de données sont mobilisables, et sont à faire apparaître dans le champ `datasources` du fichier `info.json`.
+
+#### Osmose
+
+[Osmose](https://wiki.openstreetmap.org/wiki/Osmose) est un outil d'analyse qualité et d'aide à l'intégration de données ouvertes. Les propriétés à renseigner sont les suivantes :
+
+* `source` : type de source, valeur obligatoire `osmose`
+* `item` : numéro d'item (code à quatre chiffres)
+* `class` : (optionel) numéro de classe (code à plusieurs chiffres)
+* `country` : (optionel) motif de nom de pays Osmose (exemple `france*`)
+* `name` : nom à faire apparaître à l'utilisateur
+* `subtitles` : (optionel) objet clé > valeur pour remplacer les sous-titres des signalements Osmose (recherche par motif)
+* `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "done": "C'est fait", "false": "Rien ici" }`)
+
+#### Notes OSM
+
+Les [notes OpenStreetMap](https://wiki.openstreetmap.org/wiki/Notes) sont une méthode simple pour envoyer des commentaires textuels par dessus la carte, et faciliter la contribution par des publics novices. Les propriétés à renseigner sont les suivantes :
+
+* `source` : type de source, valeur obligatoire `notes`
+* `name` : nom à faire apparaître à l'utilisateur
+* `description` : texte descriptif indiquant la méthode de résolution d'une note
+* `terms` : liste des termes à rechercher dans les notes (au singulier)
+* `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "close": "C'est fait" }`)
+
+#### Objets OpenStreetMap
+
+Les objets actuellement présents dans OpenStreetMap peuvent être affichés pour éviter les doublons et permettre leur édition. Les propriétés à renseigner sont les suivantes :
+
+* `source` : type de source, valeur obligatoire `osm`
+* `name` : nom à faire apparaître à l'utilisateur
+* `description` : texte descriptif de l'objet affiché
+
+Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database` de `info.json`.
+
+#### Objets OpenStreetMap pour comparaison
+
+Des objets indirectement liés au projet mais pertinents pour la contribution peuvent également apparaître. Les propriétés à renseigner sont les suivantes :
+
+* `source` : type de source, valeur obligatoire `osm-compare`
+* `name` : nom à faire apparaître à l'utilisateur
+* `description` : texte descriptif de l'objet affiché
+
+Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
 
 
 ## Base de données
@@ -82,14 +129,14 @@ npm run features:update
 ./db/21_features_update_tmp.sh init
 ```
 
-Pour mettre à jour quotidiennement la base avec les nouvelles contributions :
+Le script suivant est à lancer quotidiennement pour récupérer les statistiques de contribution (notes, objets ajoutés, badges obtenus) :
 
 ```bash
 npm run project:update
 ./db/09_project_update_tmp.sh
 ```
 
-Pour mettre à jour régulièrement les données depuis OSM :
+Le script suivant est à lancer chaque heure pour mettre à jour les objets venant d'OpenStreetMap à afficher sur la carte :
 
 ```bash
 npm run features:update

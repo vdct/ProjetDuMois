@@ -8,6 +8,8 @@ div#edit-feature-location.alert.alert-primary.map-alert.d-none
 
 //- This runs on client
 script.
+	let mapMarkerSvg;
+	fetch("/images/marker_plus.svg").then(res => res.text()).then(res => mapMarkerSvg = res);
 	const hasLocation = window.location.hash !== "";
 
 	// Map init
@@ -271,21 +273,23 @@ script.
 	}
 
 	// Generate add to map button
-	function createAddFeatureButton(container, classes = "") {
+	function createAddFeatureButton(container, classes = "", options = {}) {
 		if(editors.pdm && editors.pdm.add) {
 			const button = document.createElement("button");
-			button.classList.add("editor-add-btn", "btn", "btn-primary", ...classes.split(" "));
+			button.classList.add("editor-add-btn", "btn", "btn-primary", "d-flex", "align-items-center", "justify-content-center", ...classes.split(" "));
 			button.setAttribute("type", "button");
 			button.setAttribute("title", editors.pdm.add.title);
 
-			const span = document.createElement("span");
-			span.classList.add("d-inline-block", "mr-3", "container-svg-fa");
-			span.style.height = "24px";
-			fetch("/images/marker_plus.svg").then(res => res.text()).then(res => span.innerHTML = res);
-			button.appendChild(span);
+			if(mapMarkerSvg) {
+				const span = document.createElement("span");
+				span.classList.add("d-inline-block", "mr-3", "container-svg-fa");
+				span.style.height = "24px";
+				span.innerHTML = mapMarkerSvg;
+				button.appendChild(span);
+			}
 
-			button.appendChild(document.createTextNode(editors.pdm.add.title));
-			button.addEventListener("click", onStartNewFeature);
+			button.appendChild(document.createTextNode(options.title || editors.pdm.add.title));
+			button.addEventListener("click", e => onStartNewFeature(options));
 			container.appendChild(button);
 		}
 	}
@@ -313,6 +317,7 @@ script.
 				const buttons = osmoseButtons[`${meta.item}_${meta.class}`] || osmoseButtons[`${meta.item}_all`] || { "done": "Résolu", "false": "Faux positif" };
 
 				let tags = [];
+				let tagsForEdit = {};
 				if(
 					meta.new_elems && meta.new_elems.length > 0
 					&& meta.new_elems[0].add && meta.new_elems[0].add.length > 0
@@ -326,6 +331,7 @@ script.
 				) {
 					tags = meta.elems[0].fixes[0].add;
 				}
+				tags.forEach(kv => tagsForEdit[kv.k] = kv.v);
 
 				if(tags.length > 0) {
 					tags = `
@@ -347,7 +353,9 @@ script.
 					${tags}`;
 
 				resDiv.appendChild(linksToDom(getLinksOsmose(meta), document.createElement("div")));
-				createAddFeatureButton(resDiv, "btn-block mt-3 mb-1");
+				if(window.osm_user) {
+					createAddFeatureButton(resDiv, "btn-block mt-3 mb-1", { title: buttons.add, tags: tagsForEdit });
+				}
 
 				const divButtons = document.createElement("div");
 				divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
@@ -477,6 +485,7 @@ script.
 
 			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", content: getDescription(features[0]) } }));
 			showMarker(coordinates);
+			map.flyTo({ center: coordinates, zoom: 18 });
 		}
 	}
 

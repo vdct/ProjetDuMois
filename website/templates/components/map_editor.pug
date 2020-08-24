@@ -52,7 +52,7 @@ script.
 	const editorFormDom = document.getElementById("pdm-editor-form");
 	const editorWaitDom = document.getElementById("pdm-editor-wait");
 	const editorDoneDom = document.getElementById("pdm-editor-done");
-	let currentEditorCoordinates = null;
+	let currentEditorData = null;
 
 	// Show proper editing mode (note or feature)
 	function showEditingMode() {
@@ -65,7 +65,9 @@ script.
 	window.addEventListener("osm_logout", showEditingMode);
 
 	// First editing step : ask location on map
-	function onStartNewFeature() {
+	// Options can be used to pre-fill tags and close note/osmose issue
+	function onStartNewFeature(options = {}) {
+		currentEditorData = options;
 		askFeatureLocation(onNewFeatureLocated);
 	}
 
@@ -78,8 +80,18 @@ script.
 
 	// Second step : once located, ask for details
 	function onNewFeatureLocated(coordinates) {
-		currentEditorCoordinates = coordinates;
+		currentEditorData.coordinates = coordinates;
 		editorFormDom.reset();
+
+		// Prefill form with optional tags
+		if(currentEditorData.tags) {
+			Object.entries(currentEditorData.tags).forEach(e => {
+				if(editorFormDom.elements[e[0]]) {
+					editorFormDom.elements[e[0]].value = e[1];
+				}
+			});
+		}
+
 		editorFormDom.addEventListener("submit", onFormSubmit);
 		editorFormDom.classList.remove("d-none");
 		editorWaitDom.classList.add("d-none");
@@ -97,7 +109,7 @@ script.
 		const fixedTags = Object.fromEntries(editors.pdm.add.fields.filter(f => f.type === "hidden").map(f => Object.entries(f.tags)).flat());
 		const tagsToApply = Object.assign({}, fixedTags, formData);
 
-		if(osmApi && currentEditorCoordinates.lat && currentEditorCoordinates.lng && Object.keys(tagsToApply).length > 0) {
+		if(osmApi && currentEditorData && currentEditorData.coordinates.lat && currentEditorData.coordinates.lng && Object.keys(tagsToApply).length > 0) {
 			// Show wait message
 			editorFormDom.classList.add("d-none");
 			editorWaitDom.classList.remove("d-none");
@@ -137,14 +149,14 @@ script.
 				getChangeset
 				.then(() => (
 					osmApi.sendElement(
-						osmApi.createNodeElement(currentEditorCoordinates.lat, currentEditorCoordinates.lng, tagsToApply),
+						osmApi.createNodeElement(currentEditorData.coordinates.lat, currentEditorData.coordinates.lng, tagsToApply),
 						changesetId
 					)
 					.then(() => {
 						editorFormDom.classList.add("d-none");
 						editorWaitDom.classList.add("d-none");
 						editorDoneDom.classList.remove("d-none");
-						new mapboxgl.Marker({ color: "#2E7D32" }).setLngLat(currentEditorCoordinates).addTo(map);
+						new mapboxgl.Marker({ color: "#2E7D32" }).setLngLat(currentEditorData.coordinates).addTo(map);
 						cancelAddNewFeature(false, true);
 					})
 				))
@@ -159,7 +171,7 @@ script.
 				const noteText = `${editors.all.comment}\n\nAttributs renseignés :\n${Object.entries(tagsToApply).map(e => e.join("=")).join("\n")}\n\nPlus d'infos sur la résolution de cette note : #{links.osmwiki}\nVia ProjetDuMois.fr ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
 
 				osmApi._auth = { skip: true };
-				osmApi.createNote(currentEditorCoordinates.lat, currentEditorCoordinates.lng, noteText)
+				osmApi.createNote(currentEditorData.coordinates.lat, currentEditorData.coordinates.lng, noteText)
 				.then(() => {
 					editorFormDom.classList.add("d-none");
 					editorWaitDom.classList.add("d-none");
@@ -182,7 +194,7 @@ script.
 
 	// Reset map and sidebar on cancel / done
 	function cancelAddNewFeature(close = true, keepPanel = false) {
-		currentEditorCoordinates = null;
+		currentEditorData = null;
 		showMarker();
 		window.onbeforeunload = null;
 		if(!keepPanel) {

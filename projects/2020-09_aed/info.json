@@ -38,7 +38,8 @@
 			},
 			"buttons": {
 				"done": "C'est fait",
-				"false": "Rien ici"
+				"false": "Rien ici",
+				"add": "Intégrer ce défibrillateur"
 			}
 		},
 		{

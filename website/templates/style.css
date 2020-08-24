@@ -315,3 +315,7 @@ a.navbar-brand:hover {
 .pdm-note-comment p {
 	margin: 0;
 }
+
+.pdm-note-comment p a {
+	word-wrap: break-word !important;
+}

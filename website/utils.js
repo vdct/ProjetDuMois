@@ -48,6 +48,8 @@ exports.getMapStyle = (p) => {
 	if(p) {
 		const circlePaint = {
 			"circle-color": "white",
+			"circle-stroke-opacity": [ "interpolate", ["linear"], ["zoom"], 7, 0, 7.5, 1 ],
+			"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 7, 0, 7.5, 1 ],
 			"circle-radius": [
 				"interpolate",
 				["linear"],
@@ -76,7 +78,7 @@ exports.getMapStyle = (p) => {
 			sources[id] = {
 				type: "vector",
 				tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
-				minzoom: 7,
+				minzoom: 9,
 				maxzoom: 14
 			};
 
@@ -87,7 +89,8 @@ exports.getMapStyle = (p) => {
 				"source-layer": layer,
 				paint: {
 					"circle-color": color,
-					"circle-radius": [ "interpolate", ["linear"], ["zoom"], 7, 2, 11, 3, 13, 5, 19, 12 ]
+					"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 9, 0, 10, 1 ],
+					"circle-radius": [ "interpolate", ["linear"], ["zoom"], 9, 2, 11, 3, 13, 5, 19, 12 ]
 				}
 			});
 

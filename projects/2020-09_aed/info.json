@@ -32,7 +32,7 @@
 		{
 			"source": "osmose",
 			"item": "8370", "country": "france*",
-			"name": "Défibrillateur à intégrer",
+			"name": "DAE à localiser",
 			"subtitles": {
 				"fallback": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
 			},
@@ -44,7 +44,7 @@
 		},
 		{
 			"source": "notes",
-			"name": "Note à traiter",
+			"name": "DAE à intégrer",
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
 			"terms": [ "défibrillateur", "defibrillateur", "dae" ],
 			"buttons": {
@@ -53,12 +53,12 @@
 		},
 		{
 			"source": "osm",
-			"name": "Défibrillateurs dans OSM",
+			"name": "DAE dans OSM",
 			"description": "Ce défibrillateur existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
 		},
 		{
 			"source": "osm-compare",
-			"name": "Défibrillateur potentiel",
+			"name": "Lieu pouvant disposer d'un DAE",
 			"description": "Ce lieu est susceptible de disposer d'un défibrillateur. Vous pouvez vérifier sur place la localisation de l'appareil et l'ajouter à OSM."
 		}
 	],

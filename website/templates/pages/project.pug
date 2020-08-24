@@ -23,7 +23,7 @@ block content
 					h1.display-4.font-italic= `Prochainement : ${title.toLowerCase()}`
 				else
 					h1.display-4.font-italic= title
-					p.display-4.text-capitalize= new Date(start_date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+					p.display-4.text-capitalize= new Date(month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 				p.lead.my-3= summary
 				p.lead.mb-0
 					a.btn.btn-primary.btn-lg(role="button" href="#contribute") Participer
@@ -33,7 +33,7 @@ block content
 		div#contribute.container.blog-post
 			h2.blog-post-title Participer
 			if isNext
-				p Ce projet du mois commencera officiellement le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.
+				p Ce projet du mois commencera le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.
 			else if !isActive
 				p Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.
 			div.btn-over-wide
@@ -52,7 +52,7 @@ block content
 			h2.blog-post-title.mb-3 Statistiques
 
 			if isNext
-				p Les statistiques d'avancement seront affichées lors du lancement officiel du projet du mois le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}.
+				p Les statistiques d'avancement seront affichées lors du lancement du projet du mois le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}.
 			else
 				include ../components/stats.pug
 
@@ -77,7 +77,7 @@ block content
 							div.media-body.align-self-center
 								a.text-decoration-none(href=`/projects/${pastProj.id}`)
 									| #{pastProj.title}
-									span.text-muted.d-block= pastProj.period
+									span.text-muted.d-block= new Date(pastProj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 
 
 block prepend footer

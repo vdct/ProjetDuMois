@@ -16,7 +16,7 @@ exports.filterProjects = (projects) => {
 				id: project.id,
 				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
 				title: project.title,
-				period: new Date(project.start_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'numeric' })
+				month: project.month
 			});
 		}
 	});
@@ -192,7 +192,7 @@ exports.getBadgesDetails = (projects, badgesRows) => {
 	badgesRows.forEach(row => {
 		if(!badges[row.project]) {
 			badges[row.project] = {
-				project: { name: projects[row.project].title, date: projects[row.project].start_date, image: projects[row.project].icon },
+				project: { name: projects[row.project].title, date: projects[row.project].month, image: projects[row.project].icon },
 				badges: []
 			};
 		}

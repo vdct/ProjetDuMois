@@ -169,7 +169,7 @@ script.
 		}
 
 		return [
-			{ title: "JOSM", hrefs: josmHrefs },
+			{ title: "JOSM", hrefs: josmHrefs, hrefsError: "Une erreur s'est produite avec la télécommande JOSM" },
 			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit${elem && "?"+elem.type+"="+elem.id || ""}#map=20/${meta.lat}/${meta.lon}&#{idParams}` },
 			{ title: "OSM", href: `#{CONFIG.OSM_URL}/${elem && elem.type+"/"+elem.id || ""}#map=18/${meta.lat}/${meta.lon}` },
 			{ title: "Osmose", href: `#{CONFIG.OSMOSE_URL}/fr/error/${meta.uuid}` },
@@ -180,7 +180,7 @@ script.
 	function getLinksNote(f) {
 		const [ lon, lat ] = f.geometry.coordinates;
 		return [
-			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&#{josmParams}`] },
+			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&#{josmParams}`], hrefsError: "Une erreur s'est produite avec la télécommande JOSM" },
 			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit#map=20/${lat}/${lon}&#{idParams}` },
 			{ title: "OSM", href: `#{CONFIG.OSM_URL}/note/${f.properties.id}` },
 			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lon}&z=18` }
@@ -191,7 +191,7 @@ script.
 		const [ lon, lat ] = f.geometry.coordinates;
 
 		return [
-			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&select=${f.properties.osm_id.replace("/", "")}&#{josmParams}`] },
+			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&select=${f.properties.osm_id.replace("/", "")}&#{josmParams}`], hrefsError: "Une erreur s'est produite avec la télécommande JOSM" },
 			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit?${f.properties.osm_id.split("/").join("=")}#map=20/${lat}/${lon}&#{idParams}` },
 			{ title: "OSM", href: `#{CONFIG.OSM_URL}/${f.properties.osm_id}` },
 			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lon}&z=18` }
@@ -217,7 +217,12 @@ script.
 					const next = () => {
 						const url = l.hrefs.shift();
 						if(url) {
-							fetch(url).then(() => setTimeout(next, 3000));
+							fetch(url)
+							.then(() => setTimeout(next, 3000))
+							.catch(e => {
+								console.error(e);
+								if(l.hrefsError) { alert(l.hrefsError); }
+							});
 						}
 					};
 					next();

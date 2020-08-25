@@ -2,9 +2,6 @@ div#pdm-map-sidebar.pdm-hidden
 	div.btn-group-vertical.pdm-sidebar-buttons(role="group")
 		button.toggle-map-sidebar.btn.btn-outline-secondary.btn-sm.mt-2(type="button" title="Afficher/masquer la barre latérale")
 			i.fa.fa-bars
-		if editors.pdm && editors.pdm.add
-			button.editor-add-btn.btn.btn-outline-primary.btn-sm.container-svg-fa(type="button" title=editors.pdm.add.title style="height: 29px")
-				include ../../images/marker_plus.svg
 
 	div.overflow-auto.h-100
 		//- Default panel showing legend
@@ -18,10 +15,7 @@ div#pdm-map-sidebar.pdm-hidden
 
 				if editors.pdm && editors.pdm.add
 					h5.mt-3 Éditer
-					button.editor-add-btn.btn.btn-primary.btn-block.d-flex.align-items-center.justify-content-center(type="button" title=editors.pdm.add.title)
-						span.d-inline-block.container-svg-fa.mr-3(style="height: 24px")
-							include ../../images/marker_plus.svg
-						| #{editors.pdm.add.title}
+					div#legend-edit-button
 
 		//- Display details of a single feature
 		div.pdm-sidebar-feature.m-3.d-none
@@ -30,6 +24,7 @@ div#pdm-map-sidebar.pdm-hidden
 		div.pdm-sidebar-editor.m-3.d-none
 			include map_editor.pug
 
+include ./map_sidebar_feature.pug
 script.
 	const sidebarDom = document.getElementById("pdm-map-sidebar");
 	if(window.innerWidth >= 768) { sidebarDom.classList.remove("pdm-hidden"); }
@@ -42,12 +37,7 @@ script.
 	});
 
 	// Add feature button
-	const editors = !{JSON.stringify(editors)};
-	if(editors.pdm && editors.pdm.add) {
-		for(let btnAddDom of sidebarDom.querySelectorAll(".editor-add-btn")) {
-			btnAddDom.addEventListener("click", onStartNewFeature);
-		}
-	}
+	createAddFeatureButton(document.querySelector("#pdm-map-sidebar .pdm-sidebar-buttons"), null, { mini: true });
 
 	// Change visible panel
 	const panelDefaultDom = sidebarDom.querySelector(".pdm-sidebar-default");
@@ -64,11 +54,14 @@ script.
 		}
 		switch(e.detail.panel) {
 			case "feature":
-				if(typeof e.detail.content === "string") {
+				panelFeatureDom.innerHTML = '';
+				if(e.detail.feature) {
+					panelFeatureDom.appendChild(getDescription(e.detail.feature));
+				}
+				else if(typeof e.detail.content === "string") {
 					panelFeatureDom.innerHTML = e.detail.content;
 				}
 				else if(e.detail.content) {
-					panelFeatureDom.innerHTML = '';
 					panelFeatureDom.appendChild(e.detail.content);
 				}
 				panelDefaultDom.classList.add("d-none");

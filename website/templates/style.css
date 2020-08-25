@@ -285,6 +285,10 @@ a.navbar-brand:hover {
 	background-color: white;
 }
 
+#pdm-map-sidebar .pdm-sidebar-buttons button.btn-outline-primary {
+	color: #007bff;
+}
+
 #pdm-map-sidebar.pdm-hidden .pdm-sidebar-buttons {
 	right: -42px;
 }

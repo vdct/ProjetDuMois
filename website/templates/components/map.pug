@@ -3,13 +3,15 @@ div#zoom-in.alert.alert-warning.map-alert.font-weight-bold Zoomez ou lancez une 
 div#edit-feature-location.alert.alert-primary.map-alert.d-none
 	| Déplacer la carte pour positionner l'objet à créer
 	div.btn-group.btn-block.mt-1
-		button.btn.btn-success.w-50(role="button") Valider
-		button.btn.btn-warning.w-50(role="button") Annuler
+		button.btn.btn-success.w-50(role="button")
+			i.fa.fa-check.mr-2
+			| Valider
+		button.btn.btn-warning.w-50(role="button")
+			i.fa.fa-ban.mr-2
+			| Annuler
 
 //- This runs on client
 script.
-	let mapMarkerSvg;
-	fetch("/images/marker_plus.svg").then(res => res.text()).then(res => mapMarkerSvg = res);
 	const hasLocation = window.location.hash !== "";
 
 	// Map init
@@ -23,6 +25,11 @@ script.
 	});
 
 	map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
+
+	// Add feature button
+	if(editors.pdm && editors.pdm.add) {
+		createAddFeatureButton(document.getElementById("legend-edit-button"), "btn-block");
+	}
 
 	// Geolocate
 	const geoloc = new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true } });
@@ -159,322 +166,6 @@ script.
 	// Click on feature
 	//
 
-	// Links
-	function getLinksOsmose(meta) {
-		const elem = meta.elems && meta.elems.length > 0 && meta.elems[0];
-		const newElem = meta.new_elems && meta.new_elems.length > 0 && meta.new_elems[0];
-
-		// JOSM commands
-		const josmHrefs = [ `#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${meta.minlat}&top=${meta.maxlat}&right=${meta.maxlon}&left=${meta.minlon}${elem && "&select="+elem.type+elem.id || ""}&#{josmParams}` ];
-		if(newElem) {
-			josmHrefs.push(`#{CONFIG.JOSM_REMOTE_URL}/add_node?lon=${meta.lon}&lat=${meta.lat}&addtags=${encodeURIComponent(newElem.add.map(kv => kv.k+"="+kv.v).join("|"))}`);
-		}
-
-		return [
-			{ title: "JOSM", hrefs: josmHrefs, hrefsError: "Une erreur s'est produite avec la télécommande JOSM" },
-			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit${elem && "?"+elem.type+"="+elem.id || ""}#map=20/${meta.lat}/${meta.lon}&#{idParams}` },
-			{ title: "OSM", href: `#{CONFIG.OSM_URL}/${elem && elem.type+"/"+elem.id || ""}#map=18/${meta.lat}/${meta.lon}` },
-			{ title: "Osmose", href: `#{CONFIG.OSMOSE_URL}/fr/error/${meta.uuid}` },
-			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${meta.lat}&lng=${meta.lon}&z=18` }
-		];
-	}
-
-	function getLinksNote(f) {
-		const [ lon, lat ] = f.geometry.coordinates;
-		return [
-			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&#{josmParams}`], hrefsError: "Une erreur s'est produite avec la télécommande JOSM" },
-			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit#map=20/${lat}/${lon}&#{idParams}` },
-			{ title: "OSM", href: `#{CONFIG.OSM_URL}/note/${f.properties.id}` },
-			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lon}&z=18` }
-		];
-	}
-
-	function getLinksOsm(f) {
-		const [ lon, lat ] = f.geometry.coordinates;
-
-		return [
-			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&select=${f.properties.osm_id.replace("/", "")}&#{josmParams}`], hrefsError: "Une erreur s'est produite avec la télécommande JOSM" },
-			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit?${f.properties.osm_id.split("/").join("=")}#map=20/${lat}/${lon}&#{idParams}` },
-			{ title: "OSM", href: `#{CONFIG.OSM_URL}/${f.properties.osm_id}` },
-			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lon}&z=18` }
-		];
-	}
-
-	function linksToDom(links, container) {
-		container.classList.add("text-center");
-		links.forEach((l,i) => {
-			const linkDom = document.createElement("a");
-			linkDom.appendChild(document.createTextNode(l.title));
-
-			// Simple link
-			if(l.href) {
-				linkDom.href = l.href;
-				linkDom.target = "_blank";
-				linkDom.rel = "noopener";
-			}
-			// Several links (JOSM) : call one, wait 3s, call second...
-			else if(l.hrefs) {
-				linkDom.classList.add("pdm-link");
-				linkDom.addEventListener("click", () => {
-					const next = () => {
-						const url = l.hrefs.shift();
-						if(url) {
-							fetch(url)
-							.then(() => setTimeout(next, 3000))
-							.catch(e => {
-								console.error(e);
-								if(l.hrefsError) { alert(l.hrefsError); }
-							});
-						}
-					};
-					next();
-				});
-			}
-
-			if(i > 0) { container.appendChild(document.createTextNode(" | ")); }
-			container.appendChild(linkDom);
-		});
-		return container;
-	}
-
-	// Mark as done/false in Osmose
-	const filteredUuids = [];
-	function markOsmose(type, feature) {
-		const uuid = feature.properties.uuid;
-		return () => {
-			// Send to Osmose
-			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${uuid}/${type}`);
-
-			// Hide feature on map
-			showMarker();
-			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
-			filteredUuids.push(uuid);
-			map.setFilter(feature.layer.id, ["!", ["in", ["get", "uuid"], ["literal", filteredUuids]]]);
-		};
-	}
-
-	// Close note on OSM
-	function closeNote(p) {
-		if(window.osm_user && osmApi) {
-			osmApi.closeNote(p.id, "Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)")
-			.then(() => {
-				const source = map.getSource(`notes_${p.pdm_note_source}`);
-				const notes = source._data;
-				notes.features = notes.features.filter(f => f.properties.id !== p.id);
-				source.setData(notes);
-				showMarker();
-				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
-			})
-			.catch(e => {
-				alert("Une erreur s'est produite lors de la modification de la note");
-				console.error(e);
-			});
-		}
-	}
-
-	// Generate add to map button
-	function createAddFeatureButton(container, classes = "", options = {}) {
-		if(editors.pdm && editors.pdm.add) {
-			const button = document.createElement("button");
-			button.classList.add("editor-add-btn", "btn", "btn-primary", "d-flex", "align-items-center", "justify-content-center", ...classes.split(" "));
-			button.setAttribute("type", "button");
-			button.setAttribute("title", editors.pdm.add.title);
-
-			if(mapMarkerSvg) {
-				const span = document.createElement("span");
-				span.classList.add("d-inline-block", "mr-3", "container-svg-fa");
-				span.style.height = "24px";
-				span.innerHTML = mapMarkerSvg;
-				button.appendChild(span);
-			}
-
-			button.appendChild(document.createTextNode(options.title || editors.pdm.add.title));
-			button.addEventListener("click", e => onStartNewFeature(options));
-			container.appendChild(button);
-		}
-	}
-
-	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
-	const osmCompareSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm-compare"))};
-
-	// Create DOM structure for feature description
-	function getDescription(feature) {
-		const s = feature.source;
-		const p = feature.properties;
-		const resDiv = document.createElement("div");
-
-		// Retrieve metadata on Osmose API
-		if(s.startsWith("osmose_")) {
-			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
-			const osmoseButtons = !{JSON.stringify(osmoseButtons)};
-
-			resDiv.innerHTML = `<div class="d-flex align-items-center justify-content-center" style="height: 240px; width: 240px"><span class="spinner-border text-primary" role="status" style="width: 5rem; height: 5rem;"></span></div>`;
-
-			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${p.uuid}`)
-			.then(res => res.json())
-			.then(meta => {
-				const labels = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || { name: meta.title.auto };
-				const buttons = osmoseButtons[`${meta.item}_${meta.class}`] || osmoseButtons[`${meta.item}_all`] || { "done": "Résolu", "false": "Faux positif" };
-
-				let tags = [];
-				let tagsForEdit = {};
-				if(
-					meta.new_elems && meta.new_elems.length > 0
-					&& meta.new_elems[0].add && meta.new_elems[0].add.length > 0
-				) {
-					tags = meta.new_elems[0].add;
-				}
-				else if(
-					meta.elems && meta.elems.length > 0
-					&& meta.elems[0].fixes && meta.elems[0].fixes.length > 0
-					&& meta.elems[0].fixes[0].add && meta.elems[0].fixes[0].add.length > 0
-				) {
-					tags = meta.elems[0].fixes[0].add;
-				}
-				tags.forEach(kv => tagsForEdit[kv.k] = kv.v);
-
-				if(tags.length > 0) {
-					tags = `
-						<div class="form-group m-0 mb-1">
-							<label class="m-0" for="exampleFormControlTextarea1">Attributs à ajouter</label>
-							<textarea class="form-control form-control-sm" rows="${tags.length}" readonly>${tags.map(kv => kv.k+"="+kv.v).join("\n")}</textarea>
-						</div>`;
-				}
-
-				let subtitle = meta.subtitle ? meta.subtitle.auto : "";
-				if(labels.subtitles) {
-					const subtitles = Object.keys(labels.subtitles).filter(s => subtitle.includes(s)).map(s => labels.subtitles[s]);
-					if(subtitles.length > 0) { subtitle = subtitles[0]; }
-					else if(labels.subtitles.fallback) { subtitle = labels.subtitles.fallback; }
-				}
-
-				resDiv.innerHTML = `
-					<h5>${labels.name}</h5>
-					<div class="alert alert-info">${subtitle.replace(/\n/g, "<br />")}</div>
-					${tags}`;
-
-				resDiv.appendChild(linksToDom(getLinksOsmose(meta), document.createElement("div")));
-				if(window.osm_user) {
-					createAddFeatureButton(resDiv, "btn-block mt-3 mb-1", { title: buttons.add, tags: tagsForEdit });
-				}
-
-				const divButtons = document.createElement("div");
-				divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
-				divButtons.role = "group";
-
-				const divButtonDone = document.createElement("button");
-				divButtonDone.classList.add("btn", "btn-success");
-				divButtonDone.appendChild(document.createTextNode("✔ "+buttons.done));
-				divButtonDone.title = "Marquer cet élément comme \""+buttons.done+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
-				divButtonDone.addEventListener("click", markOsmose("done", feature));
-				divButtons.appendChild(divButtonDone);
-				const divButtonFalse = document.createElement("button");
-				divButtonFalse.classList.add("btn", "btn-warning");
-				divButtonFalse.appendChild(document.createTextNode("✘ "+buttons.false));
-				divButtonFalse.title = "Marquer cet élément comme \""+buttons.false+"\" si le signalement n'est pas valide";
-				divButtonFalse.addEventListener("click", markOsmose("false", feature));
-				divButtons.appendChild(divButtonFalse);
-				resDiv.appendChild(divButtons);
-			});
-		}
-		// Notes from OSM
-		else if(s.startsWith("notes_")) {
-			const noteSource = notesSources[p.pdm_note_source];
-			const cmts = typeof p.comments === "object" ? p.comments : JSON.parse(p.comments);
-			const notesStatuses = { "opened": "Ouvert", "closed": "Fermé", "reopened": "Réouvert", "commented": "Commentaire" };
-
-			resDiv.innerHTML = `
-				<h5>${noteSource.name}</h5>
-				<div class="alert alert-info">${noteSource.description}</div>
-				${cmts.map(cmt => `<div class="border-bottom pdm-note-comment pb-2 mb-2">
-					<div class="text-muted" style="font-size: 0.9rem">
-						${notesStatuses[cmt.action]} par ${cmt.user} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString()}
-					</div>
-					${cmt.html}
-				</div>`).join("")}`;
-
-			resDiv.appendChild(linksToDom(getLinksNote(feature), document.createElement("div")));
-			if(window.osm_user) {
-				createAddFeatureButton(resDiv, "btn-block mt-3 mb-1");
-			}
-
-			const divButtons = document.createElement("div");
-			divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
-			divButtons.role = "group";
-
-			const divButtonDone = document.createElement("button");
-			divButtonDone.classList.add("btn", "btn-success", "w-50");
-			divButtonDone.appendChild(document.createTextNode("✔ "+noteSource.buttons.close));
-			divButtonDone.addEventListener("click", () => closeNote(p));
-			const labelConnected = "Marquer cet élément comme \""+noteSource.buttons.close+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
-			const labelDisconnected = "Vous devez être connecté pour marquer la note comme résolue.";
-			if(!window.osm_user) {
-				divButtonDone.setAttribute("disabled", "");
-				divButtonDone.title = labelDisconnected;
-			}
-			else {
-				divButtonDone.title = labelConnected;
-			}
-
-			window.addEventListener("osm_login", () => {
-				divButtonDone.removeAttribute("disabled");
-				divButtonDone.title = labelConnected;
-			});
-			window.addEventListener("osm_logout", () => {
-				divButtonDone.setAttribute("disabled", "");
-				divButtonDone.title = labelDisconnected;
-			});
-			divButtons.appendChild(divButtonDone);
-
-			const divButtonComment = document.createElement("a");
-			divButtonComment.classList.add("btn", "btn-secondary", "w-50");
-			divButtonComment.role = "button";
-			divButtonComment.appendChild(document.createTextNode("💬 Commenter"));
-			divButtonComment.title = "Participer à la discussion sur cette note";
-			divButtonComment.href = `#{CONFIG.OSM_URL}/note/${p.id}`;
-			divButtonComment.target = "_blank";
-			divButtons.appendChild(divButtonComment);
-			resDiv.appendChild(divButtons);
-		}
-		// OSM features
-		else if(s.startsWith("osm_")) {
-			const tags = JSON.parse(p.tags);
-			const osmSource = osmSources[parseInt(feature.source.split("_")[1])];
-
-			resDiv.innerHTML = `
-				<h5>${p.name || tags.ref || osmSource.name}</h5>
-				<div class="alert alert-info">${osmSource.description}</div>
-				<div class="form-group m-0 mb-1">
-					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
-					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
-				</div>`;
-
-			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
-		}
-		// OSM comparison features
-		else if(s.startsWith("osm-compare_")) {
-			const tags = JSON.parse(p.tags);
-			const osmSource = osmCompareSources[parseInt(feature.source.split("_")[1])];
-
-			resDiv.innerHTML = `
-				<h5>${osmSource.name}</h5>
-				<div class="alert alert-info">${osmSource.description}</div>
-				${p.name || tags.ref ? `<p>${p.name || tags.ref}</p>` : ''}
-				<div class="form-group m-0 mb-1">
-					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
-					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
-				</div>`;
-
-			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
-			createAddFeatureButton(resDiv, "btn-block mt-2");
-		}
-		else {
-			resDiv.innerHTML = "<ul>"+Object.entries(p).map(e => "<li>"+e.join(" : ")+"</li>").join("")+"</ul>";
-		}
-
-		return resDiv;
-	}
-
 	// Handle map click
 	function clickFeature(e) {
 		if(!map || !e) { return; }
@@ -496,7 +187,7 @@ script.
 				coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
 			}
 
-			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", content: getDescription(features[0]) } }));
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", feature: features[0] } }));
 			showMarker(coordinates);
 			map.flyTo({ center: coordinates, zoom: 18 });
 		}

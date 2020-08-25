@@ -6,7 +6,7 @@ script.
 			icon.classList.add("fa", "fa-user");
 			const txt = document.createElement("span");
 			txt.appendChild(document.createTextNode(window.osm_user.name));
-			txt.classList.add("d-none", "d-sm-inline", "ml-2");
+			txt.classList.add("d-none", "d-sm-inline", "ml-1");
 			domConnect.appendChild(icon);
 			domConnect.appendChild(txt);
 			domConnect.title = "Se déconnecter";
@@ -27,7 +27,7 @@ script.
 			icon.classList.add("fa", "fa-sign-in-alt");
 			const txt = document.createElement("span");
 			txt.appendChild(document.createTextNode("Se connecter"));
-			txt.classList.add("d-none", "d-sm-inline", "ml-2");
+			txt.classList.add("d-none", "d-sm-inline", "ml-1");
 			domConnect.appendChild(icon);
 			domConnect.appendChild(txt);
 			domConnect.title = "Se connecter";
@@ -41,9 +41,7 @@ script.
 
 	window.addEventListener("load", e => {
 		for(let domConnect of document.getElementsByClassName("disconnect-osm-ub")) {
-			domConnect.addEventListener("click", () => {
-				logout();
-			});
+			domConnect.addEventListener("click", logout);
 		}
 
 		for(let domConnect of document.getElementsByClassName("connect-osm-ub")) {
@@ -102,4 +100,6 @@ mixin user_button
 					| Se déconnecter
 
 mixin user_connect
-	button.connect-osm.btn.btn-primary
+	button.connect-osm.btn.btn-primary(role="button")
+		i.fa.fa-sign-in-alt
+		span.d-none.d-sm-inline.ml-1 Se connecter

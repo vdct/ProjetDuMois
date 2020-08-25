@@ -34,8 +34,12 @@ form#pdm-editor-form
 						small.form-text.text-muted= field.description
 
 		div.btn-group.btn-block(role="group")
-			button.btn.btn-success.w-50(type="submit" title="Envoyer les informations sur OpenStreetMap") Créer
-			button#pdm-editor-cancel.btn.btn-warning.w-50(type="button" title="Retourner à la carte sans envoyer à OpenStreetMap") Annuler
+			button.btn.btn-success.w-50(type="submit" title="Envoyer les informations sur OpenStreetMap")
+				i.fa.fa-plus.mr-2
+				| Créer
+			button#pdm-editor-cancel.btn.btn-warning.w-50(type="button" title="Retourner à la carte sans envoyer à OpenStreetMap")
+				i.fa.fa-ban.mr-2
+				| Annuler
 
 div#pdm-editor-wait.text-center.d-none
 	span.spinner-border.text-primary(role="status" style="width: 5rem; height: 5rem;")
@@ -60,6 +64,7 @@ script.
 			else { editorModeDom.innerHTML = "Vous n'êtes pas connecté : ce formulaire va créer une note dans OpenStreetMap"; }
 		}
 	}
+	showEditingMode();
 	window.addEventListener("osm_login", showEditingMode);
 	window.addEventListener("osm_logout", showEditingMode);
 
@@ -137,7 +142,6 @@ script.
 						else { throw new Error("Not opened"); }
 					})
 					.catch(e => {
-						console.error(e);
 						return getChangesetPromise();
 					});
 				}
@@ -156,6 +160,11 @@ script.
 						editorWaitDom.classList.add("d-none");
 						editorDoneDom.classList.remove("d-none");
 						new mapboxgl.Marker({ color: "#2E7D32" }).setLngLat(currentEditorData.coordinates).addTo(map);
+
+						if(currentEditorData.onInternalEdit) {
+							currentEditorData.onInternalEdit();
+						}
+
 						cancelAddNewFeature(false, true);
 					})
 				))
@@ -200,6 +209,7 @@ script.
 			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default", close } }));
 		}
 	}
+	window.addEventListener("osm_logout", cancelAddNewFeature);
 
 	if(editorModeDom) {
 		document.getElementById("pdm-editor-cancel").addEventListener("click", cancelAddNewFeature);

@@ -1,0 +1,430 @@
+div.d-none#map-marker-plus
+	include ../../images/marker_plus.svg
+
+script.
+	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
+	const osmCompareSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm-compare"))};
+	const editors = !{JSON.stringify(editors)};
+
+	// Links
+	function getLinksOsm(f) {
+		const [ lon, lat ] = f.geometry.coordinates;
+
+		return [
+			{ title: "JOSM", hrefs: [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lon+0.0005}&left=${lon-0.0005}&select=${f.properties.osm_id.replace("/", "")}&#{josmParams}`], hrefsError: "Une erreur s'est produite avec la télécommande JOSM" },
+			{ title: "iD", href: `#{CONFIG.OSM_URL}/edit?${f.properties.osm_id.split("/").join("=")}#map=20/${lat}/${lon}&#{idParams}` },
+			{ title: "OSM", href: `#{CONFIG.OSM_URL}/${f.properties.osm_id}` },
+			{ title: "Mapillary", href: `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lon}&z=18` }
+		];
+	}
+
+	function linksToDom(links, container) {
+		container.classList.add("text-center");
+		links.forEach((l,i) => {
+			const linkDom = document.createElement("a");
+			linkDom.appendChild(document.createTextNode(l.title));
+
+			// Simple link
+			if(l.href) {
+				linkDom.href = l.href;
+				linkDom.target = "_blank";
+				linkDom.rel = "noopener";
+			}
+			// Several links (JOSM) : call one, wait 3s, call second...
+			else if(l.hrefs) {
+				linkDom.classList.add("pdm-link");
+				linkDom.addEventListener("click", () => {
+					const next = () => {
+						const url = l.hrefs.shift();
+						if(url) {
+							fetch(url)
+							.then(() => setTimeout(next, 3000))
+							.catch(e => {
+								console.error(e);
+								if(l.hrefsError) { alert(l.hrefsError); }
+							});
+						}
+					};
+					next();
+				});
+			}
+
+			if(i > 0) { container.appendChild(document.createTextNode(" | ")); }
+			container.appendChild(linkDom);
+		});
+		return container;
+	}
+
+	// Mark as done/false in Osmose
+	const filteredUuids = [];
+	function markOsmose(type, feature) {
+		const uuid = feature.properties.uuid;
+		return () => {
+			// Send to Osmose
+			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${uuid}/${type}`);
+
+			// Hide feature on map
+			showMarker();
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+			filteredUuids.push(uuid);
+			map.setFilter(feature.layer.id, ["!", ["in", ["get", "uuid"], ["literal", filteredUuids]]]);
+		};
+	}
+
+	// Close note on OSM
+	function closeNote(p) {
+		if(window.osm_user && osmApi) {
+			osmApi.closeNote(p.id, "Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)")
+			.then(() => {
+				const source = map.getSource(`notes_${p.pdm_note_source}`);
+				const notes = source._data;
+				notes.features = notes.features.filter(f => f.properties.id !== p.id);
+				source.setData(notes);
+				showMarker();
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+			})
+			.catch(e => {
+				alert("Une erreur s'est produite lors de la modification de la note");
+				console.error(e);
+			});
+		}
+	}
+
+	// Generate add to map button
+	function createAddFeatureButton(container, classes = null, options = {}) {
+		if(editors.pdm && editors.pdm.add) {
+			// Main button
+			const button = document.createElement("button");
+			button.classList.add("editor-add-btn", "btn");
+			button.setAttribute("type", "button");
+			button.setAttribute("title", editors.pdm.add.title);
+
+			const buttonIcon = document.createElement("span");
+			buttonIcon.classList.add("d-inline-block", "container-svg-fa");
+			buttonIcon.style.height = "24px";
+			buttonIcon.appendChild(document.getElementById("map-marker-plus").firstChild.cloneNode(true));
+			button.appendChild(buttonIcon);
+
+			if(options.mini) {
+				button.classList.add("btn-outline-primary", "btn-sm");
+				button.addEventListener("click", e => onStartNewFeature(options));
+				if(typeof classes === "string" && classes.length > 0) { button.classList.add(...classes.split(" ")); }
+				container.appendChild(button);
+			}
+			else {
+				const { lat, lng } = map.getCenter();
+				let dropButton;
+				button.classList.add("btn-primary", "d-flex", "align-items-center", "justify-content-center");
+				buttonIcon.classList.add("mr-3");
+
+				// Group
+				const group = document.createElement("div");
+				group.classList.add("btn-group");
+				if(typeof classes === "string" && classes.length > 0) { group.classList.add(...classes.split(" ")); }
+
+				button.appendChild(document.createTextNode(options.title || editors.pdm.add.title));
+				group.appendChild(button);
+
+				// Dropdown menu
+				const dropdown = document.createElement("div");
+				dropdown.classList.add("dropdown-menu");
+
+				if(window.osm_user || !(options.noteid || options.osmoseuuid)) {
+					// Split dropdown button
+					dropButton = document.createElement("button");
+					dropButton.classList.add("btn", "btn-primary", "dropdown-toggle");
+					dropButton.setAttribute("type", "button");
+					dropButton.setAttribute("data-toggle", "dropdown");
+					group.appendChild(dropButton);
+
+					dropButton.classList.add("dropdown-toggle-split");
+					button.addEventListener("click", e => onStartNewFeature(options));
+
+					const editWithPdm = document.createElement("a");
+					editWithPdm.classList.add("dropdown-item");
+					editWithPdm.appendChild(document.createTextNode("Avec l'éditeur intégré"));
+					editWithPdm.addEventListener("click", e => onStartNewFeature(options));
+					dropdown.appendChild(editWithPdm);
+				}
+				else {
+					if(!classes.includes("dropup")) {
+						group.classList.add("dropdown");
+					}
+					button.classList.add("dropdown-toggle", "text-wrap");
+					button.setAttribute("data-toggle", "dropdown");
+					buttonIcon.style.width = "24px";
+				}
+
+				const editWithApp = document.createElement("a");
+				editWithApp.classList.add("dropdown-item", "d-sm-none");
+				editWithApp.href = `geo:${lat},${lng}`;
+				editWithApp.appendChild(document.createTextNode("Avec une appli mobile"));
+				dropdown.appendChild(editWithApp);
+
+				const editWithID = document.createElement("a");
+				editWithID.classList.add("dropdown-item", "d-none", "d-sm-block");
+				editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&#{idParams}`;
+				editWithID.target = "_blank";
+				editWithID.appendChild(document.createTextNode("Avec iD"));
+				dropdown.appendChild(editWithID);
+
+				const editWithJOSM = document.createElement("a");
+				editWithJOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
+				editWithJOSM.addEventListener("click", () => {
+					const urlsToLoad = [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lng+0.0005}&left=${lng-0.0005}${options.osmid && `&select=${options.osmid.replace("/", "")}` || ""}&#{josmParams}`];
+					if(options.tags && !options.osmid) {
+						urlsToLoad.push(`#{CONFIG.JOSM_REMOTE_URL}/add_node?lon=${lng}&lat=${lat}&addtags=${encodeURIComponent(Object.entries(options.tags).map(e => e.join("=")).join("|"))}`);
+					}
+					const next = () => {
+						const url = urlsToLoad.shift();
+						if(url) {
+							fetch(url)
+							.then(() => setTimeout(next, 3000))
+							.catch(e => {
+								console.error(e);
+								alert("Une erreur s'est produite avec la télécommande JOSM");
+							});
+						}
+					};
+					next();
+				});
+				editWithJOSM.appendChild(document.createTextNode("Avec JOSM"));
+				dropdown.appendChild(editWithJOSM);
+
+				if(options.osmoseuuid) {
+					const editWithOsmose = document.createElement("a");
+					editWithOsmose.classList.add("dropdown-item", "d-none", "d-sm-block");
+					editWithOsmose.href = `#{CONFIG.OSMOSE_URL}/fr/error/${options.osmoseuuid}`;
+					editWithOsmose.target = "_blank";
+					editWithOsmose.appendChild(document.createTextNode("Via Osmose"));
+					dropdown.appendChild(editWithOsmose);
+				}
+
+				const editWithOSM = document.createElement("a");
+				editWithOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
+				editWithOSM.href = `#{CONFIG.OSM_URL}/${options.noteid || options.osmid || ""}#map=18/${lat}/${lng}`;
+				editWithOSM.target = "_blank";
+				editWithOSM.appendChild(document.createTextNode("Via OSM.org"));
+				dropdown.appendChild(editWithOSM);
+
+				const editWithMapillary = document.createElement("a");
+				editWithMapillary.classList.add("dropdown-item", "d-none", "d-sm-block");
+				editWithMapillary.href = `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lng}&z=18`;
+				editWithMapillary.target = "_blank";
+				editWithMapillary.appendChild(document.createTextNode("Via Mapillary"));
+				dropdown.appendChild(editWithMapillary);
+
+				if(options.onExternalEdit) {
+					editWithApp.addEventListener("click", options.onExternalEdit);
+					editWithID.addEventListener("click", options.onExternalEdit);
+					editWithJOSM.addEventListener("click", options.onExternalEdit);
+					editWithOSM.addEventListener("click", options.onExternalEdit);
+					editWithMapillary.addEventListener("click", options.onExternalEdit);
+				}
+
+				group.appendChild(dropdown);
+				container.appendChild(group);
+				new BSN.Dropdown(dropButton || button);
+			}
+		}
+	}
+
+	// Create DOM structure for feature description
+	function getDescription(feature) {
+		const s = feature.source;
+		const p = feature.properties;
+		const resDiv = document.createElement("div");
+
+		// Retrieve metadata on Osmose API
+		if(s.startsWith("osmose_")) {
+			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
+			const osmoseButtons = !{JSON.stringify(osmoseButtons)};
+
+			resDiv.innerHTML = `<div class="d-flex align-items-center justify-content-center" style="height: 240px; width: 240px"><span class="spinner-border text-primary" role="status" style="width: 5rem; height: 5rem;"></span></div>`;
+
+			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${p.uuid}`)
+			.then(res => res.json())
+			.then(meta => {
+				const labels = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || { name: meta.title.auto };
+				const buttons = osmoseButtons[`${meta.item}_${meta.class}`] || osmoseButtons[`${meta.item}_all`] || { "done": "Résolu", "false": "Faux positif" };
+
+				let tags = [];
+				let tagsForEdit = {};
+				if(
+					meta.new_elems && meta.new_elems.length > 0
+					&& meta.new_elems[0].add && meta.new_elems[0].add.length > 0
+				) {
+					tags = meta.new_elems[0].add;
+				}
+				else if(
+					meta.elems && meta.elems.length > 0
+					&& meta.elems[0].fixes && meta.elems[0].fixes.length > 0
+					&& meta.elems[0].fixes[0].add && meta.elems[0].fixes[0].add.length > 0
+				) {
+					tags = meta.elems[0].fixes[0].add;
+				}
+				tags.forEach(kv => tagsForEdit[kv.k] = kv.v);
+
+				if(tags.length > 0) {
+					tags = `
+						<div class="form-group m-0 mb-1">
+							<label class="m-0" for="exampleFormControlTextarea1">Attributs à ajouter</label>
+							<textarea class="form-control form-control-sm" rows="${tags.length}" readonly>${tags.map(kv => kv.k+"="+kv.v).join("\n")}</textarea>
+						</div>`;
+				}
+
+				let subtitle = meta.subtitle ? meta.subtitle.auto : "";
+				if(labels.subtitles) {
+					const subtitles = Object.keys(labels.subtitles).filter(s => subtitle.includes(s)).map(s => labels.subtitles[s]);
+					if(subtitles.length > 0) { subtitle = subtitles[0]; }
+					else if(labels.subtitles.fallback) { subtitle = labels.subtitles.fallback; }
+				}
+
+				resDiv.innerHTML = `
+					<h5>${labels.name}</h5>
+					<div class="alert alert-info">${subtitle.replace(/\n/g, "<br />")}</div>
+					${tags}`;
+
+				const divButtons = document.createElement("div");
+				divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
+				divButtons.role = "group";
+
+				const divButtonDone = document.createElement("button");
+				divButtonDone.classList.add("btn", "btn-success");
+				divButtonDone.appendChild(document.createTextNode("✔ "+buttons.done));
+				divButtonDone.title = "Marquer cet élément comme \""+buttons.done+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
+				divButtonDone.addEventListener("click", markOsmose("done", feature));
+
+				const divButtonFalse = document.createElement("button");
+				divButtonFalse.classList.add("btn", "btn-warning");
+				divButtonFalse.appendChild(document.createTextNode("✘ "+buttons.false));
+				divButtonFalse.title = "Marquer cet élément comme \""+buttons.false+"\" si le signalement n'est pas valide";
+				divButtonFalse.addEventListener("click", markOsmose("false", feature));
+
+				const elem = meta.elems && meta.elems.length > 0 && meta.elems[0];
+				createAddFeatureButton(resDiv, "btn-block mt-3 mb-1 dropup", {
+					title: buttons.add,
+					tags: tagsForEdit,
+					osmid: elem && elem.type+"/"+elem.id,
+					osmoseuuid: meta.uuid,
+					onExternalEdit: () => divButtons.insertBefore(divButtonDone, divButtonFalse),
+					onInternalEdit: () => markOsmose("done", feature)
+				});
+
+				divButtons.appendChild(divButtonFalse);
+				resDiv.appendChild(divButtons);
+			});
+		}
+		// Notes from OSM
+		else if(s.startsWith("notes_")) {
+			const noteSource = notesSources[p.pdm_note_source];
+			const cmts = typeof p.comments === "object" ? p.comments : JSON.parse(p.comments);
+			const notesStatuses = { "opened": "Ouvert", "closed": "Fermé", "reopened": "Réouvert", "commented": "Commentaire" };
+
+			resDiv.innerHTML = `
+				<h5>${noteSource.name}</h5>
+				<div class="alert alert-info">${noteSource.description}</div>
+				${cmts.map((cmt, i) => `<div class="${i == cmts.length - 1 ? "" : "border-bottom"} pdm-note-comment pb-2 mb-2">
+					<div class="text-muted" style="font-size: 0.9rem">
+						${notesStatuses[cmt.action]} par ${cmt.user || "une personne anonyme"} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString()}
+					</div>
+					${cmt.html}
+				</div>`).join("")}`;
+
+			// Try to read tags out of comments
+			const tags = {};
+			cmts.forEach(cmt => {
+				cmt.text.split("\n").forEach(line => {
+					const parts = line.split("=");
+					if(parts.length >= 2) {
+						const key = parts[0];
+						const value = parts.slice(1).join("=");
+						if(/^[a-zA-Z:_\-0-9]+$/.test(key.trim()) && value.trim().length > 0) {
+							tags[key.trim()] = value.trim();
+						}
+					}
+				});
+			});
+
+			const divButtons = document.createElement("div");
+			divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
+			divButtons.role = "group";
+
+			const divButtonDone = document.createElement("button");
+			divButtonDone.classList.add("btn", "btn-success", "w-50");
+			divButtonDone.appendChild(document.createTextNode("✔ "+noteSource.buttons.close));
+			divButtonDone.addEventListener("click", () => closeNote(p));
+			const labelConnected = "Marquer cet élément comme \""+noteSource.buttons.close+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
+			const labelDisconnected = "Vous devez être connecté pour marquer la note comme résolue.";
+			if(!window.osm_user) {
+				divButtonDone.setAttribute("disabled", "");
+				divButtonDone.title = labelDisconnected;
+			}
+			else {
+				divButtonDone.title = labelConnected;
+			}
+
+			window.addEventListener("osm_login", () => {
+				divButtonDone.removeAttribute("disabled");
+				divButtonDone.title = labelConnected;
+			});
+			window.addEventListener("osm_logout", () => {
+				divButtonDone.setAttribute("disabled", "");
+				divButtonDone.title = labelDisconnected;
+			});
+
+			const divButtonComment = document.createElement("a");
+			divButtonComment.classList.add("btn", "btn-secondary", "w-50");
+			divButtonComment.role = "button";
+			divButtonComment.appendChild(document.createTextNode("💬 Commenter"));
+			divButtonComment.title = "Participer à la discussion sur cette note";
+			divButtonComment.href = `#{CONFIG.OSM_URL}/note/${p.id}`;
+			divButtonComment.target = "_blank";
+
+			createAddFeatureButton(resDiv, "btn-block mb-1 dropup", {
+				noteid: "note/"+p.id,
+				tags,
+				onExternalEdit: () => divButtons.insertBefore(divButtonDone, divButtonComment),
+				onInternalEdit: () => closeNote(p)
+			});
+
+			divButtons.appendChild(divButtonComment);
+			resDiv.appendChild(divButtons);
+		}
+		// OSM features
+		else if(s.startsWith("osm_")) {
+			const tags = JSON.parse(p.tags);
+			const osmSource = osmSources[parseInt(feature.source.split("_")[1])];
+
+			resDiv.innerHTML = `
+				<h5>${p.name || tags.ref || osmSource.name}</h5>
+				<div class="alert alert-info">${osmSource.description}</div>
+				<div class="form-group m-0 mb-1">
+					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
+					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+				</div>`;
+
+			resDiv.appendChild(linksToDom(getLinksOsm(feature), document.createElement("div")));
+		}
+		// OSM comparison features
+		else if(s.startsWith("osm-compare_")) {
+			const tags = JSON.parse(p.tags);
+			const osmSource = osmCompareSources[parseInt(feature.source.split("_")[1])];
+
+			resDiv.innerHTML = `
+				<h5>${osmSource.name}</h5>
+				<div class="alert alert-info">${osmSource.description}</div>
+				${p.name || tags.ref ? `<p>${p.name || tags.ref}</p>` : ''}
+				<div class="form-group m-0 mb-1">
+					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
+					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+				</div>`;
+
+			createAddFeatureButton(resDiv, "btn-block mt-2 dropup");
+		}
+		else {
+			resDiv.innerHTML = "<ul>"+Object.entries(p).map(e => "<li>"+e.join(" : ")+"</li>").join("")+"</ul>";
+		}
+
+		return resDiv;
+	}

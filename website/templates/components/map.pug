@@ -394,7 +394,9 @@ script.
 				</div>`).join("")}`;
 
 			resDiv.appendChild(linksToDom(getLinksNote(feature), document.createElement("div")));
-			createAddFeatureButton(resDiv, "btn-block mt-3 mb-1");
+			if(window.osm_user) {
+				createAddFeatureButton(resDiv, "btn-block mt-3 mb-1");
+			}
 
 			const divButtons = document.createElement("div");
 			divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");

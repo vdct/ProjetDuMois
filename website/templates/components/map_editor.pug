@@ -1,7 +1,6 @@
 if editors.pdm && editors.pdm.add
 	h5(style="font-size: 1.1rem")= editors.pdm.add.title
-	p.text-muted
-		small#pdm-editor-mode
+	div.alert.alert-info#pdm-editor-mode
 
 form#pdm-editor-form
 	if editors.pdm && editors.pdm.add && editors.pdm.add.fields

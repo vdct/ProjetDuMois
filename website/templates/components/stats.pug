@@ -64,7 +64,7 @@ script.
 		.then(res => res.json())
 		.then(res => {
 			// % of done tasks
-			if(res.pctTasksDone) {
+			if(res.pctTasksDone !== undefined) {
 				document.getElementById("stats-pctdone").innerHTML = res.pctTasksDone+" %";
 			}
 			else {
@@ -79,6 +79,7 @@ script.
 				document.getElementById("stats-leaderboard-container").classList.remove("d-none");
 				document.getElementById("stats-leaderboard-noauth").classList.add("d-none");
 				const leaderboardBody = document.getElementById("stats-leaderboard");
+				leaderboardBody.innerHTML = '';
 				res.leaderboard.map((lb,i) => {
 					const tr = document.createElement("tr");
 
@@ -128,6 +129,20 @@ script.
 				document.getElementById("stats-count-col").classList.add("d-none");
 			}
 
+			const yAxeLinear = { ticks: { beginAtZero: true, precision: 0 } };
+			const yAxeLogarithmic = {
+				type: 'logarithmic',
+				ticks: {
+					beginAtZero: true,
+					callback: (value, index, values) => Number(value.toString())
+				},
+				afterBuildTicks: (chartObj) => {
+					const last = chartObj.ticks.pop() || 0;
+					chartObj.ticks = [0, 1, 10, 100, 1000, 10000, 100000, 1000000].filter(v => v >= last);
+					if(chartObj.ticks[0] > last) { chartObj.ticks.unshift(last); }
+				}
+			};
+
 			// Notes count + chart
 			if(res.chartNotes) {
 				document.getElementById("stats-notes").innerHTML = res.closedNotes;
@@ -145,17 +160,12 @@ script.
 								bounds: 'ticks',
 								time: {
 									tooltipFormat: "DD/MM",
-									displayFormats: {
-										day: "DD/MM"
-									}
+									displayFormats: { day: "DD/MM" },
+									round: "day",
+									unit: "day"
 								}
 							}],
-							yAxes: [{
-								ticks: {
-									beginAtZero: true,
-									precision: 0
-								}
-							}]
+							yAxes: [ yAxeLinear ]
 						}
 					}
 				});
@@ -180,16 +190,12 @@ script.
 							bounds: 'ticks',
 							time: {
 								tooltipFormat: "DD/MM",
-								displayFormats: {
-									day: "DD/MM"
-								}
+								displayFormats: { day: "DD/MM" },
+								round: "day",
+								unit: "day"
 							}
 						}],
-						yAxes: [{
-							ticks: {
-								beginAtZero: true
-							}
-						}]
+						yAxes: [ res.pctTasksDone === undefined || parseInt(res.pctTasksDone) >= 30 ? yAxeLinear : yAxeLogarithmic ]
 					}
 				}
 			});

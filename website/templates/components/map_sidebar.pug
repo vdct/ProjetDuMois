@@ -29,11 +29,30 @@ script.
 	const sidebarDom = document.getElementById("pdm-map-sidebar");
 	if(window.innerWidth >= 768) { sidebarDom.classList.remove("pdm-hidden"); }
 
+	// Update hash
+	const updateHashMapSidebar = () => {
+		if(sidebarDom.classList.contains("pdm-hidden")) {
+			window.history.replaceState(null, null, window.location.hash.replace(/sidebar&/g, ""));
+		}
+		else if(!window.location.hash.includes("sidebar")) {
+			window.location.hash = window.location.hash.replace("#", "#sidebar&");
+		}
+	};
+	window.addEventListener("hashchange", e => {
+		if(!window.location.hash.includes("sidebar") && !sidebarDom.classList.contains("pdm-hidden")) {
+			sidebarDom.classList.toggle("pdm-hidden");
+			cancelAskFeatureLocation();
+			cancelAddNewFeature(null, true);
+			updateHashMapSidebar();
+		}
+	});
+
 	// Close sidebar button
 	sidebarDom.querySelector(".toggle-map-sidebar").addEventListener("click", () => {
 		sidebarDom.classList.toggle("pdm-hidden");
 		cancelAskFeatureLocation();
 		cancelAddNewFeature(null, true);
+		updateHashMapSidebar();
 	});
 
 	// Add feature button
@@ -80,4 +99,5 @@ script.
 				panelEditorDom.classList.add("d-none");
 				panelDefaultDom.classList.remove("d-none");
 		}
+		updateHashMapSidebar();
 	});

@@ -20,6 +20,7 @@ const OSC_IDS = CONFIG.WORK_DIR + '/extract_osm_ids.txt';
 const OSC_IDS_SPLIT = CONFIG.WORK_DIR + '/extract_ids_';
 const OSC2IDS = __dirname+'/osc2ids.xslt';
 const OSC2CSV = __dirname+'/osc2csv.xslt';
+const OSH4COUNT_IDS = CONFIG.WORK_DIR + '/count_ids.osh.pbf';
 const OSH4COUNT = CONFIG.WORK_DIR + '/count.osh.pbf';
 const OSCCOUNT = CONFIG.WORK_DIR + '/count.csv';
 const OSC_FULL = CONFIG.WORK_DIR + '/changes.osc.gz';
@@ -108,7 +109,8 @@ echo ""`;
 const counts = project.statistics.count ? `
 echo "==== Count features"
 rm -rf "${OSCCOUNT}"
-osmium tags-filter "${OSH_PBF}" ${project.database.osmium_tag_filter} -O -o "${OSH4COUNT}"
+osmium tags-filter "${OSH_PBF_FULL}" ${project.database.osmium_tag_filter} -R -O -o "${OSH4COUNT_IDS}"
+osmium getid --id-osm-file "${OSH4COUNT_IDS}" --with-history "${OSH_PBF_FULL}" -O -o "${OSH4COUNT}"
 days=(${getDays().map(d => `"${d}"`).join(" ")})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
@@ -146,25 +148,25 @@ echo "==== Create work directory"
 mkdir -p "${CONFIG.WORK_DIR}"
 ${separator}
 
-echo "==== Get cookies for authorized download of OSH PBF file"
-python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py \\
-	--osm-host ${CONFIG.OSM_URL} \\
-	-u "${CONFIG.OSM_USER}" -p "${CONFIG.OSM_PASS}" \\
-	-c ${CONFIG.OSH_PBF_URL.split("/").slice(0, 3).join("/")}/get_cookie \\
-	-o "${COOKIES}"
-${separator}
+if [ -f "${OSH_PBF_FULL}" ]; then
+	echo "==== Reuse yesterday history file"
+	prev_osh="${OSH_PBF_FULL}"
+else
+	echo "==== Get cookies for authorized download of OSH PBF file"
+	python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py \\
+		--osm-host ${CONFIG.OSM_URL} \\
+		-u "${CONFIG.OSM_USER}" -p "${CONFIG.OSM_PASS}" \\
+		-c ${CONFIG.OSH_PBF_URL.split("/").slice(0, 3).join("/")}/get_cookie \\
+		-o "${COOKIES}"
 
-echo "==== Download OSH PBF file"
-wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL}"
-wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL.replace("-internal.osh.pbf", ".poly")}"
+	echo "==== Download OSH PBF file"
+	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL}"
+	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL.replace("-internal.osh.pbf", ".poly")}"
+	prev_osh="${OSH_PBF}"
+fi
 ${separator}
 
 echo "==== Update OSH PBF file with replication files"
-if [ -f "${OSH_PBF_FULL}" ]; then
-	prev_osh="${OSH_PBF_FULL}"
-else
-	prev_osh="${OSH_PBF}"
-fi
 osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" "${OSC_FULL}"
 osmium extract -p "${OSH_POLY}" -s simple "${OSC_FULL}" -O -o "${OSC_LOCAL}"
 osmium apply-changes -H "$prev_osh" "${OSC_LOCAL}" -O -o "${OSH_PBF_FULL.replace(".osh.pbf", ".new.osh.pbf")}"

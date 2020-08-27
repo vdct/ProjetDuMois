@@ -110,7 +110,7 @@ app.get('/projects/:id/stats', (req, res) => {
 
 		return {
 			chart: results,
-			pctTasksDone: Math.floor(100 - nbTasksEnd / nbTasksStart * 100)
+			tasksSolved: nbTasksStart - nbTasksEnd
 		};
 	}));
 
@@ -158,7 +158,8 @@ app.get('/projects/:id/stats', (req, res) => {
 				borderColor: "blue",
 				lineTension: 0
 			}],
-			count: results.rows.length > 0 && results.rows[results.rows.length-1].amount
+			count: results.rows.length > 0 && results.rows[results.rows.length-1].amount,
+			added: results.rows.length > 0 && results.rows[results.rows.length-1].amount - results.rows[0].amount
 		})));
 	}
 

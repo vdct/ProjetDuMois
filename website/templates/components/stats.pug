@@ -1,29 +1,7 @@
 //- Synthetic stats
-div.row.mb-4
-	div.col-md-4.mb-2#stats-pctdone-col
-		div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
-			h3#stats-pctdone.mb-0 ?%
-			p.card-text.mb-auto des #{statistics.osmose_tasks}
-	div.col-md-4.mb-2
-		div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
-			h3#stats-contributors.mb-0 ?
-			p.card-text.mb-auto personnes ayant contribué
-	div.col-md-4.mb-2
-		div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
-			if new Date(end_date).getTime() >= Date.now()
-				h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - Date.now()) / (1000*3600*24))
-				p.card-text.mb-auto jours restants
-			else
-				h3.mb-0= Math.round((new Date(end_date+"T23:59:59Z").getTime() - new Date(start_date+"T00:00:00Z").getTime()) / (1000*3600*24))
-				p.card-text.mb-auto jours de contributions
-	div.col-md-4.mb-2#stats-count-col
-		div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
-			h3#stats-count.mb-0 ?
-			p.card-text.mb-auto #{title.toLowerCase()} dans OpenStreetMap
-	div.col-md-4.mb-2#stats-notes-col
-		div.p-4.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
-			h3#stats-notes.mb-0 ?
-			p.card-text.mb-auto notes résolues
+div.row.mb-4#stats-blocks
+	div.col.text-center
+		div.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 
 div.row
 	//- Leaderboard
@@ -35,30 +13,6 @@ div.row
 			+user_connect
 		div#stats-leaderboard-container.d-none.row.align-items-center
 			div#stats-podium.col-md-7.row.justify-content-start.align-items-end.no-gutters.mb-3.mb-md-0
-				div.col.text-center
-					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
-					div.text-truncate(style="height: 125px; background-color: #F9A825")
-						| 1
-						br
-						| ABC
-				div.col.text-center
-					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
-					div.text-truncate(style="height: 100px; background-color: #1E88E5")
-						| 2
-						br
-						| DEF
-				div.col.text-center
-					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
-					div.text-truncate(style="height: 75px; background-color: #42A5F5")
-						| 3
-						br
-						| GHI
-				div.col.text-center
-					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
-					div.text-truncate(style="height: 50px; background-color: #90CAF9")
-						| 42
-						br
-						| XYZABCABCABCABCABC
 			div.overflow-auto.col-md-5(style="max-height: 300px")
 				table.table.table-sm
 					thead
@@ -88,16 +42,41 @@ script.
 		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
 		.then(res => res.json())
 		.then(res => {
-			// % of done tasks
-			if(res.pctTasksDone !== undefined) {
-				document.getElementById("stats-pctdone").innerHTML = res.pctTasksDone+" %";
+			const blocks = document.getElementById("stats-blocks");
+			blocks.innerHTML = '';
+			const addBlock = (title, subtitle) => {
+				const b = document.createElement("div");
+				b.classList.add("col-md-4", "mb-2");
+
+				const sb = document.createElement("div");
+				sb.classList.add("p-4", "no-gutters", "border", "rounded", "overflow-hidden", "flex-md-row", "shadow-sm", "position-relative", "h-100");
+				b.appendChild(sb);
+
+				const t = document.createElement("h3");
+				t.classList.add("mb-0");
+				t.appendChild(document.createTextNode(title));
+				sb.appendChild(t);
+
+				const st = document.createElement("p");
+				st.classList.add("card-text", "mb-auto");
+				st.appendChild(document.createTextNode(subtitle));
+				sb.appendChild(st);
+
+				blocks.appendChild(b);
+			};
+
+			// Blocks for small stats
+			if(new Date("#{end_date}").getTime() >= Date.now()) {
+				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - Date.now()) / (1000*3600*24)), "jours restants");
 			}
 			else {
-				document.getElementById("stats-pctdone-col").classList.add("d-none");
+				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - new Date("#{start_date}T00:00:00Z").getTime()) / (1000*3600*24)), "jours de contributions");
 			}
 
-			// Amount of contributors
-			document.getElementById("stats-contributors").innerHTML = res.nbContributors;
+			if(res.added) { addBlock(res.added, "#{title.toLowerCase()} ajoutés"); }
+			if(res.count) { addBlock(res.count, "#{title.toLowerCase()} au total dans OSM"); }
+			if(res.tasksSolved !== undefined) { addBlock(res.tasksSolved, "#{statistics.osmose_tasks}"); }
+			addBlock(res.nbContributors, "personnes ayant contribué");
 
 			// Leaderboard
 			if(res.leaderboard) {
@@ -116,7 +95,7 @@ script.
 
 					const td1 = document.createElement("td");
 					td1.setAttribute("scope", "row");
-					td1.appendChild(document.createTextNode(i+1));
+					td1.appendChild(document.createTextNode(lb.pos));
 					td1.classList.add("align-middle");
 					tr.appendChild(td1);
 
@@ -183,14 +162,6 @@ script.
 				document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
 			}
 
-			// Feature count
-			if(res.count) {
-				document.getElementById("stats-count").innerHTML = res.count;
-			}
-			else {
-				document.getElementById("stats-count-col").classList.add("d-none");
-			}
-
 			const yAxeLinear = { ticks: { beginAtZero: true, precision: 0 } };
 			const yAxeLogarithmic = {
 				type: 'logarithmic',
@@ -207,7 +178,7 @@ script.
 
 			// Notes count + chart
 			if(res.chartNotes) {
-				document.getElementById("stats-notes").innerHTML = res.closedNotes;
+				addBlock(res.closedNotes, "notes résolues");
 
 				const myChart = new Chart(document.getElementById("stats-chart-notes").getContext("2d"), {
 					type: "line",
@@ -233,7 +204,6 @@ script.
 				});
 			}
 			else {
-				document.getElementById("stats-notes-col").classList.add("d-none");
 				document.getElementById("stats-chart-notes-container").classList.add("d-none");
 			}
 
@@ -264,8 +234,14 @@ script.
 		});
 	}
 
+	let delayDisplayStats;
+	const timerShowStats = () => {
+		if(delayDisplayStats) { clearTimeout(delayDisplayStats); }
+		delayDisplayStats = setTimeout(showStatistics, 1000);
+	};
+
 	window.addEventListener("osm_login", () => {
-		showStatistics();
+		timerShowStats();
 	});
 
 	window.addEventListener("osm_logout", () => {
@@ -273,4 +249,4 @@ script.
 		document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
 	});
 
-	showStatistics();
+	timerShowStats();

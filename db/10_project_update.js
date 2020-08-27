@@ -11,25 +11,27 @@ const fetch = require('node-fetch');
 
 // Constants
 let project = filterProjects(projects).current;
-const OSH_PBF = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop();
-const OSH_PBF_FULL = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
-const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
-const OSH_POLY = OSH_PBF.replace("-internal.osh.pbf", ".poly");
-const OSC_1 = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
-const OSC_IDS = CONFIG.WORK_DIR + '/extract_osm_ids.txt';
-const OSC_IDS_SPLIT = CONFIG.WORK_DIR + '/extract_ids_';
-const OSC2IDS = __dirname+'/osc2ids.xslt';
+
+const OSH_DOWNLOADED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop();
+const OSH_UPDATED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
+const OSM_PBF_NOW = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
+const OSH_POLY = OSH_DOWNLOADED.replace("-internal.osh.pbf", ".poly");
+const OSH_USEFULL_IDS = CONFIG.WORK_DIR + '/usefull_ids.osh.pbf';
+const OSH_USEFULL = CONFIG.WORK_DIR + '/usefull.osh.pbf';
+
 const OSC2CSV = __dirname+'/osc2csv.xslt';
-const OSH4COUNT_IDS = CONFIG.WORK_DIR + '/count_ids.osh.pbf';
-const OSH4COUNT = CONFIG.WORK_DIR + '/count.osh.pbf';
-const OSCCOUNT = CONFIG.WORK_DIR + '/count.csv';
-const OSC_FULL = CONFIG.WORK_DIR + '/changes.osc.gz';
-const OSC_LOCAL = CONFIG.WORK_DIR + '/changes.local.osc.gz';
+const OSC_USEFULL = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
+const OSC_UPDATES = CONFIG.WORK_DIR + '/changes.osc.gz';
+const OSC_UPDATES_LOCAL = CONFIG.WORK_DIR + '/changes.local.osc.gz';
+
+const CSV_COUNT = CONFIG.WORK_DIR + '/count.csv';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
 const CSV_NOTES = CONFIG.WORK_DIR + '/notes.csv';
+
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql "postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
+
 
 // Check if there is any project to analyse
 const projectIdFromCli = process.argv.slice(2).pop();
@@ -108,23 +110,22 @@ echo ""`;
 // Feature counts script (optional)
 const counts = project.statistics.count ? `
 echo "==== Count features"
-rm -rf "${OSCCOUNT}"
-osmium tags-filter "${OSH_PBF_FULL}" ${project.database.osmium_tag_filter} -R -O -o "${OSH4COUNT_IDS}"
-osmium getid --id-osm-file "${OSH4COUNT_IDS}" --with-history "${OSH_PBF_FULL}" -O -o "${OSH4COUNT}"
+rm -rf "${CSV_COUNT}"
 days=(${getDays().map(d => `"${d}"`).join(" ")})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
-	nbday=$(osmium time-filter "${OSH4COUNT}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1)
+	nbday=$(osmium time-filter "${OSH_USEFULL}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1)
 	if [ "$nbday" == "" ]; then
 		nbday="0"
 	fi
 	echo "${project.id},$day,$nbday" \\
-	>> "${OSCCOUNT}"
+	>> "${CSV_COUNT}"
 done
 
 # Insert CSV into database
 ${PSQL} -c "DELETE FROM feature_counts WHERE project = '${project.id}'"
-${PSQL} -c "\\COPY feature_counts FROM '${OSCCOUNT}' CSV"
+${PSQL} -c "\\COPY feature_counts FROM '${CSV_COUNT}' CSV"
+rm -rf "${CSV_COUNT}"
 ${separator}` : '';
 
 
@@ -133,6 +134,7 @@ const noteCounts = notesSources.length > 0 ? `
 echo "==== Count notes"
 ${PSQL} -c "DELETE FROM note_counts WHERE project = '${project.id}'"
 ${PSQL} -c "\\COPY note_counts FROM '${CSV_NOTES}' CSV"
+rm -f "${CSV_NOTES}"
 ${separator}` : '';
 
 
@@ -148,9 +150,9 @@ echo "==== Create work directory"
 mkdir -p "${CONFIG.WORK_DIR}"
 ${separator}
 
-if [ -f "${OSH_PBF_FULL}" ]; then
+if [ -f "${OSH_UPDATED}" ]; then
 	echo "==== Reuse yesterday history file"
-	prev_osh="${OSH_PBF_FULL}"
+	prev_osh="${OSH_UPDATED}"
 else
 	echo "==== Get cookies for authorized download of OSH PBF file"
 	python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py \\
@@ -162,47 +164,38 @@ else
 	echo "==== Download OSH PBF file"
 	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL}"
 	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL.replace("-internal.osh.pbf", ".poly")}"
-	prev_osh="${OSH_PBF}"
+	rm -f "${COOKIES}"
+	prev_osh="${OSH_DOWNLOADED}"
 fi
 ${separator}
 
 echo "==== Update OSH PBF file with replication files"
-osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" "${OSC_FULL}"
-osmium extract -p "${OSH_POLY}" -s simple "${OSC_FULL}" -O -o "${OSC_LOCAL}"
-osmium apply-changes -H "$prev_osh" "${OSC_LOCAL}" -O -o "${OSH_PBF_FULL.replace(".osh.pbf", ".new.osh.pbf")}"
-rm -f "${OSH_PBF_FULL}"
-mv "${OSH_PBF_FULL.replace(".osh.pbf", ".new.osh.pbf")}" "${OSH_PBF_FULL}"
+osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" "${OSC_UPDATES}"
+osmium extract -p "${OSH_POLY}" -s simple "${OSC_UPDATES}" -O -o "${OSC_UPDATES_LOCAL}"
+osmium apply-changes -H "$prev_osh" "${OSC_UPDATES_LOCAL}" -O -o "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}"
+rm -f "${OSH_UPDATED}" "${OSC_UPDATES_LOCAL}" "${OSC_UPDATES}"
+mv "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}" "${OSH_UPDATED}"
 ${separator}
 
-echo "==== Extract changes from OSH PBF (1st pass)"
-osmium tags-filter "${OSH_PBF_FULL}" -R ${project.database.osmium_tag_filter} -O -o "${OSC_1}"
+echo "==== Extract features from OSH PBF (1st pass)"
+osmium tags-filter "${OSH_UPDATED}" -R ${project.database.osmium_tag_filter} -O -o "${OSH_USEFULL_IDS}"
 ${separator}
 
-echo "==== Transform changes into list of OSM IDs"
-xsltproc "${OSC2IDS}" "${OSC_1}" | sort | uniq  > "${OSC_IDS}"
-${separator}
-
-echo "==== Extract changes from OSH PBF (2nd pass)"
-rm -f ${OSC_IDS_SPLIT}*.osc.gz
-split -l 5000 "${OSC_IDS}" "${OSC_IDS_SPLIT}"
-for i in ${OSC_IDS_SPLIT}*; do
-	echo "--- Processing IDS $i"
-	osmium getid "${OSH_PBF_FULL}" -H -i "$i" -O -o "$i.osc.gz"
-done
+echo "==== Extract features based on their IDs (2nd pass)"
+osmium getid --id-osm-file "${OSH_USEFULL_IDS}" --with-history "${OSH_UPDATED}" -O -o "${OSH_USEFULL}"
 ${separator}
 
 echo "==== Transform changes into CSV file"
-rm -f "${CSV_CHANGES}"
-for i in ${OSC_IDS_SPLIT}*.osc.gz; do
-	echo "--- Processing changes $i"
-	xsltproc "${OSC2CSV}" "$i" >> "${CSV_CHANGES}"
-done
+osmium cat "${OSH_USEFULL}" -O -o "${OSC_USEFULL}"
+xsltproc "${OSC2CSV}" "${OSC_USEFULL}" > "${CSV_CHANGES}"
+rm -f "${OSC_USEFULL}"
 ${separator}
 
 echo "==== Init changes table in database"
 ${PSQL} -f ${__dirname}/11_project_init_tables.sql
 ${PSQL} -c "\\COPY osm_changes FROM '${CSV_CHANGES}' CSV"
 ${PSQL} -f ${__dirname}/12_project_post_import_changes.sql
+rm -f "${CSV_CHANGES}"
 ${separator}
 
 echo "==== Generate user contributions"
@@ -212,18 +205,15 @@ ${PSQL} -f "${__dirname}/15_badges_meta.sql"
 ${separator}
 
 echo "==== Write current state of OSM data as OSM.PBF"
-osmium time-filter "${OSH_PBF_FULL}" -O -o "${OSM_PBF_LATEST}"
+osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
 ${separator}
 
 ${counts}
 ${noteCounts}
+rm -f "${OSH_USEFULL}"
 
 echo "==== Optimize database"
 ${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"
-${separator}
-
-echo "==== Clean-up temporary files"
-rm -f "${OSC_IDS}" "${OSC_1}" "${CSV_CHANGES}" "${OSH4COUNT}" "${OSC_FULL}" "${OSC_LOCAL}" ${OSC_IDS_SPLIT}*
 ${separator}
 
 echo "Done"

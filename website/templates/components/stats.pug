@@ -33,15 +33,40 @@ div.row
 			| Connectez-vous pour voir le podium
 			br.mb-2
 			+user_connect
-		div#stats-leaderboard-container.d-none.overflow-auto(style="height: 300px")
-			table.table.table-sm
-				thead
-					tr
-						th(scope="col") #
-						th(scope="col") Pseudo
-						th(scope="col") Éditions
-						th(scope="col") Badges
-				tbody#stats-leaderboard
+		div#stats-leaderboard-container.d-none.row.align-items-center
+			div#stats-podium.col-md-7.row.justify-content-start.align-items-end.no-gutters.mb-3.mb-md-0
+				div.col.text-center
+					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
+					div.text-truncate(style="height: 125px; background-color: #F9A825")
+						| 1
+						br
+						| ABC
+				div.col.text-center
+					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
+					div.text-truncate(style="height: 100px; background-color: #1E88E5")
+						| 2
+						br
+						| DEF
+				div.col.text-center
+					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
+					div.text-truncate(style="height: 75px; background-color: #42A5F5")
+						| 3
+						br
+						| GHI
+				div.col.text-center
+					img.img-thumbnail.mb-1(src="/images/badges/contributed.mini.svg" style="max-width: 60px; max-height: 60px")
+					div.text-truncate(style="height: 50px; background-color: #90CAF9")
+						| 42
+						br
+						| XYZABCABCABCABCABC
+			div.overflow-auto.col-md-5(style="max-height: 300px")
+				table.table.table-sm
+					thead
+						tr
+							th(scope="col") #
+							th(scope="col") Pseudo
+							th(scope="col") Éditions
+					tbody#stats-leaderboard
 
 	//- Charts
 	div.col-lg-6.mb-2
@@ -78,8 +103,14 @@ script.
 			if(res.leaderboard) {
 				document.getElementById("stats-leaderboard-container").classList.remove("d-none");
 				document.getElementById("stats-leaderboard-noauth").classList.add("d-none");
+
 				const leaderboardBody = document.getElementById("stats-leaderboard");
 				leaderboardBody.innerHTML = '';
+				const podium = document.getElementById("stats-podium");
+				podium.innerHTML = '';
+
+				const podiumStyle = [ [125, "#F9A825"], [100, "#1E88E5"], [75, "#42A5F5"], [50, "#90CAF9"] ];
+
 				res.leaderboard.map((lb,i) => {
 					const tr = document.createElement("tr");
 
@@ -102,15 +133,46 @@ script.
 					td3.classList.add("align-middle");
 					tr.appendChild(td3);
 
-					const td4 = document.createElement("td");
-					lb.badges.sort().forEach(badge => {
-						const img = document.createElement("img");
-						img.src = `/images/badges/${badge}.mini.svg`;
-						img.classList.add("stats-badge-mini", "align-middle");
-						img.title = BADGES_NAMES[badge];
-						td4.appendChild(img);
-					});
-					tr.appendChild(td4);
+					// Add to podium
+					if(i < 3 || lb.userid === window.osm_user.id) {
+						const podiumStep = document.createElement("div");
+						podiumStep.classList.add("col", "text-center");
+
+						const imgDefault = document.createElement("img");
+						imgDefault.classList.add("img-thumbnail", "mb-1");
+						imgDefault.src = "/images/badges/contributed.mini.svg";
+						imgDefault.style.maxWidth = "60px";
+						imgDefault.style.maxHeight = "60px";
+						podiumStep.appendChild(imgDefault);
+
+						// Try to load a custom user pic if any
+						const imgCustom = document.createElement("img");
+						imgCustom.classList.add("img-thumbnail", "mb-1", "d-none");
+						imgCustom.style.maxWidth = "60px";
+						imgCustom.style.maxHeight = "60px";
+						podiumStep.appendChild(imgCustom);
+
+						osmApi.fetchUser(lb.userid).then(details => {
+							if(details.img && details.img.href) {
+								imgCustom.src = details.img.href;
+								imgCustom.addEventListener("load", e => {
+									imgCustom.classList.remove("d-none");
+									imgDefault.classList.add("d-none");
+								});
+							}
+						});
+
+						const divStep = document.createElement("div");
+						divStep.classList.add("text-truncate");
+						divStep.style.height = `${i < 3 ? podiumStyle[i][0] : podiumStyle[3][0]}px`;
+						divStep.style.backgroundColor = i < 3 ? podiumStyle[i][1] : podiumStyle[3][1];
+						divStep.appendChild(document.createTextNode(lb.pos));
+						divStep.appendChild(document.createElement("br"));
+						divStep.appendChild(document.createTextNode(lb.username));
+						podiumStep.appendChild(divStep);
+
+						podium.appendChild(podiumStep);
+					}
 
 					return tr;
 				})

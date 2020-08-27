@@ -51,3 +51,23 @@ CREATE INDEX note_counts_project_idx ON note_counts(project);
 -- Extensions for Imposm
 CREATE EXTENSION postgis;
 CREATE EXTENSION hstore;
+
+-- Leaderboard view
+CREATE VIEW leaderboard AS
+WITH stats AS (
+	SELECT userid, project, COUNT(*) AS amount
+	FROM user_contributions
+	GROUP BY userid, project
+	ORDER BY COUNT(*) DESC
+), scores AS (
+	SELECT project, row_number() over (PARTITION BY project ORDER BY amount DESC) AS pos, amount
+	FROM (
+		SELECT DISTINCT project, amount
+		FROM stats
+		ORDER BY project, amount DESC
+	) a
+)
+SELECT st.project, st.userid, un.username, st.amount, sc.pos
+FROM stats st
+JOIN scores sc ON st.project = sc.project AND sc.amount = st.amount
+JOIN user_names un ON st.userid = un.userid;

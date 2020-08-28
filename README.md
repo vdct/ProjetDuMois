@@ -29,6 +29,8 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 
 Copyright 2020 L'équipe de projetdumois.fr
 
+Certaines images (badges) sont extraites du dépôt [MissingMaps](https://github.com/MissingMaps/users) sous [licence BSD-3](https://github.com/MissingMaps/users/blob/master/LICENSE).
+
 See [LICENSE](LICENSE.txt) for complete AGPL3 license.
 
 ProjetDuMois.fr is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

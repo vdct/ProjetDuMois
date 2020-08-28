@@ -323,3 +323,174 @@ a.navbar-brand:hover {
 .pdm-note-comment p a {
 	word-wrap: break-word !important;
 }
+
+
+/*
+ * Progress circular
+ */
+
+.progress{
+	width: 70px;
+	height: 70px;
+	line-height: 70px;
+	background: none;
+	margin: 0 auto;
+	box-shadow: none;
+	position: relative;
+}
+.progress > span{
+	width: 50%;
+	height: 100%;
+	overflow: hidden;
+	position: absolute;
+	top: 0;
+	z-index: 1;
+}
+.progress .progress-left{
+	left: 0;
+	pointer-events: none;
+}
+.progress .progress-bar{
+	width: 100%;
+	height: 100%;
+	background: none;
+	border-width: 6px;
+	border-style: solid;
+	position: absolute;
+	top: 0;
+	border-color: #F57F17;
+	pointer-events: none;
+}
+.progress .progress-left .progress-bar{
+	left: 100%;
+	border-top-right-radius: 80px;
+	border-bottom-right-radius: 80px;
+	border-left: 0;
+	-webkit-transform-origin: center left;
+	transform-origin: center left;
+}
+.progress .progress-right{
+	right: 0;
+	pointer-events: none;
+}
+.progress .progress-right .progress-bar{
+	left: -100%;
+	border-top-left-radius: 80px;
+	border-bottom-left-radius: 80px;
+	border-right: 0;
+	-webkit-transform-origin: center right;
+	transform-origin: center right;
+}
+.progress .progress-value{
+	width: 90%;
+	height: 90%;
+	border-radius: 50%;
+	font-size: 24px;
+	color: #fff;
+	line-height: 135px;
+	text-align: center;
+	position: absolute;
+	top: 5%;
+	left: 5%;
+}
+.progress .progress-value img {
+	height: 96%;
+	position: absolute;
+	left: 2%;
+	top: 2%;
+	filter: grayscale(100%);
+}
+.progress.load-0 .progress-right .progress-bar{
+	animation: loading-0 0.3s linear forwards 0.5s;
+}
+.progress.load-1 .progress-right .progress-bar{
+	animation: loading-1 0.4s linear forwards 0.5s;
+}
+.progress.load-2 .progress-right .progress-bar{
+	animation: loading-2 0.5s linear forwards 0.5s;
+}
+.progress.load-3 .progress-right .progress-bar{
+	animation: loading-3 0.6s linear forwards 0.5s;
+}
+.progress.load-4 .progress-right .progress-bar{
+	animation: loading-4 0.7s linear forwards 0.5s;
+}
+.progress.load-5 .progress-right .progress-bar,
+.progress.load-6 .progress-right .progress-bar,
+.progress.load-7 .progress-right .progress-bar,
+.progress.load-8 .progress-right .progress-bar,
+.progress.load-9 .progress-right .progress-bar{
+	animation: loading-5 0.8s linear forwards 0.5s;
+}
+.progress.load-6 .progress-left .progress-bar{
+	animation: loading-1 0.2s linear forwards 1.3s;
+}
+.progress.load-7 .progress-left .progress-bar{
+	animation: loading-2 0.3s linear forwards 1.3s;
+}
+.progress.load-8 .progress-left .progress-bar{
+	animation: loading-3 0.4s linear forwards 1.3s;
+}
+.progress.load-9 .progress-left .progress-bar{
+	animation: loading-4 0.5s linear forwards 1.3s;
+}
+@keyframes loading-0{
+	0%{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100%{
+		-webkit-transform: rotate(18deg);
+		transform: rotate(18deg);
+	}
+}
+@keyframes loading-1{
+	0%{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100%{
+		-webkit-transform: rotate(36deg);
+		transform: rotate(36deg);
+	}
+}
+@keyframes loading-2{
+	0%{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100%{
+		-webkit-transform: rotate(72deg);
+		transform: rotate(72deg);
+	}
+}
+@keyframes loading-3{
+	0%{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100%{
+		-webkit-transform: rotate(108deg);
+		transform: rotate(108deg);
+	}
+}
+@keyframes loading-4{
+	0%{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100%{
+		-webkit-transform: rotate(144deg);
+		transform: rotate(144deg);
+	}
+}
+@keyframes loading-5{
+	0%{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+	}
+	100%{
+		-webkit-transform: rotate(180deg);
+		transform: rotate(180deg);
+	}
+}

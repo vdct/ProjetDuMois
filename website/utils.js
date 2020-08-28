@@ -180,29 +180,23 @@ exports.getMapStyle = (p) => {
 
 // Get badges description
 exports.getBadgesDetails = (projects, badgesRows) => {
-	const commonBadges = {
-		"contributed": { name: "A participé" },
-		"score_1st": { name: "1ère position au classement" },
-		"score_2nd": { name: "2ème position au classement" },
-		"score_3rd": { name: "3ème position au classement" },
-		"allbest": { name: "A le plus de contributions au total" }
-	};
-
 	const badges = { "meta": { project: { name: "Général", image: "/images/favicon.svg" }, badges: [] } };
 	badgesRows.forEach(row => {
 		if(!badges[row.project]) {
 			badges[row.project] = {
 				project: { name: projects[row.project].title, date: projects[row.project].month, image: projects[row.project].icon },
-				badges: []
+				badges: [{ id: row.project.split("_").pop(), name: "A participé", description: "A participé au projet du mois", acquired: true, progress: 100 }]
 			};
 		}
 
-		badges[row.project].badges.push(Object.assign({ id: row.badge }, commonBadges[row.badge] || projects[row.project].badges[row.badge]));
+		if(row.project === "meta" || row.acquired || new Date(projects[row.project].start_date).getTime() <= Date.now() && Date.now() <= new Date(projects[row.project].end_date).getTime()) {
+			badges[row.project].badges.push(row);
+		}
 	});
 
 	// Meta badges
 	if(Object.keys(badges).length - 1 === Object.keys(projects).length) {
-		badges.meta.badges.push({ id: "all", name: "A participé à tous les projets" });
+		badges.meta.badges.push({ id: "all", name: "Toujours là", description: "A participé à tous les projets du mois", acquired: true, progress: 100 });
 	}
 	if(badges.meta.badges.length === 0) {
 		delete badges.meta;

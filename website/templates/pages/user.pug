@@ -39,6 +39,7 @@ block content
 
 		//- Badges
 		h3 Badges obtenus
+
 		each badgeProject in Object.keys(badges).sort((a,b) => b.localeCompare(a))
 			div.mb-3.border-top.mt-2.pt-2
 				h4(style="font-size: 1.4rem")
@@ -49,8 +50,21 @@ block content
 				div.row
 					each badge in badges[badgeProject].badges
 						div.col-12.col-sm.text-center.mb-2
-							img.mr-2(src=`/images/badges/${badge.id === "contributed" ? badgeProject.split("_").pop() : badge.id}.svg` alt="" style="max-width: 72px")
-							p.m-0= badge.name
+							if badge.acquired
+								img.mr-2(src=`/images/badges/${badge.id === "contributed" ? badgeProject.split("_").pop() : badge.id}.svg` title=badge.description alt="" style="max-width: 72px; max-height: 72px")
+								p.m-0= badge.name
+							else
+								div(class=`progress load-${Math.floor(badge.progress/10)}`)
+									span.progress-left
+										span.progress-bar
+									span.progress-right
+										span.progress-bar
+									div.progress-value
+										img(src=`/images/badges/${badge.id === "contributed" ? badgeProject.split("_").pop() : badge.id}.svg` title=badge.description alt="")
+								p.m-0.text-muted
+									| #{badge.name}
+									| &nbsp;
+									small= `(${badge.progress}%)`
 
 	script.
 		const userLoadDom = document.getElementById("user-load");

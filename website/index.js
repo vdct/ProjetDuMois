@@ -196,7 +196,12 @@ app.get('/users/:name', (req, res) => {
 			const userid = res1.rows[0].userid;
 
 			// Fetch badges
-			pool.query("SELECT project, badge FROM user_badges WHERE userid = $1", [ userid ])
+			const sql = Object.entries(projects)
+				.map(e => `SELECT '${e[0]}' AS project, * FROM get_badges('${e[0]}', $1)`)
+				.concat([`SELECT 'meta' AS project, * FROM get_badges('meta', $1)`])
+				.join(" UNION ALL ");
+
+			pool.query(sql, [ userid ])
 			.then(res2 => {
 				res.render('pages/user', { CONFIG, username: req.params.name, userid, badges: getBadgesDetails(projects, res2.rows) });
 			})

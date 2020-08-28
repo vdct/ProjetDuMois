@@ -18,16 +18,7 @@ CREATE INDEX user_contributions_project_idx ON user_contributions(project);
 CREATE INDEX user_contributions_userid_idx ON user_contributions(userid);
 
 -- User badges
-CREATE TABLE user_badges(
-	userid BIGINT NOT NULL,
-	project VARCHAR NOT NULL,
-	badge VARCHAR NOT NULL,
-	ts TIMESTAMP NOT NULL DEFAULT current_timestamp,
-	PRIMARY KEY (userid, project, badge)
-);
-
-CREATE INDEX user_badges_userid_idx ON user_badges(userid);
-CREATE INDEX user_badges_project_idx ON user_badges(project);
+DROP TABLE IF EXISTS user_badges;
 
 -- Features counts
 CREATE TABLE feature_counts(

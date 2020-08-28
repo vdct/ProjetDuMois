@@ -41,7 +41,7 @@ BEGIN
 			RETURN next;
 		END IF;
 
-		IF nb_contributions BETWEEN 1 AND 30 THEN
+		IF nb_contributions BETWEEN 1 AND 29 THEN
 			id := '10_edits';
 			name := '10+ contributions';
 			description := 'Envie d''aller un peu plus loin';
@@ -50,7 +50,7 @@ BEGIN
 			RETURN next;
 		END IF;
 
-		IF nb_contributions BETWEEN 10 AND 42 THEN
+		IF nb_contributions BETWEEN 10 AND 41 THEN
 			id := '30_edits';
 			name := '30+ contributions';
 			description := 'J''aime bien c''est sympa comme projet';
@@ -59,7 +59,7 @@ BEGIN
 			RETURN next;
 		END IF;
 
-		IF nb_contributions BETWEEN 30 AND 70 THEN
+		IF nb_contributions BETWEEN 30 AND 69 THEN
 			id := '42_edits';
 			name := '42+ contributions';
 			description := 'La réponse à la grande question sur la vie, l''univers et le reste';
@@ -68,7 +68,7 @@ BEGIN
 			RETURN next;
 		END IF;
 
-		IF nb_contributions BETWEEN 42 AND 100 THEN
+		IF nb_contributions BETWEEN 42 AND 99 THEN
 			id := '70_edits';
 			name := '70+ contributions';
 			description := '70 contributions par heure, tout s''accélère';
@@ -77,7 +77,7 @@ BEGIN
 			RETURN next;
 		END IF;
 
-		IF nb_contributions BETWEEN 70 AND 500 THEN
+		IF nb_contributions BETWEEN 70 AND 499 THEN
 			id := '100_edits';
 			name := '100+ contributions';
 			description := 'Et de 100 !';

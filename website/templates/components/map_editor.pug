@@ -166,6 +166,7 @@ script.
 						}
 
 						cancelAddNewFeature(false, true);
+						addContribution('add');
 					})
 				))
 				.catch(e => {
@@ -186,6 +187,7 @@ script.
 					editorDoneDom.classList.remove("d-none");
 					loadNotesOnMap();
 					cancelAddNewFeature(false, true);
+					addContribution('add');
 				})
 				.catch(e => {
 					console.error(e);

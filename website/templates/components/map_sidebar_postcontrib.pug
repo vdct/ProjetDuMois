@@ -1,0 +1,89 @@
+p Votre contribution a bien été prise en compte, merci pour votre participation !
+
+div#pdm-postcontrib-badges.d-none
+	h5 Badges obtenus
+	div#pdm-postcontrib-anon.d-none
+		p Vous n'êtes pas connecté avec un compte OpenStreetMap. Inscrivez-vous ou connectez-vous pour collecter des badges !
+		div.text-center.mb-3
+			+user_connect
+	div#pdm-postcontrib-auth.d-none.row
+
+button#pdm-postcontrib-map.btn.btn-outline-primary.btn-block.d-md-none(type="button") Retour à la carte
+button#pdm-postcontrib-ok.btn.btn-outline-primary.btn-block.d-none.d-md-block(type="button") OK
+
+script.
+	document.getElementById("pdm-postcontrib-map").addEventListener("click", e => window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } })));
+	document.getElementById("pdm-postcontrib-ok").addEventListener("click", e => window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } })));
+	const postContribBadgesDom = document.getElementById("pdm-postcontrib-badges");
+	const postContribAuthDom = document.getElementById("pdm-postcontrib-auth");
+
+	// Send instant contribution
+	function addContribution(type) {
+		postContribBadgesDom.classList.remove("d-none");
+
+		// With auth : save contribution in DB, display badges
+		if(window.osm_user) {
+			document.getElementById("pdm-postcontrib-anon").classList.add("d-none");
+			postContribAuthDom.innerHTML = `<div class="col text-center mb-3"><span class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></span></div>`;
+			postContribAuthDom.classList.remove("d-none");
+
+			fetch(`${window.location.origin}/projects/#{id}/contribute/${window.osm_user.id}?type=${type}&username=${window.osm_user.name}`, { method: "POST" })
+			.then(result => result.json())
+			.then(result => {
+				// Display badges
+				postContribAuthDom.innerHTML = '';
+
+				if(result.badges && result.badges.length > 0) {
+					result.badges.forEach(badge => {
+						const domBadge = document.createElement("div");
+						domBadge.classList.add("col-12", "col-sm", "text-center", "mb-2");
+
+						const img = document.createElement("img");
+						img.src = `/images/badges/${badge.id === "contributed" ? #{id.split("_").pop()} : badge.id}.svg`;
+						img.alt = "";
+						img.title = badge.description;
+
+						if(badge.acquired) {
+							img.classList.add("mr-2");
+							img.style.maxWidth = "72px";
+							img.style.maxHeight = "72px";
+							domBadge.appendChild(img);
+
+							const p = document.createElement("p");
+							p.classList.add("m-0");
+							p.appendChild(document.createTextNode(badge.name));
+							domBadge.appendChild(p);
+						}
+						else {
+							const subdiv = document.createElement("div");
+							subdiv.classList.add("progress", `load-${Math.floor(badge.progress/10)}`);
+							subdiv.innerHTML = `<span class="progress-left"><span class="progress-bar"></span></span><span class="progress-right"><span class="progress-bar"></span></span><div class="progress-value"></div>`;
+							subdiv.lastChild.appendChild(img);
+							domBadge.appendChild(subdiv);
+
+							const p = document.createElement("p");
+							p.classList.add("m-0", "text-muted");
+							p.innerHTML = `${badge.name} <small>(${badge.progress}%)</small>`;
+							domBadge.appendChild(p);
+						}
+
+						postContribAuthDom.appendChild(domBadge);
+					});
+				}
+				else {
+					postContribBadgesDom.classList.add("d-none");
+				}
+			})
+			.catch(e => {
+				console.error(e);
+				postContribBadgesDom.classList.add("d-none");
+			});
+		}
+		// No auth : show connect to OSM
+		else {
+			document.getElementById("pdm-postcontrib-anon").classList.remove("d-none");
+			postContribAuthDom.classList.add("d-none");
+		}
+
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "postcontrib", open: true } }));
+	}

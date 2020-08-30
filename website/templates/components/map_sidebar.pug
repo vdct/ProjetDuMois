@@ -24,6 +24,10 @@ div#pdm-map-sidebar.pdm-hidden
 		div.pdm-sidebar-editor.m-3.d-none
 			include map_editor.pug
 
+		//- Display post-contribution screen
+		div.pdm-sidebar-postcontrib.m-3.d-none
+			include map_sidebar_postcontrib.pug
+
 include ./map_sidebar_feature.pug
 script.
 	const sidebarDom = document.getElementById("pdm-map-sidebar");
@@ -62,6 +66,7 @@ script.
 	const panelDefaultDom = sidebarDom.querySelector(".pdm-sidebar-default");
 	const panelFeatureDom = sidebarDom.querySelector(".pdm-sidebar-feature");
 	const panelEditorDom = sidebarDom.querySelector(".pdm-sidebar-editor");
+	const panelPostContribDom = sidebarDom.querySelector(".pdm-sidebar-postcontrib");
 
 	window.addEventListener("pdm_sidebar_use", e => {
 		if(e.detail.open) {
@@ -85,18 +90,28 @@ script.
 				}
 				panelDefaultDom.classList.add("d-none");
 				panelEditorDom.classList.add("d-none");
+				panelPostContribDom.classList.add("d-none");
 				panelFeatureDom.classList.remove("d-none");
 				break;
 
 			case "editor":
 				panelDefaultDom.classList.add("d-none");
 				panelFeatureDom.classList.add("d-none");
+				panelPostContribDom.classList.add("d-none");
 				panelEditorDom.classList.remove("d-none");
+				break;
+
+			case "postcontrib":
+				panelDefaultDom.classList.add("d-none");
+				panelFeatureDom.classList.add("d-none");
+				panelEditorDom.classList.add("d-none");
+				panelPostContribDom.classList.remove("d-none");
 				break;
 
 			default:
 				panelFeatureDom.classList.add("d-none");
 				panelEditorDom.classList.add("d-none");
+				panelPostContribDom.classList.add("d-none");
 				panelDefaultDom.classList.remove("d-none");
 		}
 		updateHashMapSidebar();

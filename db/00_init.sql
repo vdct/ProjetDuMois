@@ -11,7 +11,8 @@ CREATE TABLE user_contributions(
 	project VARCHAR NOT NULL,
 	userid BIGINT NOT NULL,
 	ts TIMESTAMP NOT NULL,
-	contribution VARCHAR NOT NULL
+	contribution VARCHAR NOT NULL,
+	verified BOOLEAN NOT NULL DEFAULT TRUE
 );
 
 CREATE INDEX user_contributions_project_idx ON user_contributions(project);

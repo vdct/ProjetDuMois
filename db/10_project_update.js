@@ -200,6 +200,7 @@ ${separator}
 
 echo "==== Generate user contributions"
 ${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS \\$\\$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; \\$\\$ LANGUAGE plpgsql IMMUTABLE;"
+${PSQL} -c "DELETE FROM user_contributions WHERE NOT verified"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
 ${PSQL} -f "${__dirname}/15_badges.sql"
 ${separator}

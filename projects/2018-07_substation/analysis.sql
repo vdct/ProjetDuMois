@@ -6,7 +6,7 @@ WHERE project = current_setting('my.pdm.project_id');
 
 -- Read contributions from osm_changes
 INSERT INTO user_contributions
-SELECT current_setting('my.pdm.project_id') AS project, userid, ts, 'add_substation' AS contribution
+SELECT current_setting('my.pdm.project_id') AS project, userid, ts, 'add' AS contribution
 FROM (
 	SELECT *
 	FROM osm_changes
@@ -14,7 +14,7 @@ FROM (
 ) a;
 
 INSERT INTO user_contributions
-SELECT current_setting('my.pdm.project_id') AS project, userid, ts, 'edit_substation' AS contribution
+SELECT current_setting('my.pdm.project_id') AS project, userid, ts, 'edit' AS contribution
 FROM (
 	SELECT *
 	FROM osm_changes

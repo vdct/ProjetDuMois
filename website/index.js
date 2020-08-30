@@ -71,8 +71,10 @@ app.get('/projects/:id/map', (req, res) => {
 	}
 
 	const p = projects[req.params.id];
+	const all = filterProjects(projects);
+	const isActive = all.current && all.current.id === req.params.id;
 	const mapstyle = getMapStyle(p);
-	res.render('pages/map', Object.assign({ CONFIG }, p, mapstyle));
+	res.render('pages/map', Object.assign({ CONFIG }, p, mapstyle, isActive));
 });
 
 // Project statistics
@@ -180,6 +182,62 @@ app.get('/projects/:id/stats', (req, res) => {
 			});
 		});
 		res.send(toSend);
+	});
+});
+
+// User contributions
+app.post('/projects/:id/contribute/:userid', (req, res) => {
+	// Check project is active
+	const p = filterProjects(projects);
+	if(!req.params.id || !projects[req.params.id] || !p.current || p.current.id !== req.params.id) {
+		return res.redirect('/error/400');
+	}
+
+	// Check userid seem valid
+	if(!req.params.userid || !/^\d+$/.test(req.params.userid) || typeof req.query.username !== "string" || req.query.username.trim().length === 0) {
+		return res.redirect('/error/400');
+	}
+
+	// Check type of contribution
+	if(!req.query.type || !["add", "edit", "delete"].includes(req.query.type)) {
+		return res.redirect('/error/400');
+	}
+
+	// Update user name in DB
+	pool.query('INSERT INTO user_names(userid, username) VALUES ($1, $2) ON CONFLICT (userid) DO UPDATE SET username = EXCLUDED.username', [req.params.userid, req.query.username])
+	.then(r1 => {
+		// Get badges before edit
+		pool.query('SELECT * FROM get_badges($1, $2)', [req.params.id, req.params.userid])
+		.then(r2 => {
+			const badgesBefore = r2.rows;
+
+			// Insert contribution
+			pool.query('INSERT INTO user_contributions(project, userid, ts, contribution, verified) VALUES ($1, $2, current_timestamp, $3, false)', [req.params.id, req.params.userid, req.query.type])
+			.then(r3 => {
+				// Get badges after contribution
+				pool.query('SELECT * FROM get_badges($1, $2)', [req.params.id, req.params.userid])
+				.then(r4 => {
+					const badgesAfter = r4.rows;
+					const badgesForDisplay = badgesAfter.filter(b => {
+						const badgeInBefore = badgesBefore.find(b2 => b.id === b2.id);
+						return !badgeInBefore || !b.acquired || badgeInBefore.acquired !== b.acquired;
+					});
+					res.send({ badges: badgesForDisplay });
+				})
+				.catch(e => {
+					res.redirect('/error/500');
+				});
+			})
+			.catch(e => {
+				res.redirect('/error/500');
+			});
+		})
+		.catch(e => {
+			res.redirect('/error/500');
+		});
+	})
+	.catch(e => {
+		res.redirect('/error/500');
 	});
 });
 

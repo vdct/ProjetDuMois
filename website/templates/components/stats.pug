@@ -23,12 +23,14 @@ div.row
 					tbody#stats-leaderboard
 
 	//- Charts
-	div.col-lg-6.mb-2
+	div.col-lg-6.mb-2#stats-chart-container
 		h3 Avancement
+		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart.w-100(height="300")
 
 	div.col-lg-6.mb-2#stats-chart-notes-container
 		h3 Notes
+		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart-notes.w-100(height="300")
 
 script.
@@ -116,20 +118,27 @@ script.
 					if(i < 3 || lb.userid === window.osm_user.id) {
 						const podiumStep = document.createElement("div");
 						podiumStep.classList.add("col", "text-center");
+						podiumStep.style.transition = "opacity 1s";
+						podiumStep.style.opacity = "0";
+						setTimeout(() => podiumStep.style.opacity = "1", 1000*i);
+
+						const imgLink = document.createElement("a");
+						imgLink.href = td2Link.href;
+						podiumStep.appendChild(imgLink);
 
 						const imgDefault = document.createElement("img");
 						imgDefault.classList.add("img-thumbnail", "mb-1");
 						imgDefault.src = "/images/badges/contributed.mini.svg";
 						imgDefault.style.maxWidth = "60px";
 						imgDefault.style.maxHeight = "60px";
-						podiumStep.appendChild(imgDefault);
+						imgLink.appendChild(imgDefault);
 
 						// Try to load a custom user pic if any
 						const imgCustom = document.createElement("img");
 						imgCustom.classList.add("img-thumbnail", "mb-1", "d-none");
 						imgCustom.style.maxWidth = "60px";
 						imgCustom.style.maxHeight = "60px";
-						podiumStep.appendChild(imgCustom);
+						imgLink.appendChild(imgCustom);
 
 						osmApi.fetchUser(lb.userid).then(details => {
 							if(details.img && details.img.href) {
@@ -147,7 +156,8 @@ script.
 						divStep.style.backgroundColor = i < 3 ? podiumStyle[i][1] : podiumStyle[3][1];
 						divStep.appendChild(document.createTextNode(lb.pos));
 						divStep.appendChild(document.createElement("br"));
-						divStep.appendChild(document.createTextNode(lb.username));
+						divStep.appendChild(td2Link.cloneNode(true));
+						divStep.lastChild.classList.add("text-decoration-none", "text-body");
 						podiumStep.appendChild(divStep);
 
 						podium.appendChild(podiumStep);
@@ -175,6 +185,10 @@ script.
 					if(chartObj.ticks[0] > last) { chartObj.ticks.unshift(last); }
 				}
 			};
+
+			for(let scd of document.querySelectorAll(".spinner-charts")) {
+				scd.classList.add("d-none");
+			}
 
 			// Notes count + chart
 			if(res.chartNotes) {

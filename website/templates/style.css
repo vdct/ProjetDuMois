@@ -234,11 +234,17 @@ a.navbar-brand:hover {
 	display: flex;
 	align-items: center;
 	line-height: 1.5rem;
+	cursor: pointer;
 }
 
 .map-legend > div > span {
-	font-size: 2rem;
 	margin-right: 5px;
+	width: 12px;
+	height: 12px;
+}
+
+.text-line-through {
+	text-decoration: line-through;
 }
 
 .map-alert {

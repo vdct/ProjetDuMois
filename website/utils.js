@@ -37,6 +37,7 @@ exports.getMapStyle = (p) => {
 		type: "raster",
 		tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
 		maxzoom: 19,
+		tileSize: 256,
 		attribution: "&copy; OpenStreetMap"
 	}};
 	const layers = [{
@@ -94,7 +95,7 @@ exports.getMapStyle = (p) => {
 				}
 			});
 
-			legend.push({ color, label: ds.name });
+			legend.push({ color, label: ds.name, layerId: id });
 		});
 
 		// OSM
@@ -119,7 +120,7 @@ exports.getMapStyle = (p) => {
 				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 			});
 
-			legend.push({ color, label: ds.name });
+			legend.push({ color, label: ds.name, layerId: id });
 		});
 
 		// Osmose
@@ -145,7 +146,7 @@ exports.getMapStyle = (p) => {
 				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 			});
 
-			legend.push({ color, label: ds.name });
+			legend.push({ color, label: ds.name, layerId: id });
 		});
 
 		// Notes
@@ -163,7 +164,7 @@ exports.getMapStyle = (p) => {
 				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 			});
 
-			legend.push({ color, label: ds.name });
+			legend.push({ color, label: ds.name, layerId: id });
 		});
 	}
 

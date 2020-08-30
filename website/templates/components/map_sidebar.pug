@@ -9,8 +9,8 @@ div#pdm-map-sidebar.pdm-hidden
 			div.map-legend
 				h5 Légende
 				each lg in legend
-					div
-						span(style=`color: ${lg.color}`) ●
+					div(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
+						span(style=`background-color: ${lg.color}`)
 						| #{lg.label}
 
 				if editors.pdm && editors.pdm.add
@@ -116,3 +116,23 @@ script.
 		}
 		updateHashMapSidebar();
 	});
+
+//- Make legend symbol clickable to enable/disable layer
+-
+	const legendClickEvents = legend
+		.map(lg => lg.layerId)
+		.map((id,i) => `
+			const domLegend${i} = document.getElementById('pdm-legend-${id}');
+			domLegend${i}.addEventListener("click", e => {
+				if(domLegend${i}.classList.contains('text-line-through')) {
+					map.setFilter('${id}', null);
+					domLegend${i}.classList.remove('text-line-through');
+				}
+				else {
+					map.setFilter('${id}', ['boolean', false]);
+					domLegend${i}.classList.add('text-line-through');
+				}
+			});`)
+		.join("\n");
+
+script !{legendClickEvents}

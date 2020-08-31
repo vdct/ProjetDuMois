@@ -187,9 +187,12 @@ script.
 				coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
 			}
 
-			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", feature: features[0] } }));
-			showMarker(coordinates);
-			map.flyTo({ center: coordinates, zoom: 18 });
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } }));
+			map.flyTo({ center: coordinates, zoom: Math.max(16, map.getZoom()), speed: 1.5 });
+			map.once("moveend", () => {
+				showMarker(coordinates);
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", feature: features[0] } }));
+			});
 		}
 	}
 

@@ -120,7 +120,7 @@ script.
 						podiumStep.classList.add("col", "text-center");
 						podiumStep.style.transition = "opacity 1s";
 						podiumStep.style.opacity = "0";
-						setTimeout(() => podiumStep.style.opacity = "1", 1000*i);
+						setTimeout(() => podiumStep.style.opacity = "1", 1000*Math.min(i, 3));
 
 						const imgLink = document.createElement("a");
 						imgLink.href = td2Link.href;

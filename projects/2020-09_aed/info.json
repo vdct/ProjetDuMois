@@ -76,7 +76,7 @@
 			"add": {
 				"title": "Ajouter un défibrillateur manquant",
 				"fields": [
-					{ "type": "hidden", "tags": { "emergency": "defibrillator" } },
+					{ "type": "hidden", "tags": { "emergency": "defibrillator", "ref:FR:GeoDAE": "*" } },
 					{ "type": "3states", "name": "À l'intérieur d'un bâtiment ?", "tag": "indoor" },
 					{ "type": "textarea", "name": "Localisation précise", "tag": "defibrillator:location", "description": "Exemple : derrière le comptoir de l'accueil" },
 					{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },

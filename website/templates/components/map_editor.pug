@@ -110,7 +110,14 @@ script.
 		e.preventDefault();
 		showMarker();
 		const formData = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[1] && kv[1].toString().trim() !== ""));
-		const fixedTags = Object.fromEntries(editors.pdm.add.fields.filter(f => f.type === "hidden").map(f => Object.entries(f.tags)).flat());
+		const fixedTags = Object.fromEntries(
+			editors.pdm.add.fields
+			.filter(f => f.type === "hidden")
+			.map(f => Object.entries(f.tags))
+			.flat()
+			.map(e => e[1] === "*" && currentEditorData.tags && currentEditorData.tags[e[0]] ? [e[0], currentEditorData.tags[e[0]]] : e)
+			.filter(e => e[1] !== "*")
+		);
 		const tagsToApply = Object.assign({}, fixedTags, formData);
 
 		if(osmApi && currentEditorData && currentEditorData.coordinates.lat && currentEditorData.coordinates.lng && Object.keys(tagsToApply).length > 0) {

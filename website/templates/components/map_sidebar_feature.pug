@@ -177,6 +177,7 @@ script.
 				const editWithJOSM = document.createElement("a");
 				editWithJOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
 				editWithJOSM.addEventListener("click", () => {
+					const { lat, lng } = map.getCenter();
 					const urlsToLoad = [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lng+0.0005}&left=${lng-0.0005}${options.osmid && `&select=${options.osmid.replace("/", "")}` || ""}&#{josmParams}`];
 					if(options.tags && !options.osmid) {
 						urlsToLoad.push(`#{CONFIG.JOSM_REMOTE_URL}/add_node?lon=${lng}&lat=${lat}&addtags=${encodeURIComponent(Object.entries(options.tags).map(e => e.join("=")).join("|"))}`);
@@ -226,6 +227,16 @@ script.
 					editWithJOSM.addEventListener("click", options.onExternalEdit);
 					editWithOSM.addEventListener("click", options.onExternalEdit);
 					editWithMapillary.addEventListener("click", options.onExternalEdit);
+				}
+
+				if(options.mapcoords) {
+					map.on("moveend", () => {
+						const { lat, lng } = map.getCenter();
+						editWithApp.href = `geo:${lat},${lng}`;
+						editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&#{idParams}`;
+						editWithOSM.href = `#{CONFIG.OSM_URL}/${options.noteid || options.osmid || ""}#map=18/${lat}/${lng}`;
+						editWithMapillary.href = `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lng}&z=18`;
+					});
 				}
 
 				group.appendChild(dropdown);

@@ -27,8 +27,9 @@ script.
 	map.addControl(new mapboxgl.NavigationControl({ showCompass: false }));
 
 	// Add feature button
+	createAddFeatureButton(document.querySelector("#pdm-map-sidebar .pdm-sidebar-buttons"), null, { mini: true });
 	if(editors.pdm && editors.pdm.add) {
-		createAddFeatureButton(document.getElementById("legend-edit-button"), "btn-block");
+		createAddFeatureButton(document.getElementById("legend-edit-button"), "btn-block", { mapcoords: true });
 	}
 
 	// Geolocate

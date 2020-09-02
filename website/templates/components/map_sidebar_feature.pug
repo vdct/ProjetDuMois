@@ -325,7 +325,7 @@ script.
 					osmid: elem && elem.type+"/"+elem.id,
 					osmoseuuid: meta.uuid,
 					onExternalEdit: () => divButtons.insertBefore(divButtonDone, divButtonFalse),
-					onInternalEdit: () => markOsmose("done", feature)
+					onInternalEdit: markOsmose("done", feature)
 				});
 
 				divButtons.appendChild(divButtonFalse);

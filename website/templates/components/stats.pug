@@ -19,7 +19,7 @@ div.row
 						tr
 							th(scope="col") #
 							th(scope="col") Pseudo
-							th(scope="col") Éditions
+							th(scope="col") Points
 					tbody#stats-leaderboard
 
 	//- Charts
@@ -34,12 +34,6 @@ div.row
 		canvas#stats-chart-notes.w-100(height="300")
 
 script.
-	const BADGES_NAMES = {
-		"contributed": "A participé au projet du mois",
-		"score_1st": "Première place au classement",
-		"score_2nd": "Deuxième place au classement",
-		"score_3rd": "Troisième place au classement"
-	};
 	function showStatistics() {
 		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
 		.then(res => res.json())

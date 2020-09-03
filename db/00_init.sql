@@ -12,7 +12,8 @@ CREATE TABLE user_contributions(
 	userid BIGINT NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	contribution VARCHAR NOT NULL,
-	verified BOOLEAN NOT NULL DEFAULT TRUE
+	verified BOOLEAN NOT NULL DEFAULT TRUE,
+	points INT NOT NULL DEFAULT 1
 );
 
 CREATE INDEX user_contributions_project_idx ON user_contributions(project);
@@ -45,12 +46,12 @@ CREATE EXTENSION postgis;
 CREATE EXTENSION hstore;
 
 -- Leaderboard view
-CREATE VIEW leaderboard AS
+CREATE OR REPLACE VIEW leaderboard AS
 WITH stats AS (
-	SELECT userid, project, COUNT(*) AS amount
+	SELECT userid, project, SUM(points) AS amount
 	FROM user_contributions
 	GROUP BY userid, project
-	ORDER BY COUNT(*) DESC
+	ORDER BY SUM(points) DESC
 ), scores AS (
 	SELECT project, row_number() over (PARTITION BY project ORDER BY amount DESC) AS pos, amount
 	FROM (

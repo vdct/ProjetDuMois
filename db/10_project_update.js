@@ -35,8 +35,13 @@ const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
 
 // Check if there is any project to analyse
 const projectIdFromCli = process.argv.slice(2).pop();
-if(projectIdFromCli && projects[projectIdFromCli]) {
-	project = projects[projectIdFromCli];
+if(projectIdFromCli) {
+	if(projects[projectIdFromCli]) {
+		project = projects[projectIdFromCli];
+	}
+	else {
+		throw new Error("Project not found : "+projectIdFromCli);
+	}
 }
 if(!project) {
 	throw new Error("No project currently");

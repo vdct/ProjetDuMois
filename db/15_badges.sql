@@ -34,7 +34,7 @@ BEGIN
 		-- Badges related to amount of contributions
 		IF nb_contributions < 10 THEN
 			id := '1_edit';
-			name := '1ère contribution';
+			name := '1er point';
 			description := 'Lancez-vous dans l''aventure';
 			acquired := nb_contributions >= 1;
 			progress := acquired::INT * 100;
@@ -43,7 +43,7 @@ BEGIN
 
 		IF nb_contributions BETWEEN 1 AND 29 THEN
 			id := '10_edits';
-			name := '10+ contributions';
+			name := '10+ points';
 			description := 'Envie d''aller un peu plus loin';
 			acquired := nb_contributions >= 10;
 			progress := FLOOR(LEAST(nb_contributions, 10)::FLOAT / 10 * 100);
@@ -52,7 +52,7 @@ BEGIN
 
 		IF nb_contributions BETWEEN 10 AND 41 THEN
 			id := '30_edits';
-			name := '30+ contributions';
+			name := '30+ points';
 			description := 'J''aime bien c''est sympa comme projet';
 			acquired := nb_contributions >= 30;
 			progress := FLOOR(LEAST(nb_contributions, 30)::FLOAT / 30 * 100);
@@ -61,7 +61,7 @@ BEGIN
 
 		IF nb_contributions BETWEEN 30 AND 69 THEN
 			id := '42_edits';
-			name := '42+ contributions';
+			name := '42+ points';
 			description := 'La réponse à la grande question sur la vie, l''univers et le reste';
 			acquired := nb_contributions >= 42;
 			progress := FLOOR(LEAST(nb_contributions, 42)::FLOAT / 42 * 100);
@@ -70,8 +70,8 @@ BEGIN
 
 		IF nb_contributions BETWEEN 42 AND 99 THEN
 			id := '70_edits';
-			name := '70+ contributions';
-			description := '70 contributions par heure, tout s''accélère';
+			name := '70+ points';
+			description := '70 points par heure, tout s''accélère';
 			acquired := nb_contributions >= 70;
 			progress := FLOOR(LEAST(nb_contributions, 70)::FLOAT / 70 * 100);
 			RETURN next;
@@ -79,7 +79,7 @@ BEGIN
 
 		IF nb_contributions BETWEEN 70 AND 499 THEN
 			id := '100_edits';
-			name := '100+ contributions';
+			name := '100+ points';
 			description := 'Et de 100 !';
 			acquired := nb_contributions >= 100;
 			progress := LEAST(nb_contributions, 100);
@@ -88,7 +88,7 @@ BEGIN
 
 		IF nb_contributions >= 100 THEN
 			id := '500_edits';
-			name := '500+ contributions';
+			name := '500+ points';
 			description := 'Objectif Lune';
 			acquired := nb_contributions >= 500;
 			progress := FLOOR(LEAST(nb_contributions, 500)::FLOAT / 500 * 100);
@@ -109,14 +109,14 @@ BEGIN
 
 		IF acquired THEN
 			progress := 100;
-			description := 'Le plus de contributions sur l''ensemble des projets';
+			description := 'Le plus de points sur l''ensemble des projets';
 			RETURN next;
 		ELSE
 			SELECT COUNT(*)::FLOAT / result_count * 100 INTO progress
 			FROM user_contributions
 			WHERE userid = the_userid;
 			IF progress >= 50 THEN
-				description := 'Détronez la personne ayant le plus de contributions à ce jour';
+				description := 'Détronez la personne ayant le plus de points à ce jour';
 				RETURN next;
 			END IF;
 		END IF;

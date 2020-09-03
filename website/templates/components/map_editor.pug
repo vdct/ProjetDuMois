@@ -1,9 +1,9 @@
 if editors.pdm && editors.pdm.add
 	h5(style="font-size: 1.1rem")= editors.pdm.add.title
-	div.alert.alert-info#pdm-editor-mode
 
 form#pdm-editor-form
 	if editors.pdm && editors.pdm.add && editors.pdm.add.fields
+		div.alert.alert-info#pdm-editor-mode
 		each field in editors.pdm.add.fields
 			if field.type !== "hidden"
 				div.form-group
@@ -41,6 +41,19 @@ form#pdm-editor-form
 				i.fa.fa-ban.mr-2
 				| Annuler
 
+form#pdm-editor-note.d-none
+	div.alert.alert-info La création de notes de carte est à réserver aux cas ambigus, si la situation est claire préférez un autre mode d'édition.
+	div.form-group
+		label(for="pdm-editor-note-txt") Commentaire
+		textarea.form-control(name="note" rows="3" required=true)
+	div.btn-group.btn-block(role="group")
+		button.btn.btn-success.w-50(type="submit" title="Envoyer le commentaire de carte sur OpenStreetMap")
+			i.fa.fa-plus.mr-2
+			| Créer
+		button#pdm-editor-note-cancel.btn.btn-warning.w-50(type="button" title="Retourner à la carte sans envoyer à OpenStreetMap")
+			i.fa.fa-ban.mr-2
+			| Annuler
+
 div#pdm-editor-wait.text-center.d-none
 	span.spinner-border.text-primary(role="status" style="width: 5rem; height: 5rem;")
 	p.text-muted Envoi en cours, veuillez patienter
@@ -53,6 +66,7 @@ div#pdm-editor-done.d-none
 script.
 	const editorModeDom = document.getElementById("pdm-editor-mode");
 	const editorFormDom = document.getElementById("pdm-editor-form");
+	const editorNoteDom = document.getElementById("pdm-editor-note");
 	const editorWaitDom = document.getElementById("pdm-editor-wait");
 	const editorDoneDom = document.getElementById("pdm-editor-done");
 	let currentEditorData = null;
@@ -85,19 +99,32 @@ script.
 	// Second step : once located, ask for details
 	function onNewFeatureLocated(coordinates) {
 		currentEditorData.coordinates = coordinates;
-		editorFormDom.reset();
 
-		// Prefill form with optional tags
-		if(currentEditorData.tags) {
-			Object.entries(currentEditorData.tags).forEach(e => {
-				if(editorFormDom.elements[e[0]]) {
-					editorFormDom.elements[e[0]].value = e[1];
-				}
-			});
+		// Creation of an OSM note
+		if(currentEditorData.textnote) {
+			editorNoteDom.reset();
+			editorNoteDom.addEventListener("submit", onNoteFormSubmit);
+			editorNoteDom.classList.remove("d-none");
+			editorFormDom.classList.add("d-none");
+		}
+		// Creation of a feature (either in OSM or as note)
+		else {
+			editorFormDom.reset();
+
+			// Prefill form with optional tags
+			if(currentEditorData.tags) {
+				Object.entries(currentEditorData.tags).forEach(e => {
+					if(editorFormDom.elements[e[0]]) {
+						editorFormDom.elements[e[0]].value = e[1];
+					}
+				});
+			}
+
+			editorFormDom.addEventListener("submit", onFormSubmit);
+			editorFormDom.classList.remove("d-none");
+			editorNoteDom.classList.add("d-none");
 		}
 
-		editorFormDom.addEventListener("submit", onFormSubmit);
-		editorFormDom.classList.remove("d-none");
 		editorWaitDom.classList.add("d-none");
 		editorDoneDom.classList.add("d-none");
 		window.onbeforeunload = askBeforeUnload;
@@ -123,6 +150,7 @@ script.
 		if(osmApi && currentEditorData && currentEditorData.coordinates.lat && currentEditorData.coordinates.lng && Object.keys(tagsToApply).length > 0) {
 			// Show wait message
 			editorFormDom.classList.add("d-none");
+			editorNoteDom.classList.add("d-none");
 			editorWaitDom.classList.remove("d-none");
 			editorDoneDom.classList.add("d-none");
 
@@ -164,6 +192,7 @@ script.
 					)
 					.then(() => {
 						editorFormDom.classList.add("d-none");
+						editorNoteDom.classList.add("d-none");
 						editorWaitDom.classList.add("d-none");
 						editorDoneDom.classList.remove("d-none");
 						new mapboxgl.Marker({ color: "#2E7D32" }).setLngLat(currentEditorData.coordinates).addTo(map);
@@ -190,6 +219,7 @@ script.
 				osmApi.createNote(currentEditorData.coordinates.lat, currentEditorData.coordinates.lng, noteText)
 				.then(() => {
 					editorFormDom.classList.add("d-none");
+					editorNoteDom.classList.add("d-none");
 					editorWaitDom.classList.add("d-none");
 					editorDoneDom.classList.remove("d-none");
 					loadNotesOnMap();
@@ -209,6 +239,42 @@ script.
 		}
 	}
 
+	function onNoteFormSubmit(e) {
+		e.preventDefault();
+		showMarker();
+
+		let noteText = new FormData(e.target).get("note");
+
+		if(osmApi && currentEditorData && currentEditorData.coordinates.lat && currentEditorData.coordinates.lng && typeof noteText === "string" && noteText.trim().length > 0) {
+			// Show wait message
+			editorFormDom.classList.add("d-none");
+			editorNoteDom.classList.add("d-none");
+			editorWaitDom.classList.remove("d-none");
+			editorDoneDom.classList.add("d-none");
+
+			noteText += `\nVia ProjetDuMois.fr ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
+
+			if(!window.osm_user || !window.osm_user.id || !window.osm_user.auth) {
+				osmApi._auth = { skip: true };
+			}
+
+			osmApi.createNote(currentEditorData.coordinates.lat, currentEditorData.coordinates.lng, noteText)
+			.then(() => {
+				editorFormDom.classList.add("d-none");
+				editorNoteDom.classList.add("d-none");
+				editorWaitDom.classList.add("d-none");
+				editorDoneDom.classList.remove("d-none");
+				loadNotesOnMap();
+				cancelAddNewFeature(false, true);
+			})
+			.catch(e => {
+				console.error(e);
+				alert("Une erreur s'est produite, merci de réessayer plus tard");
+				cancelAddNewFeature();
+			});
+		}
+	}
+
 	// Reset map and sidebar on cancel / done
 	function cancelAddNewFeature(close = true, keepPanel = false) {
 		currentEditorData = null;
@@ -221,6 +287,7 @@ script.
 	window.addEventListener("osm_logout", cancelAddNewFeature);
 
 	if(editorModeDom) {
+		document.getElementById("pdm-editor-note-cancel").addEventListener("click", cancelAddNewFeature);
 		document.getElementById("pdm-editor-cancel").addEventListener("click", cancelAddNewFeature);
 		document.getElementById("pdm-editor-done-btnmap").addEventListener("click", cancelAddNewFeature);
 		document.getElementById("pdm-editor-done-btnok").addEventListener("click", e => cancelAddNewFeature(false));

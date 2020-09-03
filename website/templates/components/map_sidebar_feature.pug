@@ -98,6 +98,8 @@ script.
 	// Generate add to map button
 	function createAddFeatureButton(container, classes = null, options = {}) {
 		if(editors.pdm && editors.pdm.add) {
+			const optsPdm = Object.fromEntries(Object.entries(options).filter(e => ["tags", "onInternalEdit"].includes(e[0])));
+
 			// Main button
 			const button = document.createElement("button");
 			button.classList.add("editor-add-btn", "btn");
@@ -113,7 +115,7 @@ script.
 
 			if(options.mini) {
 				button.classList.add("btn-outline-primary", "btn-sm");
-				button.addEventListener("click", e => onStartNewFeature(options));
+				button.addEventListener("click", e => onStartNewFeature(optsPdm));
 				if(typeof classes === "string" && classes.length > 0) { button.classList.add(...classes.split(" ")); }
 				container.appendChild(button);
 			}
@@ -144,12 +146,12 @@ script.
 					group.appendChild(dropButton);
 
 					dropButton.classList.add("dropdown-toggle-split");
-					button.addEventListener("click", e => onStartNewFeature(options));
+					button.addEventListener("click", e => onStartNewFeature(optsPdm));
 
 					const editWithPdm = document.createElement("a");
 					editWithPdm.classList.add("dropdown-item");
 					editWithPdm.appendChild(document.createTextNode("Avec l'éditeur intégré"));
-					editWithPdm.addEventListener("click", e => onStartNewFeature(options));
+					editWithPdm.addEventListener("click", e => onStartNewFeature(optsPdm));
 					dropdown.appendChild(editWithPdm);
 				}
 				else {
@@ -205,6 +207,14 @@ script.
 					editWithOsmose.target = "_blank";
 					editWithOsmose.appendChild(document.createTextNode("Via Osmose"));
 					dropdown.appendChild(editWithOsmose);
+				}
+
+				if(options.textnote) {
+					const editWithPdmNote = document.createElement("a");
+					editWithPdmNote.classList.add("dropdown-item");
+					editWithPdmNote.appendChild(document.createTextNode("Via une note de carte"));
+					editWithPdmNote.addEventListener("click", e => onStartNewFeature(Object.assign({ textnote: true }, optsPdm)));
+					dropdown.appendChild(editWithPdmNote);
 				}
 
 				const editWithOSM = document.createElement("a");

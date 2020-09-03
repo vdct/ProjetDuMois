@@ -26,7 +26,8 @@
 	"statistics": {
 		"count": true,
 		"feature_name": "gendarmeries",
-		"osmose_tasks": "gendarmeries complétées/intégrées"
+		"osmose_tasks": "gendarmeries complétées/intégrées",
+		"points": { "add": 2, "edit": 2 }
 	},
 	"editors": {
 		"all": {

@@ -212,7 +212,7 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 			const badgesBefore = r2.rows;
 
 			// Insert contribution
-			pool.query('INSERT INTO user_contributions(project, userid, ts, contribution, verified) VALUES ($1, $2, current_timestamp, $3, false)', [req.params.id, req.params.userid, req.query.type])
+			pool.query('INSERT INTO user_contributions(project, userid, ts, contribution, verified, points) VALUES ($1, $2, current_timestamp, $3, false, get_points($1, $3))', [req.params.id, req.params.userid, req.query.type])
 			.then(r3 => {
 				// Get badges after contribution
 				pool.query('SELECT * FROM get_badges($1, $2)', [req.params.id, req.params.userid])

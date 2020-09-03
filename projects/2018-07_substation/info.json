@@ -33,7 +33,8 @@
 	"statistics": {
 		"count": true,
 		"feature_name": "postes électriques",
-		"osmose_tasks": "postes intégrés"
+		"osmose_tasks": "postes intégrés",
+		"points": { "add": 3, "edit": 2 }
 	},
 	"editors": {
 		"all": {

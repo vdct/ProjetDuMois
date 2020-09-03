@@ -26,7 +26,8 @@
 	"statistics": {
 		"count": true,
 		"feature_name": "bornes de recharge",
-		"osmose_tasks": "bornes officielles intégrées"
+		"osmose_tasks": "bornes officielles intégrées",
+		"points": { "add": 3, "edit": 1 }
 	},
 	"editors": {
 		"all": {

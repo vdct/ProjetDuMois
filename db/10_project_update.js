@@ -31,6 +31,7 @@ const CSV_NOTES = CONFIG.WORK_DIR + '/notes.csv';
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql "postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
+const OUTPUT_SQL_POINTS = __dirname+'/13_points.sql';
 
 
 // Check if there is any project to analyse
@@ -110,6 +111,32 @@ if(notesSources.length > 0) {
 // Script text
 const separator = `echo "-------------------------------------------------------------------"
 echo ""`;
+
+
+// Points per contributions (13_points.sql)
+const pointsEntries = [];
+Object.entries(projects).filter(e => e[1].statistics && e[1].statistics.points).forEach(e => {
+	Object.entries(e[1].statistics.points).forEach(ep => {
+		pointsEntries.push([e[0], ep[0], ep[1]]);
+	});
+});
+const sqlPoints = `
+-- Function to get points for each type of contribution per project
+-- Generated automatically by npm run project:update
+CREATE OR REPLACE FUNCTION get_points(the_project VARCHAR, the_contrib VARCHAR) RETURNS INT AS $$
+BEGIN
+	RETURN CASE
+${pointsEntries.map(pe => `		WHEN the_project = '${pe[0]}' AND the_contrib = '${pe[1]}' THEN ${pe[2]}`).join("\n")}
+		ELSE 1
+	END;
+END;
+$$ LANGUAGE plpgsql
+IMMUTABLE LEAKPROOF;
+`;
+fs.writeFile(OUTPUT_SQL_POINTS, sqlPoints, err => {
+	if(err) { throw new Error(err); }
+	console.log("Written SQL points");
+});
 
 
 // Feature counts script (optional)
@@ -204,6 +231,7 @@ rm -f "${CSV_CHANGES}"
 ${separator}
 
 echo "==== Generate user contributions"
+${PSQL} -f "${__dirname}/13_points.sql"
 ${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS \\$\\$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; \\$\\$ LANGUAGE plpgsql IMMUTABLE;"
 ${PSQL} -c "DELETE FROM user_contributions WHERE NOT verified"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
@@ -227,5 +255,5 @@ echo "Done"
 
 fs.writeFile(OUTPUT_SCRIPT, script, { mode: 0o766 }, err => {
 	if(err) { throw new Error(err); }
-	console.log("Done");
+	console.log("Written Bash script");
 });

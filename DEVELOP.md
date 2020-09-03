@@ -68,6 +68,10 @@ Les propriétés dans `info.json` sont les suivantes :
 * `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
 * `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
 * `statistics` : configuration de l'affichage des statistiques sur la page du projet
+* `statistics.count` : activer le comptage des objets dans OSM
+* `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
+* `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
+* `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `analysis.sql`)
 * `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Sources de données

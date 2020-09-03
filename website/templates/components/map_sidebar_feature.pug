@@ -57,7 +57,7 @@ script.
 
 	// Mark as done/false in Osmose
 	const filteredUuids = [];
-	function markOsmose(type, feature) {
+	function markOsmose(type, feature, skipContrib = false) {
 		const uuid = feature.properties.uuid;
 		return () => {
 			// Send to Osmose
@@ -66,7 +66,9 @@ script.
 			// Hide feature on map
 			showMarker();
 			if(type === "done") {
-				addContribution('add');
+				if(!skipContrib) {
+					addContribution('add');
+				}
 			}
 			else {
 				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
@@ -335,7 +337,7 @@ script.
 					osmid: elem && elem.type+"/"+elem.id,
 					osmoseuuid: meta.uuid,
 					onExternalEdit: () => divButtons.insertBefore(divButtonDone, divButtonFalse),
-					onInternalEdit: markOsmose("done", feature)
+					onInternalEdit: markOsmose("done", feature, true)
 				});
 
 				divButtons.appendChild(divButtonFalse);

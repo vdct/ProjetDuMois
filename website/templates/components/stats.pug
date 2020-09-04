@@ -33,6 +33,11 @@ div.row
 		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart-notes.w-100(height="300")
 
+	div.col-lg-6.mb-2#stats-chart-keys-container
+		h3 Clés fréquentes
+		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
+		canvas#stats-chart-keys.w-100(height="300")
+
 script.
 	function showStatistics() {
 		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
@@ -236,6 +241,21 @@ script.
 							}
 						}],
 						yAxes: [ res.pctTasksDone === undefined || parseInt(res.pctTasksDone) >= 30 ? yAxeLinear : yAxeLogarithmic ]
+					}
+				}
+			});
+
+			// Keys chart
+			const ctx2 = document.getElementById("stats-chart-keys").getContext("2d");
+			const myChart2 = new Chart(ctx2, {
+				type: "bar",
+				data: res.chartKeys,
+				options: {
+					responsive: true,
+					scales: {
+						xAxes: [{
+							ticks: { callback: (value, index, values) => value.length > 15 ? value.slice(0, 12)+"..." : value }
+						}]
 					}
 				}
 			});

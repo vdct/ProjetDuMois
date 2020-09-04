@@ -100,7 +100,7 @@ app.get('/projects/:id/stats', (req, res) => {
 				.map(e => ({ t: e[0], y: e[1] }))
 				.sort((a,b) => a.t.localeCompare(b.t)),
 			fill: false,
-			borderColor: ds.color || "red",
+			borderColor: ds.color || "#c62828",
 			lineTension: 0
 		}));
 	}))
@@ -130,14 +130,14 @@ app.get('/projects/:id/stats', (req, res) => {
 					label: "Ouvertes",
 					data: results.rows.map(r => ({ t: r.ts, y: r.open })),
 					fill: false,
-					borderColor: "red",
+					borderColor: "#c62828",
 					lineTension: 0
 				},
 				{
 					label: "Résolues",
 					data: results.rows.map(r => ({ t: r.ts, y: r.closed })),
 					fill: false,
-					borderColor: "green",
+					borderColor: "#388E3C",
 					lineTension: 0
 				}
    			],
@@ -157,7 +157,7 @@ app.get('/projects/:id/stats', (req, res) => {
 				label: "Nombre dans OSM",
 				data: results.rows.map(r => ({ t: r.ts, y: r.amount })),
 				fill: false,
-				borderColor: "blue",
+				borderColor: "#388E3C",
 				lineTension: 0
 			}],
 			count: results.rows.length > 0 && results.rows[results.rows.length-1].amount,
@@ -171,6 +171,31 @@ app.get('/projects/:id/stats', (req, res) => {
 		nbContributors: results.rows.length,
 		leaderboard: osmUserAuthentified ? results.rows : null
 	})));
+
+	// Fetch tags statistics
+	allPromises.push(pool.query(`
+		SELECT k, COUNT(*) AS amount
+		FROM (
+			SELECT json_object_keys(tags) AS k
+			FROM project_${req.params.id.split("_").pop()}
+		) a
+		GROUP BY k
+		ORDER BY COUNT(*) desc;`
+	)
+	.then(results => {
+		const d = results.rows.filter(r => r.amount >= (results.rows[0].amount / 10));
+		return {
+			chartKeys: {
+				labels: d.map(r => r.k),
+				datasets: [{
+					label: "Nombre d'objets pour la clé",
+					data: d.map(r => r.amount),
+					fill: false,
+					backgroundColor: "#1E88E5",
+				}]
+			}
+		};
+	}));
 
 	Promise.all(allPromises)
 	.then(results => {

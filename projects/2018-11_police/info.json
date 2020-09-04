@@ -5,7 +5,8 @@
 	"end_date": "2018-11-30",
 	"summary": "Les commissariats et gendarmeries sont des services publics essentiels, dans lesquels nous pouvons tous être amenés à nous rendre un jour ou l'autre. Pourtant, il en manque encore beaucoup dans OpenStreetMap. La récente mise à disposition de données ouvertes de qualité sur les points d'accueil de la Gendarmerie nationale et de la Police nous permet d'envisager de les ajouter tous sur la carte !",
 	"links": {
-		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Gendarmerie_nationale"
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Gendarmerie_nationale",
+		"osmblog": "https://www.openstreetmap.fr/bilan-du-projet-du-mois-de-novembre-2018/"
 	},
 	"database": {
 		"osmium_tag_filter": "nwr/amenity=police",

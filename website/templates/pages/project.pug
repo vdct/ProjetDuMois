@@ -41,10 +41,15 @@ block content
 				a.btn.btn-light
 					i.fa.fa-expand
 			div.mt-3!= howto
-			div.btn-over-wide
-				a.pdm-wide-link.books(href=links.osmwiki target="_blank") Documentation
-				a.btn.btn-light
-					i.fa.fa-book
+			div.text-center
+				if links.osmwiki
+					a.btn.btn-primary.m-1(href=links.osmwiki target="_blank" role="button")
+						i.fa.fa-book.mr-2
+						| Documentation complète
+				if links.osmblog
+					a.btn.btn-secondary.m-1(href=links.osmblog target="_blank" role="button")
+						i.fa.fa-rss.mr-2
+						| Article de blog
 
 	//- Statistics
 	div.container-fluid.py-5.mb-3.pdm-section-highlight

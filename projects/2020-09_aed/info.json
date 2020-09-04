@@ -5,7 +5,8 @@
 	"end_date": "2020-09-30",
 	"summary": "Les défibrillateurs automatiques externes (DAE) permettent de secourir les personnes lors d'un arrêt cardiaque. Ces équipements de premiers secours sont essentiels, pourtant leur localisation n'est pas toujours connue. Ce mois-ci, complétons ensemble OpenStreetMap pour offrir une liste exhaustive des défibrillateurs en France ! #DéfiCoeur",
 	"links": {
-		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Defibrillateurs"
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Defibrillateurs",
+		"osmblog": "https://www.openstreetmap.fr/projet-du-mois-defibrillateurs/"
 	},
 	"database": {
 		"osmium_tag_filter": "n/emergency=defibrillator",

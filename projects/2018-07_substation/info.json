@@ -5,7 +5,8 @@
 	"end_date": "2018-08-31",
 	"summary": "La récente mise à disposition de données ouvertes par les gestionnaires des réseaux de transport électrique et de distribution nous permettent de passer une nouvelle étape dans l'inventaire des réseaux de notre environnement. En outre, ce projet du mois va permettre de mieux qualifier une partie du bâti partiellement ajoutée au cadastre.",
 	"links": {
-		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/postes_electriques"
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/postes_electriques",
+		"osmblog": "https://www.openstreetmap.fr/bilan-du-projet-du-mois-de-juillet-2018/"
 	},
 	"database": {
 		"osmium_tag_filter": "nw/power=substation",

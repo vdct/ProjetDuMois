@@ -128,11 +128,6 @@ a.pdm-wide-link:hover {
 	opacity: 0.9;
 }
 
-a.pdm-wide-link.books {
-	background: url('/images/osmwiki.jpg') no-repeat center center;
-	background-size: cover;
-}
-
 a.pdm-wide-link.map {
 	background: url('/images/map.jpg') no-repeat center center;
 	background-size: cover;

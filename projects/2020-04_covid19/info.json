@@ -1,0 +1,39 @@
+{
+	"id": "2020-04_covid19",
+	"title": "Horaires durant le confinement",
+	"start_date": "2020-03-23",
+	"end_date": "2020-05-31",
+	"summary": "Pendant le confinement, les commerces et services autour de chez vous sont peut-être fermés ou avec des horaires adaptés. Recensons dans OpenStreetMap les horaires durant le confinement #CaResteOuvert",
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/France/Covid-19",
+		"osmblog": "https://blog.caresteouvert.fr/about/"
+	},
+	"database": {
+		"osmium_tag_filter": "nwr/opening_hours:covid19",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": { "opening_hours:covid19": ["__any__"] }
+		}
+	},
+	"datasources": [
+		{
+			"source": "osm",
+			"name": "Lieu avec horaires de confinement",
+			"description": "Ce lieu a ses horaires durant le confinement renseignées dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		}
+	],
+	"statistics": {
+		"count": true,
+		"feature_name": "lieux",
+		"points": { "add": 3, "edit": 1 }
+	},
+	"editors": {
+		"all": {
+			"comment": "Ajout des horaires durant le confinement",
+			"hashtags": "projetdumois,projetdumoisfr,caresteouvert,covid19"
+		}
+	},
+	"opendata": [
+		{ "title": "Lieux ouverts durant le confinement", "via": "data.gouv.fr", "url": "https://www.data.gouv.fr/fr/organizations/ca-reste-ouvert/" }
+	]
+}

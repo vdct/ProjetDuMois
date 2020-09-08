@@ -203,10 +203,9 @@ ${separator}
 
 echo "==== Update OSH PBF file with replication files"
 osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" "${OSC_UPDATES}"
-osmium extract -p "${OSH_POLY}" -s simple "${OSC_UPDATES}" -O -o "${OSC_UPDATES_LOCAL}"
-osmium apply-changes -H "$prev_osh" "${OSC_UPDATES_LOCAL}" -O -o "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}"
-rm -f "${OSH_UPDATED}" "${OSC_UPDATES_LOCAL}" "${OSC_UPDATES}"
-mv "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}" "${OSH_UPDATED}"
+osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}"
+osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}" -O -o "${OSH_UPDATED}"
+rm -f "${OSC_UPDATES}"
 ${separator}
 
 echo "==== Extract features from OSH PBF (1st pass)"

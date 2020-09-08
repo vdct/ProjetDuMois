@@ -10,6 +10,8 @@ const yaml = require('js-yaml');
 
 // Constants
 const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
+const OSM_PBF_LATEST_UNSTABLE = OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf");
+const OSM_PBF_LATEST_UNSTABLE_FILTERED = OSM_PBF_LATEST.replace(".osm.pbf", ".new-local.osm.pbf");
 const OSM_POLY = OSM_PBF_LATEST.replace("-internal.osm.pbf", ".poly");
 const IMPOSM_YML = CONFIG.WORK_DIR + '/imposm.yml';
 const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
@@ -115,16 +117,17 @@ osmupdate --keep-tempfiles --trust-tempfiles \\
 	-t="${CONFIG.WORK_DIR}/osmupdate/" \\
 	-v "${OSM_PBF_LATEST}" \\
 	"${OSC_FULL}"
-osmium extract -p "${OSM_POLY}" -s simple "${OSC_FULL}" -O -o "${OSC_LOCAL}"
 osmium apply-changes "${OSM_PBF_LATEST}" \\
-	"${OSC_LOCAL}" \\
-	-O -o "${OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf")}"
-rm -f "${OSM_PBF_LATEST}"
-mv "${OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf")}" "${OSM_PBF_LATEST}"
+	"${OSC_FULL}" \\
+	-O -o "${OSM_PBF_LATEST_UNSTABLE}"
+osmium extract -p "${OSM_POLY}" -s simple "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
+rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
 ${separator}
 
 if [ "$mode" == "init" ]; then
 	echo "==== Initial import with Imposm"
+	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
+	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
 	mkdir -p "${IMPOSM_CACHE_DIR}"
 	imposm import -mapping "${IMPOSM_YML}" \\
 		-read "${OSM_PBF_LATEST}" \\
@@ -142,6 +145,7 @@ if [ "$mode" == "init" ]; then
 	${postSQLFull}
 else
 	echo "==== Apply latest changes to database"
+	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
 	imposm diff -mapping "${IMPOSM_YML}" \\
 		-cachedir "${IMPOSM_CACHE_DIR}" \\
 		-dbschema-production public \\
@@ -149,11 +153,9 @@ else
 		"${OSC_LOCAL}"
 
 	${postUpdateSQLFull}
+	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
+	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
 fi
-${separator}
-
-echo "==== Clean-up temporary files"
-rm -f "${OSC_FULL}" "${OSC_LOCAL}"
 ${separator}
 
 echo "Done"

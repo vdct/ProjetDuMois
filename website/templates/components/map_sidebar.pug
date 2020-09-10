@@ -13,7 +13,7 @@ div#pdm-map-sidebar.pdm-hidden
 						span(style=`background-color: ${lg.color}`)
 						| #{lg.label}
 
-				if editors.pdm && editors.pdm.add
+				if editors.pdm
 					h5.mt-3 Éditer
 					div#legend-edit-button
 
@@ -46,7 +46,7 @@ script.
 		if(!window.location.hash.includes("sidebar") && !sidebarDom.classList.contains("pdm-hidden")) {
 			sidebarDom.classList.toggle("pdm-hidden");
 			cancelAskFeatureLocation();
-			cancelAddNewFeature(null, true);
+			cancelEdit(null, true);
 			updateHashMapSidebar();
 		}
 	});
@@ -55,7 +55,7 @@ script.
 	sidebarDom.querySelector(".toggle-map-sidebar").addEventListener("click", () => {
 		sidebarDom.classList.toggle("pdm-hidden");
 		cancelAskFeatureLocation();
-		cancelAddNewFeature(null, true);
+		cancelEdit(null, true);
 		updateHashMapSidebar();
 	});
 

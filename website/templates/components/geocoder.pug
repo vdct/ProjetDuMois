@@ -1,13 +1,16 @@
 div.input-group#boundary-search-container
-	div.d-none.d-sm-flex.input-group-prepend
-		span.input-group-text#search-bar-icon
+	div.input-group-prepend
+		div.input-group-text#search-bar-symbol
 			i.fa.fa-search
+			div.d-none.spinner-border.text-secondary(role="status" style="height: 16px; width: 16px")
 	input#boundary-search.form-control(type="text" placeholder="Rechercher un lieu...")
 
 script.
 	const searchTextField = document.getElementById("boundary-search");
+	const searchBarSymbol = document.getElementById("search-bar-symbol");
 	searchTextField.value = "";
 	let timerSearchInput = null;
+	let lastText = null;
 
 	searchTextField.addEventListener("input", e => {
 		if(timerSearchInput) {
@@ -16,21 +19,36 @@ script.
 
 		const text = e.target.value;
 		if(text && text.trim().length >= 3) {
+			searchBarSymbol.firstChild.classList.add("d-none");
+			searchBarSymbol.lastChild.classList.remove("d-none");
+
 			timerSearchInput = setTimeout(() => {
+				lastText = text.slice(0);
 				fetch(`#{CONFIG.NOMINATIM_URL}/search?q=${encodeURIComponent(text)}&format=json&countrycodes=fr&limit=1`)
 				.then(res => res.json())
 				.then(results => {
-					if(results.length > 0) {
-						searchTextField.value = results[0].display_name;
-						const [ minlat, maxlat, minlon, maxlon ] = results[0].boundingbox.map(v => parseFloat(v));
-						const [ south, north, west, east ] = results[0].boundingbox.map(v => parseFloat(v));
-						searchTextField.blur();
-						map.fitBounds([minlon, minlat, maxlon, maxlat]);
+					if(lastText === searchTextField.value.trim()) {
+						searchBarSymbol.firstChild.classList.remove("d-none");
+						searchBarSymbol.lastChild.classList.add("d-none");
+
+						if(results.length > 0) {
+							const [ minlat, maxlat, minlon, maxlon ] = results[0].boundingbox.map(v => parseFloat(v));
+							const [ south, north, west, east ] = results[0].boundingbox.map(v => parseFloat(v));
+							searchTextField.blur();
+							map.fitBounds([minlon, minlat, maxlon, maxlat]);
+						}
 					}
+					else { console.log("skip"); }
 				})
 				.catch(e => {
 					console.log(e);
+					searchBarSymbol.firstChild.classList.remove("d-none");
+					searchBarSymbol.lastChild.classList.add("d-none");
 				});
-			}, 1000);
+			}, 2000);
+		}
+		else {
+			searchBarSymbol.firstChild.classList.remove("d-none");
+			searchBarSymbol.lastChild.classList.add("d-none");
 		}
 	});

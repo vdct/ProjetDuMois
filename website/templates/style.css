@@ -161,12 +161,6 @@ a.navbar-brand:hover {
 	max-width: 300px;
 }
 
-@media (max-width: 576px) {
-	#boundary-search {
-		border-radius: 0.25rem !important;
-	}
-}
-
 .pdm-user-button .dropdown-menu.show {
 	left: -50px;
 }

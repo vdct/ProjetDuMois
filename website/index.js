@@ -160,8 +160,13 @@ app.get('/projects/:id/stats', (req, res) => {
 				borderColor: "#388E3C",
 				lineTension: 0
 			}],
-			count: results.rows.length > 0 && results.rows[results.rows.length-1].amount,
 			added: results.rows.length > 0 && results.rows[results.rows.length-1].amount - results.rows[0].amount
+		})));
+
+		allPromises.push(pool.query(
+			`SELECT COUNT(*) AS amount FROM project_${req.params.id.split("_").pop()}`
+		).then(results => ({
+			count: results.rows.length > 0 && results.rows[0].amount
 		})));
 	}
 

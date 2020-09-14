@@ -1,5 +1,5 @@
 div#map.map-main
-div#zoom-in.alert.alert-warning.map-alert.font-weight-bold Zoomez ou lancez une recherche pour commencer
+div.alert.alert-warning.map-alert.font-weight-bold.show-low-zoom Zoomez ou lancez une recherche pour commencer
 div#edit-feature-location.alert.alert-primary.map-alert.d-none
 	| Déplacer la carte pour positionner l'objet à créer
 	div.btn-group.btn-block.mt-1
@@ -31,7 +31,7 @@ script.
 	});
 
 	// Add feature button
-	createFeatureButton(document.body, "add", "btn-floating btn-primary d-md-none", { mini: true });
+	createFeatureButton(document.body, "add", "btn-floating btn-primary d-md-none hide-low-zoom", { mini: true });
 	createFeatureButton(document.querySelector("#pdm-map-sidebar .pdm-sidebar-buttons"), "add", "btn-outline-primary btn-sm d-none d-md-block", { mini: true });
 	if(editors.pdm) {
 		createFeatureButton(document.getElementById("legend-edit-button"), "add", "btn-block", { mapcoords: true, textnote: true });
@@ -45,13 +45,22 @@ script.
 	}
 
 	// Alert for zoom/search
-	const zoomAlert = document.getElementById("zoom-in");
 	const toggleZoomAlert = () => {
 		if(map.getZoom() >= 7) {
-			zoomAlert.classList.add("d-none");
+			for(let d of document.querySelectorAll(".show-low-zoom")) {
+				d.classList.add("d-none");
+			}
+			for(let d of document.querySelectorAll(".hide-low-zoom")) {
+				d.classList.remove("d-none");
+			}
 		}
 		else {
-			zoomAlert.classList.remove("d-none");
+			for(let d of document.querySelectorAll(".show-low-zoom")) {
+				d.classList.remove("d-none");
+			}
+			for(let d of document.querySelectorAll(".hide-low-zoom")) {
+				d.classList.add("d-none");
+			}
 		}
 	};
 	toggleZoomAlert();
@@ -62,7 +71,7 @@ script.
 		onAdd(map) {
 			this._map = map;
 			this._container = document.createElement('div');
-			this._container.className = "mapboxgl-ctrl map-ctrl-btn";
+			this._container.className = "mapboxgl-ctrl map-ctrl-btn hide-low-zoom";
 			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
 			if(osmoseLabels && Object.keys(osmoseLabels).length > 0) {
 				const [osmoseItem, osmoseClasses] = Object.keys(osmoseLabels)[0].split("_");

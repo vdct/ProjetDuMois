@@ -26,11 +26,11 @@ script.
 			const icon = document.createElement("i");
 			icon.classList.add("fa", "fa-sign-in-alt");
 			const txt = document.createElement("span");
-			txt.appendChild(document.createTextNode("Se connecter"));
+			txt.appendChild(document.createTextNode("S'inscrire / Se connecter"));
 			txt.classList.add("d-none", "d-sm-inline", "ml-1");
 			domConnect.appendChild(icon);
 			domConnect.appendChild(txt);
-			domConnect.title = "Se connecter";
+			domConnect.title = "S'inscrire / Se connecter";
 		}
 
 		for(let domConnect of document.getElementsByClassName("pdm-user-button")) {
@@ -82,9 +82,9 @@ script.
 
 mixin user_button
 	div.pdm-user-button
-		button.connect-osm-ub.btn.btn-sm.btn-outline-secondary.text-truncate.ml-2(role="button" title="Se connecter")
+		button.connect-osm-ub.btn.btn-sm.btn-outline-secondary.text-truncate.ml-2(role="button" title="S'inscrire / Se connecter")
 			i.fa.fa-sign-in-alt
-			span.d-none.d-sm-inline.ml-1 Se connecter
+			span.d-none.d-sm-inline.ml-1 S'inscrire / Se connecter
 
 		div.dropdown.d-none
 			button.btn.btn-sm.btn-outline-secondary.dropdown-toggle.text-truncate.ml-2(role="button" title="Menu" data-toggle="dropdown")
@@ -102,4 +102,4 @@ mixin user_button
 mixin user_connect
 	button.connect-osm.btn.btn-primary(role="button")
 		i.fa.fa-sign-in-alt
-		span.d-none.d-sm-inline.ml-1 Se connecter
+		span.d-none.d-sm-inline.ml-1 S'inscrire / Se connecter

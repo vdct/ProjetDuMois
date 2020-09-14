@@ -85,7 +85,8 @@
 					{ "v": "yes", "l": "Tout le monde" },
 					{ "v": "customers", "l": "Clients uniquement" },
 					{ "v": "private", "l": "Personnes autorisées uniquement" }
-				] }
+				] },
+				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, modèle, infos pratiques...", "optional": true }
 			],
 			"title": {
 				"add": "Ajouter un défibrillateur manquant",

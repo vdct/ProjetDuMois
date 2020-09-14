@@ -18,7 +18,7 @@
 			"types": ["point", "polygon"],
 			"mapping": {
 				"aeroway": ["aerodrome"],
-				"amenity": ["college","university","ferry_terminal","cinema","community_centre","theatre","conference_centre","townhall"],
+				"amenity": ["college","university","ferry_terminal","cinema","community_centre","theatre","conference_centre","townhall","arts_centre"],
 				"highway": ["services"],
 				"leisure": ["ice_rink","sports_centre","stadium","water_park"],
 				"railway": ["station"],

@@ -53,7 +53,7 @@ Object.entries(projects).forEach(e => {
 		+ project.database.imposm.types.map(type => {
 			const osmid = type === "point" ? "CONCAT('node/', osm_id) AS osm_id" : "CASE WHEN osm_id < 0 THEN CONCAT('relation/', -osm_id) ELSE CONCAT('way/', osm_id) END AS osm_id";
 			const geom = type === "point" ? "geom::GEOMETRY(Point, 3857)" : "ST_PointOnSurface(geom)::GEOMETRY(Point, 3857) AS geom";
-			return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, ${geom} FROM project_${id.split("_").pop()}_${type}`
+			return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, tags ?| ARRAY['note','fixme'] AS needs_check, ${geom} FROM project_${id.split("_").pop()}_${type}`
 		}).join(" UNION ALL ")
 	);
 

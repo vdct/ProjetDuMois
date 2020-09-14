@@ -61,17 +61,20 @@ script.
 			button.setAttribute("type", "button");
 			button.setAttribute("title", editors.pdm.title[mode]);
 
-			const buttonIcon = document.createElement("span");
+			let buttonIcon = document.createElement("span");
 			buttonIcon.classList.add("d-inline-block", "container-svg-fa");
 			buttonIcon.style.height = options.mini ? "24px" : "30px";
 			buttonIcon.appendChild(document.getElementById(mode === "add" ? "map-marker-plus" : "map-marker-edit").firstChild.cloneNode(true));
-			button.appendChild(buttonIcon);
 
 			// PdM action
 			const pdmfct = mode === "add" ? e => onStartNewFeature(optsPdm) : e => onStartEditFeature(Object.assign({ osmid: options.osmid }, optsPdm));
 
 			if(options.mini) {
-				button.classList.add("btn-outline-primary", "btn-sm");
+				if(classes.includes("btn-floating")) {
+					buttonIcon = document.createElement("i");
+					buttonIcon.classList.add("fa", "fa-plus");
+				}
+				button.appendChild(buttonIcon);
 				button.addEventListener("click", pdmfct);
 				if(typeof classes === "string" && classes.length > 0) { button.classList.add(...classes.split(" ")); }
 				container.appendChild(button);
@@ -79,6 +82,8 @@ script.
 			else {
 				const { lat, lng } = options.originalCoordinates || map.getCenter();
 				let dropButton;
+				button.appendChild(buttonIcon);
+
 				button.classList.add("btn-primary", "d-flex", "align-items-center", "justify-content-center");
 				buttonIcon.classList.add("mr-3");
 

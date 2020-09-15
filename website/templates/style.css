@@ -1,5 +1,5 @@
 body {
-	font-size: 1.05rem;
+	font-size: 1.2rem;
 }
 
 .blog-header {
@@ -19,6 +19,10 @@ body {
 	.display-4 {
 		font-size: 3rem;
 	}
+}
+
+.jumbotron .lead {
+	font-size: 1.3rem;
 }
 
 .pdm-section-highlight {
@@ -51,6 +55,11 @@ a.dropdown-item:not([href]):hover {
 	line-height: 60px;
 	font-size: 25px;
 }
+
+.dropdown-menu {
+	font-size: 1.1rem;
+}
+
 
 /*
 * Blog posts
@@ -173,8 +182,14 @@ a.navbar-brand:hover {
 	max-width: 300px;
 }
 
+#boundary-search {
+	height: 38px;
+	font-size: 1.2rem;
+}
+
 .pdm-user-button .dropdown-menu.show {
 	left: -50px;
+	z-index: 1010;
 }
 
 @media (max-width: 576px) {
@@ -265,6 +280,13 @@ a.navbar-brand:hover {
 	}
 }
 
+.mapboxgl-ctrl-group button,
+.map-ctrl-btn {
+	width: 32px;
+	height: 32px;
+}
+
+
 /*
  * Map sidebar
  */
@@ -304,7 +326,7 @@ a.navbar-brand:hover {
 }
 
 #pdm-map-sidebar.pdm-hidden .pdm-sidebar-buttons {
-	right: -42px;
+	right: -47px;
 }
 
 #pdm-map-sidebar .pdm-sidebar-buttons button:hover {
@@ -312,7 +334,7 @@ a.navbar-brand:hover {
 }
 
 #pdm-map-sidebar .alert.alert-info {
-	font-size: 0.9rem;
+	font-size: 1rem;
 	padding: 0.5rem 1.0rem;
 }
 
@@ -326,7 +348,7 @@ a.navbar-brand:hover {
 	}
 
 	#pdm-map-sidebar .pdm-sidebar-buttons {
-		right: -42px;
+		right: -47px;
 	}
 }
 

@@ -6,7 +6,7 @@ block navbar
 		a.p-2.text-muted(href="/#summary") En ce moment
 	else
 		a.p-2.text-muted(href="#contribute") Participer
-	a.p-2.text-muted(href="#statistics") Statistiques
+	a.p-2.text-muted(href="#statistics") Stats
 	a.p-2.text-muted(href="#data") Données
 
 
@@ -43,11 +43,11 @@ block content
 			div.mt-3!= howto
 			div.text-center
 				if links.osmwiki
-					a.btn.btn-primary.m-1(href=links.osmwiki target="_blank" role="button")
+					a.btn.btn-primary.btn-lg.m-1(href=links.osmwiki target="_blank" role="button")
 						i.fa.fa-book.mr-2
 						| Documentation complète
 				if links.osmblog
-					a.btn.btn-secondary.m-1(href=links.osmblog target="_blank" role="button")
+					a.btn.btn-secondary.btn-lg.m-1(href=links.osmblog target="_blank" role="button")
 						i.fa.fa-rss.mr-2
 						| Article de blog
 

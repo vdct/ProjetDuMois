@@ -122,7 +122,6 @@ script.
 					}
 					button.classList.add("dropdown-toggle", "text-wrap");
 					button.setAttribute("data-toggle", "dropdown");
-					buttonIcon.style.width = "24px";
 				}
 
 				const editWithApp = document.createElement("a");
@@ -259,7 +258,7 @@ script.
 					tags = `
 						<div class="form-group m-0 mb-1">
 							<label class="m-0" for="exampleFormControlTextarea1">Attributs à ajouter</label>
-							<textarea class="form-control form-control-sm" rows="${tags.length}" readonly>${tags.map(kv => kv.k+"="+kv.v).join("\n")}</textarea>
+							<textarea class="form-control" rows="${tags.length}" readonly>${tags.map(kv => kv.k+"="+kv.v).join("\n")}</textarea>
 						</div>`;
 				}
 
@@ -276,7 +275,7 @@ script.
 					${tags}`;
 
 				const divButtons = document.createElement("div");
-				divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
+				divButtons.classList.add("btn-group", "btn-block", "mt-1");
 				divButtons.role = "group";
 
 				const divButtonDone = document.createElement("button");
@@ -360,7 +359,7 @@ script.
 			}
 
 			const divButtons = document.createElement("div");
-			divButtons.classList.add("btn-group", "btn-group-sm", "btn-block", "mt-1");
+			divButtons.classList.add("btn-group", "btn-block", "mt-1");
 			divButtons.role = "group";
 
 			const divButtonDone = document.createElement("button");
@@ -416,7 +415,7 @@ script.
 				<div class="alert alert-info">${osmSource.description}</div>
 				<div class="form-group m-0 mb-1">
 					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
-					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+					<textarea class="form-control" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
 				</div>`;
 
 			createFeatureButton(resDiv, "edit", "btn-block mt-2 dropup", {
@@ -436,7 +435,7 @@ script.
 				${p.name || tags.ref ? `<p>${p.name || tags.ref}</p>` : ''}
 				<div class="form-group m-0 mb-1">
 					<label class="m-0" for="exampleFormControlTextarea1">Attributs actuels</label>
-					<textarea class="form-control form-control-sm" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
+					<textarea class="form-control" rows="${Object.keys(tags).length}" readonly>${Object.entries(tags).map(e => e.join("=")).join("\n")}</textarea>
 				</div>`;
 
 			createFeatureButton(resDiv, "add", "btn-block mt-2 dropup", { originalCoordinates });

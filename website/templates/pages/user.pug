@@ -2,9 +2,15 @@ extends ../layout.pug
 
 
 block navbar
-	a.p-2.text-muted(href="/#summary") En ce moment
-	a.p-2.text-muted(href="/#statistics") Stats
-	a.p-2.text-muted(href="/#data") Données
+	a(href="/#summary")
+		i.fa.fa-calendar-day(title="En ce moment")
+		span En ce moment
+	a(href="/#statistics")
+		i.fa.fa-chart-bar(title="Statistiques")
+		span Statistiques
+	a(href="/#data")
+		i.fa.fa-file-download(title="Données")
+		span Données
 
 
 block content
@@ -38,7 +44,9 @@ block content
 						small.d-block participations aux projets du mois
 
 		//- Badges
-		h3 Badges obtenus
+		h3
+			i.fa.fa-medal.mr-2
+			| Badges obtenus
 
 		each badgeProject in Object.keys(badges).sort((a,b) => b.localeCompare(a))
 			div.mb-3.border-top.mt-2.pt-2

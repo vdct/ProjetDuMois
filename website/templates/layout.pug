@@ -10,8 +10,11 @@ html(lang="fr")
 		//- Nav links
 		nav.navbar.navbar-light.sticky-top.navbar-pdm
 			div.container.d-flex.p-0.px-sm-3.align-items-center.justify-content-between
-				div
-					block navbar
+				div.d-flex.align-items-center
+					a.mr-2(href="/" title="Retour")
+						img(style="height: 40px" src="/images/favicon.png")
+					div.navbar-pdm-links
+						block navbar
 				+user_button
 
 		block content

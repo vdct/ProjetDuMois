@@ -165,6 +165,33 @@ a.pdm-wide-link.map {
 	z-index: 10000;
 }
 
+.navbar-pdm-links a {
+	padding: 15px;
+	color: #1562ac;
+}
+
+.navbar-pdm-links a:hover {
+	text-decoration: none;
+	background-color: #1562ac;
+	color: white;
+}
+
+.navbar-pdm-links a span {
+	margin-left: 10px;
+}
+
+@media (max-width: 768px) {
+	.navbar-pdm-links a i {
+		text-align: center;
+		width: 40px;
+		font-size: 24px;
+	}
+
+	.navbar-pdm-links a span {
+		display: none;
+	}
+}
+
 a.navbar-brand {
 	padding: 0 !important;
 }

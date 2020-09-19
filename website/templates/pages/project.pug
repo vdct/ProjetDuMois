@@ -3,11 +3,19 @@ extends ../layout.pug
 
 block navbar
 	if !isActive && !isNext
-		a.p-2.text-muted(href="/#summary") En ce moment
+		a(href="/#summary")
+			i.fa.fa-calendar-day(title="En ce moment")
+			span En ce moment
 	else
-		a.p-2.text-muted(href="#contribute") Participer
-	a.p-2.text-muted(href="#statistics") Stats
-	a.p-2.text-muted(href="#data") Données
+		a(href="#contribute")
+			i.fa.fa-pen(title="Participer")
+			span Participer
+	a(href="#statistics")
+		i.fa.fa-chart-bar(title="Statistiques")
+		span Statistiques
+	a(href="#data")
+		i.fa.fa-file-download(title="Données")
+		span Données
 
 
 block content
@@ -31,7 +39,9 @@ block content
 	div.container-fluid.py-5
 		//- Contribute
 		div#contribute.container.blog-post
-			h2.blog-post-title Participer
+			h2.blog-post-title.mb-2
+				i.fa.fa-pen.mr-2(style="font-size: 2.1rem")
+				| Participer
 			if isNext
 				p Ce projet du mois commencera le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.
 			else if !isActive
@@ -54,7 +64,9 @@ block content
 	//- Statistics
 	div.container-fluid.py-5.mb-3.pdm-section-highlight
 		div#statistics.blog-post.container
-			h2.blog-post-title.mb-3 Statistiques
+			h2.blog-post-title.mb-3
+				i.fa.fa-chart-bar.mr-2(style="font-size: 2.1rem")
+				| Statistiques
 
 			if isNext
 				p Les statistiques d'avancement seront affichées lors du lancement du projet du mois le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}.
@@ -63,7 +75,9 @@ block content
 
 	//- Data
 	div#data.container.blog-post.py-5
-		h2.blog-post-title Données
+		h2.blog-post-title
+			i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
+			| Données
 		if !isNext
 			p L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :
 			ul

@@ -2,13 +2,22 @@ extends ../layout.pug
 
 
 block navbar
-	a.p-2.text-muted(href="/#summary") En ce moment
-	a.p-2.text-muted(href="/#data") Données
+	a(href="/#summary")
+		i.fa.fa-calendar-day(title="En ce moment")
+		span En ce moment
+	a(href="/#statistics")
+		i.fa.fa-chart-bar(title="Statistiques")
+		span Statistiques
+	a(href="/#data")
+		i.fa.fa-file-download(title="Données")
+		span Données
 
 
 block content
 	div.container
-		h2 Erreur #{httpcode}
+		h2.mb-2
+			i.fa.fa-exclamation-triangle.mr-2
+			| Erreur #{httpcode}
 		//- Wide image
 		a(href="/")
 			img.w-100.rounded-lg(src="/images/httperror.png" title="Retour à l'accueil" alt="Erreur #{httpcode} : rien que le désert ici...")

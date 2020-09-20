@@ -1,7 +1,11 @@
 nav.navbar.navbar-expand-sm.navbar-light.bg-light.d-flex.justify-content-between.align-items-center.flex-nowrap
-	a.navbar-brand(href="./")
-		img.d-none.d-sm-inline-block(src="/images/logo_mini.png" alt="Projet du mois OpenStreetMap" title="Retour")
-		img.d-inline-block.d-sm-none(src="/images/favicon.png" alt="Projet du mois OpenStreetMap" title="Retour")
+	div
+		button.btn.btn-outline-secondary.toggle-map-sidebar.mr-2
+			i.fa.fa-bars
+		a.navbar-brand.d-none.d-md-inline-block(title="Retour à la page d'accueil" href="/")
+			img(src="/images/logo_mini.png" alt="Projet du mois")
+		a.navbar-brand.d-none.d-sm-inline-block.d-md-none(title="Retour à la page d'accueil" href="/")
+			img(src="/images/favicon.png" alt="Projet du mois OpenStreetMap")
 
 	include geocoder.pug
 

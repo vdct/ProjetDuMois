@@ -56,6 +56,16 @@ a.dropdown-item:not([href]):hover {
 	font-size: 25px;
 }
 
+@media (min-width: 768px) {
+	.btn-floating {
+		width: 90px;
+		height: 90px;
+		line-height: 80px;
+		font-size: 35px;
+		border-radius: 45px;
+	}
+}
+
 .dropdown-menu {
 	font-size: 1.1rem;
 }
@@ -194,6 +204,7 @@ a.pdm-wide-link.map {
 
 a.navbar-brand {
 	padding: 0 !important;
+	cursor: pointer;
 }
 
 a.navbar-brand img {
@@ -219,7 +230,7 @@ a.navbar-brand:hover {
 	z-index: 1010;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 992px) {
 	.pdm-user-button .dropdown-menu.show {
 		left: -130px;
 	}
@@ -323,46 +334,40 @@ a.navbar-brand:hover {
 	top: 55px;
 	left: 0;
 	bottom: 0;
-	width: 100%;
+	width: 80%;
 	z-index: 1000;
-	background-color: white;
+	color: #555;
 	transition: left 0.5s;
 }
 
 #pdm-map-sidebar.pdm-hidden {
-	left: -100%;
-}
-
-#pdm-map-sidebar .pdm-sidebar-buttons {
-	position: absolute;
-	right: 10px;
-}
-
-#pdm-map-sidebar .pdm-sidebar-buttons button {
-	background-color: white;
-}
-
-@media (max-width: 768px) {
-	#pdm-map-sidebar .pdm-sidebar-buttons button:first-child {
-		border-radius: .2rem !important;
-	}
-}
-
-#pdm-map-sidebar .pdm-sidebar-buttons button.btn-outline-primary {
-	color: #007bff;
-}
-
-#pdm-map-sidebar.pdm-hidden .pdm-sidebar-buttons {
-	right: -47px;
-}
-
-#pdm-map-sidebar .pdm-sidebar-buttons button:hover {
-	background-color: #6c757d
+	left: -80%;
 }
 
 #pdm-map-sidebar .alert.alert-info {
 	font-size: 1rem;
 	padding: 0.5rem 1.0rem;
+}
+
+#pdm-map-sidebar .pdm-sidebar-mask {
+	position: fixed;
+	top: 56px;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	background-color: rgba(0,0,0,0.7);
+	transition: background-color 0.5s, visibility 0.5s;
+}
+
+#pdm-map-sidebar.pdm-hidden .pdm-sidebar-mask {
+	background-color: rgba(0,0,0,0);
+	visibility: hidden;
+}
+
+.pdm-sidebar-content {
+	z-index: 1;
+	position: absolute;
+	background-color: #fff;
 }
 
 @media (min-width: 576px) {
@@ -374,8 +379,9 @@ a.navbar-brand:hover {
 		left: -300px;
 	}
 
-	#pdm-map-sidebar .pdm-sidebar-buttons {
-		right: -47px;
+	#pdm-map-sidebar .pdm-sidebar-mask {
+		display: none;
+		visibility: hidden;
 	}
 }
 
@@ -386,6 +392,7 @@ a.navbar-brand:hover {
 .pdm-note-comment p a {
 	word-wrap: break-word !important;
 }
+
 
 
 /*

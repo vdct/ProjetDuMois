@@ -153,6 +153,7 @@ script.
 						divStep.classList.add("text-truncate");
 						divStep.style.height = `${i < 3 ? podiumStyle[i][0] : podiumStyle[3][0]}px`;
 						divStep.style.backgroundColor = i < 3 ? podiumStyle[i][1] : podiumStyle[3][1];
+						divStep.style.lineHeight = "1.4rem";
 						divStep.appendChild(document.createTextNode(lb.pos));
 						divStep.appendChild(document.createElement("br"));
 						divStep.appendChild(td2Link.cloneNode(true));

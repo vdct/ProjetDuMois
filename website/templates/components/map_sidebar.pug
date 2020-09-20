@@ -1,11 +1,12 @@
 div#pdm-map-sidebar.pdm-hidden
-	div.btn-group-vertical.pdm-sidebar-buttons(role="group")
-		button.toggle-map-sidebar.btn.btn-outline-secondary.mt-2(type="button" title="Afficher/masquer la barre latérale")
-			i.fa.fa-bars
+	div.pdm-sidebar-mask.toggle-map-sidebar
 
-	div.overflow-auto.h-100
+	div.overflow-auto.h-100.pdm-sidebar-content
 		//- Default panel showing legend
 		div.pdm-sidebar-default.m-3
+			a.d-inline-block.d-md-none.w-100.text-center.mb-2(href="/" title="Retour à la page d'accueil" style="border-bottom: 1px solid #bbb")
+				img.mb-2(style="max-width: 100%; max-height: 100px" src="/images/logo.png" alt="Projet du mois")
+
 			div.map-legend
 				h5 Légende
 				each lg in legend
@@ -52,12 +53,18 @@ script.
 	});
 
 	// Close sidebar button
-	sidebarDom.querySelector(".toggle-map-sidebar").addEventListener("click", () => {
-		sidebarDom.classList.toggle("pdm-hidden");
-		cancelAskFeatureLocation();
-		cancelEdit(null, true);
-		updateHashMapSidebar();
-	});
+	for(let d of document.querySelectorAll(".toggle-map-sidebar")) {
+		d.addEventListener("click", () => {
+			if(sidebarDom.classList.contains("pdm-hidden")) {
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true } }));
+			}
+			else {
+				cancelAskFeatureLocation();
+				cancelEdit(null, true);
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+			}
+		});
+	}
 
 	// Change visible panel
 	const panelDefaultDom = sidebarDom.querySelector(".pdm-sidebar-default");

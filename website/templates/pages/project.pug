@@ -36,9 +36,10 @@ block content
 				p.lead.mb-0
 					a.btn.btn-primary.btn-lg(role="button" href="#contribute") Participer
 
+	a#contribute
 	div.container-fluid.py-5
 		//- Contribute
-		div#contribute.container.blog-post
+		div.container.blog-post
 			h2.blog-post-title.mb-2
 				i.fa.fa-pen.mr-2(style="font-size: 2.1rem")
 				| Participer
@@ -62,8 +63,9 @@ block content
 						| Article de blog
 
 	//- Statistics
+	a#statistics
 	div.container-fluid.py-5.mb-3.pdm-section-highlight
-		div#statistics.blog-post.container
+		div.blog-post.container
 			h2.blog-post-title.mb-3
 				i.fa.fa-chart-bar.mr-2(style="font-size: 2.1rem")
 				| Statistiques
@@ -74,35 +76,38 @@ block content
 				include ../components/stats.pug
 
 	//- Data
-	div#data.container.blog-post.py-5
-		h2.blog-post-title
-			i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
-			| Données
-		if !isNext
-			p L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :
-			ul
-				each datalink in opendata
-					li: a(href=datalink.url)
-						| #{datalink.title}
-						small &nbsp;(via #{datalink.via})
+	a#data
+	div.container-fluid.py-5
+		div.container.blog-post
+			h2.blog-post-title
+				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
+				| Données
+			if !isNext
+				p L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :
+				ul
+					each datalink in opendata
+						li: a(href=datalink.url)
+							| #{datalink.title}
+							small &nbsp;(via #{datalink.via})
 
-		p Retrouvez les précédents projets du mois, leurs outils, statistiques et données.
-			div.row.align-items-center
-				each pastProj in projects.past.reverse()
-					div.col-md-6.col-lg-4.h-100
-						div.media.mb-3
-							a.align-self-center.mr-3(href=`/projects/${pastProj.id}`)
-								img(src=pastProj.icon alt="" style="max-width: 100px")
-							div.media-body.align-self-center
-								a.text-decoration-none(href=`/projects/${pastProj.id}`)
-									| #{pastProj.title}
-									span.text-muted.d-block= new Date(pastProj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+			p Retrouvez les précédents projets du mois, leurs outils, statistiques et données.
+				div.row.align-items-center
+					each pastProj in projects.past.reverse()
+						div.col-md-6.col-lg-4.h-100
+							div.media.mb-3
+								a.align-self-center.mr-3(href=`/projects/${pastProj.id}`)
+									img(src=pastProj.icon alt="" style="max-width: 100px")
+								div.media-body.align-self-center
+									a.text-decoration-none(href=`/projects/${pastProj.id}`)
+										| #{pastProj.title}
+										span.text-muted.d-block= new Date(pastProj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 
 
 block prepend footer
+	a#about
 	div.container.text-left
 		div.row
-			div#about.blog-post.col-md-8
+			div.blog-post.col-md-8
 				include:markdown-it ../../../README.md
 			aside.col-md-4.blog-sidebar
 				div.p-4.mb-3.rounded

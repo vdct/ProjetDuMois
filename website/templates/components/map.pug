@@ -31,8 +31,7 @@ script.
 	});
 
 	// Add feature button
-	createFeatureButton(document.body, "add", "btn-floating btn-primary d-md-none hide-low-zoom", { mini: true });
-	createFeatureButton(document.querySelector("#pdm-map-sidebar .pdm-sidebar-buttons"), "add", "btn-outline-primary btn-sm d-none d-md-block", { mini: true });
+	createFeatureButton(document.body, "add", "btn-floating btn-primary hide-low-zoom", { mini: true });
 	if(editors.pdm) {
 		createFeatureButton(document.getElementById("legend-edit-button"), "add", "btn-block", { mapcoords: true, textnote: true });
 	}

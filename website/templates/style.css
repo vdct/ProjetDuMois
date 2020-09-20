@@ -135,10 +135,8 @@ div.btn-over-wide {
 }
 
 div.btn-over-wide a.btn {
-	position: absolute;
-	bottom: 10px;
-	left: 10px;
 	pointer-events: none;
+	position: absolute;
 }
 
 a.pdm-wide-link {

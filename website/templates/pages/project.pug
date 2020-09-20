@@ -34,7 +34,9 @@ block content
 					p.display-4.text-capitalize= new Date(month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 				p.lead.my-3= summary
 				p.lead.mb-0
-					a.btn.btn-primary.btn-lg(role="button" href="#contribute") Participer
+					a.btn.btn-primary.btn-lg(role="button" href="#contribute")
+						i.fa.fa-pen.mr-2
+						| Participer
 
 	a#contribute
 	div.container-fluid.py-5
@@ -47,14 +49,21 @@ block content
 				p Ce projet du mois commencera le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.
 			else if !isActive
 				p Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.
-			div.btn-over-wide
-				a.pdm-wide-link.map(href=`/projects/${id}/map`) Commencer à contribuer
-				a.btn.btn-light
+			div.btn-over-wide.d-flex.justify-content-center.align-items-center
+				a.pdm-wide-link.map(href=`/projects/${id}/map`)
+				a.btn.btn-primary.btn-lg(style="color: white")
+					i.fa.fa-pen.mr-2
+					| Commencer à contribuer
+				a.btn.btn-light.btn-corner(style="bottom: 10px; left: 10px")
 					i.fa.fa-expand
+
 			div.mt-3!= howto
 			div.text-center
+				a.btn.btn-primary.btn-lg.m-1(style="color: white" href=`/projects/${id}/map`)
+					i.fa.fa-pen.mr-2
+					| Commencer à contribuer
 				if links.osmwiki
-					a.btn.btn-primary.btn-lg.m-1(href=links.osmwiki target="_blank" role="button")
+					a.btn.btn-secondary.btn-lg.m-1(href=links.osmwiki target="_blank" role="button")
 						i.fa.fa-book.mr-2
 						| Documentation complète
 				if links.osmblog

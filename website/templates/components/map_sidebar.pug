@@ -48,10 +48,7 @@ script.
 	};
 	window.addEventListener("hashchange", e => {
 		if(!window.location.hash.includes("sidebar") && !sidebarDom.classList.contains("pdm-hidden")) {
-			sidebarDom.classList.toggle("pdm-hidden");
-			cancelAskFeatureLocation();
-			cancelEdit(null, true);
-			updateHashMapSidebar();
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
 		}
 	});
 
@@ -62,8 +59,6 @@ script.
 				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true } }));
 			}
 			else {
-				cancelAskFeatureLocation();
-				cancelEdit(null, true);
 				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
 			}
 		});
@@ -95,6 +90,8 @@ script.
 		}
 		if(e.detail.close) {
 			sidebarDom.classList.add("pdm-hidden");
+			cancelAskFeatureLocation();
+			cancelEdit(null, true);
 			e.detail.panel = "default";
 		}
 		switch(e.detail.panel) {

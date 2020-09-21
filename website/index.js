@@ -318,12 +318,8 @@ app.use('/images', express.static(__dirname+'/images'));
 
 // Libraries
 const authorized = {
-	"bootstrap": {
-		"bootstrap.css": "dist/css/bootstrap.min.css"
-	},
-	"bootstrap.native": {
-		"bootstrap.js": "dist/bootstrap-native.min.js"
-	},
+	"bootstrap": { "bootstrap.css": "dist/css/bootstrap.min.css" },
+	"bootstrap.native": { "bootstrap.js": "dist/bootstrap-native.min.js" },
 	"mapbox-gl": {
 		"mapbox-gl.js": "dist/mapbox-gl.js",
 		"mapbox-gl.css": "dist/mapbox-gl.css"
@@ -332,12 +328,9 @@ const authorized = {
 		"chart.js": "dist/Chart.bundle.min.js",
 		"chart.css": "dist/Chart.min.css"
 	},
-	"osm-auth": {
-		"osmauth.js": "osmauth.min.js"
-	},
-	"osm-request": {
-		"osmrequest.js": "dist/OsmRequest.js"
-	}
+	"osm-auth": { "osmauth.js": "osmauth.min.js" },
+	"osm-request": { "osmrequest.js": "dist/OsmRequest.js" },
+	"swiped-events": { "swiped-events.js": "dist/swiped-events.min.js" }
 };
 
 app.get('/lib/:modname/:file', (req, res) => {

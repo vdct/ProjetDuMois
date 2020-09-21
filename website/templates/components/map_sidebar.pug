@@ -1,3 +1,6 @@
+div#menu-swiper.toggle-map-sidebar.d-sm-none
+	span
+
 div#pdm-map-sidebar.pdm-hidden
 	div.pdm-sidebar-mask.toggle-map-sidebar
 
@@ -65,6 +68,20 @@ script.
 			}
 		});
 	}
+
+	// Swipe menu
+	document.getElementById("menu-swiper").addEventListener("swiped-right", e => {
+		e.preventDefault();
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true } }));
+	});
+	sidebarDom.querySelector(".pdm-sidebar-mask").addEventListener("swiped-left", e => {
+		e.preventDefault();
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+	});
+	sidebarDom.addEventListener("swiped-left", e => {
+		e.preventDefault();
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+	});
 
 	// Change visible panel
 	const panelDefaultDom = sidebarDom.querySelector(".pdm-sidebar-default");

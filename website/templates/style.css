@@ -323,6 +323,7 @@ a.navbar-brand:hover {
 }
 
 
+
 /*
  * Map sidebar
  */
@@ -389,6 +390,30 @@ a.navbar-brand:hover {
 
 .pdm-note-comment p a {
 	word-wrap: break-word !important;
+}
+
+#menu-swiper {
+	position: fixed;
+	top: 43%;
+	left: 0;
+	bottom: 43%;
+	background-color: #fafafa;
+	width: 25px;
+	z-index: 100;
+	border-top-right-radius: 10px;
+	border-bottom-right-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 1px 1px 5px rgba(0,0,0,.2);
+}
+
+#menu-swiper span {
+	border-radius: 3px;
+	width: 5px;
+	height: 50%;
+	background-color: #bdbdbd;
+	display: block;
 }
 
 

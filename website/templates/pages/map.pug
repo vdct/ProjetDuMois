@@ -3,7 +3,12 @@ doctype html
 html(lang="fr")
 	head
 		include ../common/head.pug
-	body
+
+		//- Map specific libraries
+		script(src="/lib/mapbox-gl/mapbox-gl.js")
+		script(src="/lib/swiped-events/swiped-events.js")
+
+	body(data-swipe-ignore="true")
 		include ../components/map_navbar.pug
 		include ../components/map_sidebar.pug
 		include ../components/map.pug

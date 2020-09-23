@@ -64,6 +64,9 @@ a.dropdown-item:not([href]):hover {
 		font-size: 35px;
 		border-radius: 45px;
 	}
+	.btn-floating .fa {
+	display: block;
+	}
 }
 
 .dropdown-menu {
@@ -288,6 +291,7 @@ a.navbar-brand:hover {
 	align-items: center;
 	line-height: 1.5rem;
 	cursor: pointer;
+	align-items: baseline;
 }
 
 .map-legend > div > span {

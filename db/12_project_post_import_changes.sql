@@ -14,3 +14,4 @@ DO UPDATE SET username = EXCLUDED.username;
 
 -- Compute indexes
 REINDEX TABLE user_names;
+REINDEX TABLE osm_compare_exclusions;

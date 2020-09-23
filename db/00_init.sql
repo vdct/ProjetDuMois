@@ -64,3 +64,12 @@ SELECT st.project, st.userid, un.username, st.amount, sc.pos
 FROM stats st
 JOIN scores sc ON st.project = sc.project AND sc.amount = st.amount
 JOIN user_names un ON st.userid = un.userid;
+
+-- OSM compare feature exclusions
+CREATE TABLE osm_compare_exclusions(
+	project VARCHAR NOT NULL,
+	osm_id VARCHAR NOT NULL,
+	ts TIMESTAMP NOT NULL DEFAULT current_timestamp,
+	userid BIGINT,
+	CONSTRAINT osm_compare_exclusions_pk PRIMARY KEY(project, osm_id)
+);

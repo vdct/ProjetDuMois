@@ -271,6 +271,26 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 	});
 });
 
+// Add OSM feature to compare exclusion list
+app.post('/projects/:id/ignore/:osmtype/:osmid', (req, res) => {
+	// Check project exists
+	if(!req.params.id || !projects[req.params.id]) {
+		return res.redirect('/error/404');
+	}
+	// Check OSM ID
+	if(!req.params.osmtype || !["node", "way", "relation"].includes(req.params.osmtype) || !req.params.osmid || !/^\d+$/.test(req.params.osmid)) {
+		return res.redirect('/error/400');
+	}
+
+	pool.query('INSERT INTO osm_compare_exclusions(project, osm_id, userid) VALUES ($1, $2, $3) ON CONFLICT (project, osm_id) DO UPDATE SET ts = current_timestamp, userid = $3', [req.params.id, req.params.osmtype+"/"+req.params.osmid, req.query.user_id])
+	.then(() => {
+		res.send();
+	})
+	.catch(e => {
+		res.redirect('/error/500');
+	});
+});
+
 // User page
 app.get('/users/:name', (req, res) => {
 	if(!req.params.name) {

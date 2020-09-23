@@ -50,6 +50,21 @@ script.
 		}
 	}
 
+	// Mark OSM compare feature as ignored
+	const filteredOsmIds = [];
+	function ignoreOsmCompare(f) {
+		fetch(`/projects/#{id}/ignore/${f.properties.osm_id}?${window.osm_user ? "user_id="+window.osm_user.id : ""}`, { method: "POST" })
+		.then(() => {
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+			filteredOsmIds.push(f.properties.osm_id);
+			map.setFilter(f.layer.id, ["!", ["in", ["get", "osm_id"], ["literal", filteredOsmIds]]]);
+		})
+		.catch(e => {
+			alert("Une erreur s'est produite lors de l'enregistrement, merci de réessayer plus tard");
+			console.error(e);
+		});
+	}
+
 	// Generate button for feature creation / editing
 	function createFeatureButton(container, mode = "add", classes = null, options = {}) {
 		if(editors.pdm) {
@@ -519,6 +534,13 @@ script.
 
 			getReadableTags(resDiv, tags, "Attributs");
 			createFeatureButton(resDiv, "add", "btn-block mt-2 dropup", { originalCoordinates });
+
+			const divButtonFalse = document.createElement("button");
+			divButtonFalse.classList.add("btn", "btn-warning", "btn-block", "mt-2");
+			divButtonFalse.appendChild(document.createTextNode("✘ Rien ici"));
+			divButtonFalse.title = "Marquer qu'il n'y a rien ici si vous n'avez pas vu de #{statistics.feature_name} sur le terrain";
+			divButtonFalse.addEventListener("click", e => ignoreOsmCompare(feature));
+			resDiv.appendChild(divButtonFalse);
 		}
 		else {
 			resDiv.innerHTML = "<ul>"+Object.entries(p).map(e => "<li>"+e.join(" : ")+"</li>").join("")+"</ul>";

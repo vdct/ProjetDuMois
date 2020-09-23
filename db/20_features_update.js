@@ -80,6 +80,11 @@ Object.entries(projects).forEach(e => {
 		);
 		postSQL.push(`CREATE INDEX project_${id.split("_").pop()}_compare_tiles_geom_idx ON project_${id.split("_").pop()}_compare_tiles USING GIST(geom)`);
 		postUpdateSQL.push(`REFRESH MATERIALIZED VIEW project_${id.split("_").pop()}_compare_tiles`);
+
+		preSQL.push(`DROP VIEW IF EXISTS project_${id.split("_").pop()}_compare_tiles_filtered CASCADE`);
+		postSQL.push(
+			`CREATE VIEW project_${id.split("_").pop()}_compare_tiles_filtered AS SELECT a.* FROM project_${id.split("_").pop()}_compare_tiles a LEFT JOIN osm_compare_exclusions b ON b.project = '${id}' AND a.osm_id = b.osm_id WHERE b.osm_id IS NULL`
+		);
 	}
 });
 

@@ -148,6 +148,7 @@ script.
 	// First editing step : ask location on map
 	// Options can be used to pre-fill tags and close note/osmose issue
 	function onStartNewFeature(options = {}) {
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: "noCancelLoc" } }));
 		currentEditorData = options;
 		currentEditorData.mode = "add";
 		if(currentEditorData.coordinates || currentEditorData.originalCoordinates) {
@@ -214,6 +215,7 @@ script.
 		if(currentEditorData.coordinates || currentEditorData.originalCoordinates) {
 			map.setCenter(currentEditorData.coordinates || currentEditorData.originalCoordinates);
 		}
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: "noCancelLoc" } }));
 		askFeatureLocation(onEditedFeatureMoved);
 	});
 
@@ -369,6 +371,7 @@ script.
 	function onStartTextNote(options = {}) {
 		currentEditorData = options;
 		if(options.coordinates || options.originalCoordinates) { map.setCenter(options.coordinates || options.originalCoordinates); }
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: "noCancelLoc" } }));
 		askFeatureLocation(onNewNoteLocated);
 	}
 

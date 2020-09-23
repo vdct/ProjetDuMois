@@ -90,9 +90,11 @@ script.
 		}
 		if(e.detail.close) {
 			sidebarDom.classList.add("pdm-hidden");
-			cancelAskFeatureLocation();
-			cancelEdit(null, true);
 			e.detail.panel = "default";
+			cancelAskFeatureLocation(false);
+			if(e.detail.close === true) {
+				cancelEdit(null, true);
+			}
 		}
 		switch(e.detail.panel) {
 			case "feature":

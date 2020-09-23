@@ -158,7 +158,6 @@ script.
 
 	function askFeatureLocation(callback) {
 		if(lastCallbackFeatureLocation) { cancelAskFeatureLocation(); }
-		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }))
 		markerEditorDom.classList.remove("d-none");
 
 		// Move marker

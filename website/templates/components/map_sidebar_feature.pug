@@ -90,7 +90,7 @@ script.
 					buttonIcon.classList.add("fa", "fa-plus");
 				}
 				button.appendChild(buttonIcon);
-				button.addEventListener("click", pdmfct);
+				button.addEventListener("click", onStartNewFeature);
 				if(typeof classes === "string" && classes.length > 0) { button.classList.add(...classes.split(" ")); }
 				container.appendChild(button);
 			}

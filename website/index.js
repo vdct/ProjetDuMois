@@ -112,7 +112,7 @@ app.get('/projects/:id/stats', (req, res) => {
 
 		return {
 			chart: results,
-			tasksSolved: nbTasksStart - nbTasksEnd
+			tasksSolved: nbTasksStart - nbTasksEnd > 0 ? nbTasksStart - nbTasksEnd : undefined
 		};
 	}));
 

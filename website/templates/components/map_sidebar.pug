@@ -4,7 +4,7 @@ div#menu-swiper.toggle-map-sidebar.d-sm-none
 div#pdm-map-sidebar.pdm-hidden
 	div.pdm-sidebar-mask.toggle-map-sidebar
 
-	div.overflow-auto.h-100.pdm-sidebar-content
+	div.overflow-auto.h-100.w-100.pdm-sidebar-content
 		//- Default panel showing legend
 		div.pdm-sidebar-default.m-3
 			a.d-inline-block.d-md-none.w-100.text-center.mb-2(href="/" title="Retour à la page d'accueil" style="border-bottom: 1px solid #bbb")
@@ -20,6 +20,10 @@ div#pdm-map-sidebar.pdm-hidden
 				if editors.pdm
 					h5.mt-3 Éditer
 					div#legend-edit-button
+
+		//- Display features list
+		div.pdm-sidebar-features.m-3.d-none
+			include map_sidebar_features_list.pug
 
 		//- Display details of a single feature
 		div.pdm-sidebar-feature.m-3.d-none
@@ -81,6 +85,7 @@ script.
 	// Change visible panel
 	const panelDefaultDom = sidebarDom.querySelector(".pdm-sidebar-default");
 	const panelFeatureDom = sidebarDom.querySelector(".pdm-sidebar-feature");
+	const panelFeaturesListDom = sidebarDom.querySelector(".pdm-sidebar-features");
 	const panelEditorDom = sidebarDom.querySelector(".pdm-sidebar-editor");
 	const panelPostContribDom = sidebarDom.querySelector(".pdm-sidebar-postcontrib");
 
@@ -111,13 +116,24 @@ script.
 				panelDefaultDom.classList.add("d-none");
 				panelEditorDom.classList.add("d-none");
 				panelPostContribDom.classList.add("d-none");
+				panelFeaturesListDom.classList.add("d-none");
 				panelFeatureDom.classList.remove("d-none");
+				break;
+
+			case "features":
+				setFeaturesList(e.detail.features);
+				panelDefaultDom.classList.add("d-none");
+				panelFeatureDom.classList.add("d-none");
+				panelEditorDom.classList.add("d-none");
+				panelPostContribDom.classList.add("d-none");
+				panelFeaturesListDom.classList.remove("d-none");
 				break;
 
 			case "editor":
 				panelDefaultDom.classList.add("d-none");
 				panelFeatureDom.classList.add("d-none");
 				panelPostContribDom.classList.add("d-none");
+				panelFeaturesListDom.classList.add("d-none");
 				panelEditorDom.classList.remove("d-none");
 				break;
 
@@ -125,6 +141,7 @@ script.
 				panelDefaultDom.classList.add("d-none");
 				panelFeatureDom.classList.add("d-none");
 				panelEditorDom.classList.add("d-none");
+				panelFeaturesListDom.classList.add("d-none");
 				panelPostContribDom.classList.remove("d-none");
 				break;
 
@@ -132,6 +149,7 @@ script.
 				panelFeatureDom.classList.add("d-none");
 				panelEditorDom.classList.add("d-none");
 				panelPostContribDom.classList.add("d-none");
+				panelFeaturesListDom.classList.add("d-none");
 				panelDefaultDom.classList.remove("d-none");
 		}
 		updateHashMapSidebar();

@@ -517,7 +517,7 @@ script.
 		}
 		// OSM features
 		else if(s.startsWith("osm_")) {
-			const tags = JSON.parse(p.tags);
+			const tags = typeof p.tags === "string" ? JSON.parse(p.tags) : p.tags;
 			const osmSource = osmSources[parseInt(feature.source.split("_")[1])];
 
 			resDiv.innerHTML = `
@@ -534,7 +534,7 @@ script.
 		}
 		// OSM comparison features
 		else if(s.startsWith("osm-compare_")) {
-			const tags = JSON.parse(p.tags);
+			const tags = typeof p.tags === "string" ? JSON.parse(p.tags) : p.tags;
 			const osmSource = osmCompareSources[parseInt(feature.source.split("_")[1])];
 
 			resDiv.innerHTML = `

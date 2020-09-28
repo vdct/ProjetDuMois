@@ -1,0 +1,74 @@
+h5 Objets à cet endroit
+div#pdm-sidebar-features-list
+
+script.
+	const featuresListDom = document.getElementById("pdm-sidebar-features-list");
+
+	function setFeaturesList(features) {
+		const legend = !{JSON.stringify(legend)};
+
+		featuresListDom.innerHTML = '';
+		features.forEach(feature => {
+			const p = feature.properties;
+			if(p.tags) { p.tags = JSON.parse(p.tags); }
+			const s = feature.source;
+			const featureName = p.name || (p.tags && (p.tags.name || p.tags.ref || p.tags.operator));
+			const sourceName = (legend.find(lg => lg.layerId === s) || { label: "Objet" }).label;
+			const sourceColor = (legend.find(lg => lg.layerId === s) || { color: "#ddd" }).color;
+
+			const div = document.createElement("div");
+			div.classList.add("pdm-features-list-entry");
+
+			const colorPatch = document.createElement("div");
+			colorPatch.classList.add("pdm-color-patch");
+			colorPatch.style.borderColor = sourceColor;
+			div.appendChild(colorPatch);
+
+			const details = document.createElement("div");
+			details.classList.add("pdm-features-list-entry-details");
+			div.appendChild(details);
+
+			const title = document.createElement("h6");
+			title.classList.add("m-0");
+			title.appendChild(document.createTextNode(featureName || sourceName));
+			details.appendChild(title);
+
+			const subtitle = document.createElement("p");
+			subtitle.classList.add("m-0");
+			subtitle.appendChild(document.createTextNode(sourceName));
+			details.appendChild(subtitle);
+
+			div.addEventListener("click", e => showFeature(feature));
+
+			if(s.startsWith("osmose_")) {
+				fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${p.uuid}`)
+				.then(res => res.json())
+				.then(meta => {
+					let tags = [];
+					let tagsForEdit = {};
+					if(
+						meta.new_elems && meta.new_elems.length > 0
+						&& meta.new_elems[0].add && meta.new_elems[0].add.length > 0
+					) {
+						tags = meta.new_elems[0].add;
+					}
+					else if(
+						meta.elems && meta.elems.length > 0
+						&& meta.elems[0].fixes && meta.elems[0].fixes.length > 0
+						&& meta.elems[0].fixes[0].add && meta.elems[0].fixes[0].add.length > 0
+					) {
+						tags = meta.elems[0].fixes[0].add;
+					}
+					tags.forEach(kv => tagsForEdit[kv.k] = kv.v);
+
+					const osmoseName = tagsForEdit.name || tagsForEdit.ref || tagsForEdit.operator;
+					if(osmoseName) {
+						subtitle.innerHTML = title.innerHTML;
+						title.innerHTML = osmoseName;
+					}
+				});
+			}
+
+			featuresListDom.appendChild(div);
+		});
+	}

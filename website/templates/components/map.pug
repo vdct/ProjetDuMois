@@ -180,7 +180,7 @@ script.
 	//
 
 	// Handle map click
-	function clickFeature(e) {
+	function onMapClick(e) {
 		if(!map || !e) { return; }
 		const features = map.queryRenderedFeatures(e.point);
 
@@ -195,21 +195,49 @@ script.
 				cancelAskFeatureLocation();
 			}
 			cancelEdit(false, true);
-			const coordinates = features[0].geometry.coordinates.slice();
-			while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-				coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+
+			// Deduplicate features
+			for(let i=0; i < features.length; i++) {
+				for(let j=0; j < i; j++) {
+					if(features[i].source === features[j].source && (
+						features[i].properties.osm_id === features[j].properties.osm_id
+						|| features[i].properties.uuid === features[j].properties.uuid
+						|| features[i].properties.id === features[j].properties.id
+					)) {
+						features.splice(i, 1);
+						i--;
+						break;
+					}
+				}
 			}
 
-			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default" } }));
-			map.flyTo({ center: coordinates, zoom: Math.max(16, map.getZoom()), speed: 1.5 });
-			map.once("moveend", () => {
-				showMarker(coordinates);
-				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", feature: features[0] } }));
-			});
+			if(features.length > 1) {
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "features", features: features } }));
+			}
+			else {
+				showFeature(features[0], e)
+			}
 		}
 	}
 
-	map.on("click", clickFeature);
+	// Display a certain feature
+	function showFeature(feature, e) {
+		const coordinates = feature.geometry.coordinates.slice();
+		if(e) {
+			while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+				coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+			}
+		}
+
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "default", close: true } }));
+		map.flyTo({ center: coordinates, zoom: Math.max(16, map.getZoom()), speed: 1.5 });
+		map.once("moveend", () => {
+			showMarker(coordinates);
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "feature", feature: feature } }));
+		});
+	}
+
+	map.on("click", onMapClick);
 
 
 //- Generate hover events for each layer dynamically on server

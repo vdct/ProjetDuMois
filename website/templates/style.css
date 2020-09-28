@@ -421,6 +421,63 @@ a.navbar-brand:hover {
 }
 
 
+/* Features list */
+
+#pdm-sidebar-features-list {
+	margin: 0 -16px;
+}
+
+.pdm-features-list-entry {
+	border-bottom: 1px solid rgba(0,0,0,.12);
+	padding: 10px 16px;
+	display: flex;
+	cursor: pointer;
+	min-height: 56px;
+}
+
+.pdm-features-list-entry:hover {
+	background-color: #F6F6F6;
+}
+
+.pdm-features-list-entry:first-child {
+	border-top: 1px solid rgba(0,0,0,.12);
+}
+
+.pdm-features-list-entry h6 {
+	line-height: 1.2;
+	margin-bottom: 2px;
+	font-size: 1rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: rgba(0,0,0,.87) !important;
+}
+
+.pdm-features-list-entry p {
+	font-size: 0.9rem;
+	color: rgba(0,0,0,.6);
+	line-height: 1.2;
+	margin-bottom: 2px;
+	font-size: .875rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pdm-features-list-entry div.pdm-features-list-entry-details {
+	max-width: 80%;
+}
+
+.pdm-features-list-entry div.pdm-color-patch {
+	width: 20px;
+	height: 20px;
+	border-radius: 16px;
+	border: 4px solid;
+	margin: 3px 10px 0 0;
+	background-color: white;
+}
+
+
 
 /*
  * Progress circular

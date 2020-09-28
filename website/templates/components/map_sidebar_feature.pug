@@ -157,7 +157,7 @@ script.
 				editWithJOSM.addEventListener("click", () => {
 					const { lat, lng } = options.originalCoordinates || map.getCenter();
 					const urlsToLoad = [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lng+0.0005}&left=${lng-0.0005}${options.osmid && `&select=${options.osmid.replace("/", "")}` || ""}&#{josmParams}`];
-					if(options.tags && !options.osmid) {
+					if(options.tags && !options.osmid && Object.keys(options.tags).length > 0) {
 						urlsToLoad.push(`#{CONFIG.JOSM_REMOTE_URL}/add_node?lon=${lng}&lat=${lat}&addtags=${encodeURIComponent(Object.entries(options.tags).map(e => e.join("=")).join("|"))}`);
 					}
 					const next = () => {
@@ -421,8 +421,18 @@ script.
 					${cmt.html}
 				</div>`).join("")}`;
 
+			const tags = {
+				source: `#{CONFIG.OSM_URL}/note/${p.id}`
+			};
+
+			// Read tags from editor
+			if(editors.pdm && editors.pdm.fields) {
+				editors.pdm.fields.filter(fld => fld.type === "hidden").forEach(fld => {
+					Object.entries(fld.tags).filter(e => e[1] !== "*").forEach(e => tags[e[0]] = e[1]);
+				});
+			}
+
 			// Try to read tags out of comments
-			const tags = {};
 			let featureId = null;
 			cmts.forEach(cmt => {
 				cmt.text.split("\n").forEach(line => {

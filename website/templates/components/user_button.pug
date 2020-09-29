@@ -1,4 +1,67 @@
 script.
+	//
+	// Notifications system
+	//
+
+	const NOTIFS_STORAGE = "pdm_notifs";
+
+	function showNotifsInMenu() {
+		// Read previous notifications if any
+		let prevNotifs = JSON.parse(sessionStorage.getItem(NOTIFS_STORAGE) || "[]");
+
+		// Display all notifications in menu
+		for(let domNotifs of document.querySelectorAll(".pdm-notifs")) {
+			if(prevNotifs.length === 0) {
+				domNotifs.classList.add("d-none");
+			}
+			else {
+				// Clean-up previous notifications
+				domNotifs.classList.remove("d-none");
+				for(let domNotifPrev of (domNotifs.querySelectorAll("a") || [])) {
+					domNotifs.removeChild(domNotifPrev);
+				}
+
+				// Add new ones
+				prevNotifs.forEach(notif => {
+					const notifDom = document.createElement("a");
+					notifDom.classList.add("dropdown-item", "pdm-user-page-btn");
+					notifDom.title = notif.t;
+					notifDom.href = notif.u;
+
+					const img = document.createElement("img");
+					img.classList.add("mr-1");
+					img.src = "/images/"+notif.i;
+					img.style.width = "17px";
+					notifDom.appendChild(img);
+
+					notifDom.appendChild(document.createTextNode(notif.l));
+					domNotifs.insertBefore(notifDom, domNotifs.lastChild);
+				});
+			}
+		}
+	}
+
+	window.addEventListener("pdm_notifs_add", e => {
+		let prevNotifs = JSON.parse(sessionStorage.getItem(NOTIFS_STORAGE) || "[]");
+
+		// Add new notification in storage
+		prevNotifs.unshift({ l: e.detail.label, i: e.detail.image, u: e.detail.url, t: e.detail.title });
+		if(prevNotifs.length > 3) { prevNotifs = prevNotifs.slice(0, 3); }
+		sessionStorage.setItem(NOTIFS_STORAGE, JSON.stringify(prevNotifs));
+
+		// Show badge
+		for(let notifBadge of document.querySelectorAll(".pdm-user-button .badge-info")) {
+			notifBadge.classList.remove("d-none");
+		}
+
+		showNotifsInMenu();
+	});
+
+
+	//
+	// Login/logout handlers
+	//
+
 	window.addEventListener("osm_login", e => {
 		for(let domConnect of document.getElementsByClassName("connect-osm")) {
 			domConnect.innerHTML = '';
@@ -15,9 +78,11 @@ script.
 		for(let domConnect of document.getElementsByClassName("pdm-user-button")) {
 			domConnect.firstChild.classList.add("d-none");
 			domConnect.lastChild.classList.remove("d-none");
-			domConnect.lastChild.firstChild.lastChild.innerHTML = window.osm_user.name;
+			domConnect.querySelector(".pdm-username").innerHTML = window.osm_user.name;
 			domConnect.querySelector(".pdm-user-page-btn").setAttribute("href", `/users/${encodeURIComponent(window.osm_user.name)}`);
 		}
+
+		showNotifsInMenu();
 	});
 
 	window.addEventListener("osm_logout", e => {
@@ -36,7 +101,11 @@ script.
 		for(let domConnect of document.getElementsByClassName("pdm-user-button")) {
 			domConnect.firstChild.classList.remove("d-none");
 			domConnect.lastChild.classList.add("d-none");
+			domConnect.querySelector(".pdm-username").classList.add("d-none");
+			domConnect.querySelector(".badge-info").classList.add("d-none");
 		}
+
+		sessionStorage.setItem(NOTIFS_STORAGE, "[]");
 	});
 
 	window.addEventListener("load", e => {
@@ -84,6 +153,9 @@ script.
 				const menu = domDropdown.querySelector(".dropdown-menu");
 				if(!menu) { return; }
 				menu.style.left = `-${menu.offsetWidth - 60}px`;
+
+				const notifBadge = domDropdown.querySelector(".badge-info");
+				notifBadge.classList.add("d-none");
 			});
 		}
 	});
@@ -97,8 +169,16 @@ mixin user_button
 		div.dropdown.d-none
 			button.btn.btn-outline-secondary.dropdown-toggle.text-truncate.ml-2(role="button" title="Menu" data-toggle="dropdown")
 				i.fa.fa-user
-				span.d-none.d-lg-inline.ml-1 Utilisateur
+				span.d-none.d-lg-inline.ml-1.pdm-username Utilisateur
+				span.badge.badge-info.ml-1.d-none(title="Notifications non-lues")
+					i.fa.fa-bell
 			div.dropdown-menu
+				div.pdm-notifs.d-none
+					h6.dropdown-header
+						i.fa.fa-bell.mr-1
+						| Notifications
+					div.dropdown-divider
+
 				a.dropdown-item.pdm-user-page-btn(href="")
 					i.fa.fa-medal.mr-1
 					| Mes badges

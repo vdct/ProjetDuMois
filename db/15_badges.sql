@@ -32,7 +32,7 @@ BEGIN
 		END IF;
 
 		-- Badges related to amount of contributions
-		IF nb_contributions < 10 THEN
+		IF nb_contributions < 3 THEN
 			id := '1_edit';
 			name := '1er point';
 			description := 'Lancez-vous dans l''aventure';
@@ -41,7 +41,25 @@ BEGIN
 			RETURN next;
 		END IF;
 
-		IF nb_contributions BETWEEN 1 AND 29 THEN
+		IF nb_contributions BETWEEN 1 AND 5 THEN
+			id := '3_edits';
+			name := '3+ points';
+			description := 'Premiers pas';
+			acquired := nb_contributions >= 3;
+			progress := FLOOR(LEAST(nb_contributions, 3)::FLOAT / 3 * 100);
+			RETURN next;
+		END IF;
+
+		IF nb_contributions BETWEEN 3 AND 9 THEN
+			id := '6_edits';
+			name := '6+ points';
+			description := 'Bien parti';
+			acquired := nb_contributions >= 6;
+			progress := FLOOR(LEAST(nb_contributions, 6)::FLOAT / 6 * 100);
+			RETURN next;
+		END IF;
+
+		IF nb_contributions BETWEEN 6 AND 29 THEN
 			id := '10_edits';
 			name := '10+ points';
 			description := 'Envie d''aller un peu plus loin';

@@ -39,7 +39,8 @@ script.
 						domBadge.classList.add("col-12", "col-sm", "text-center", "mb-2");
 
 						const img = document.createElement("img");
-						img.src = `/images/badges/${badge.id === "contributed" ? #{id.split("_").pop()} : badge.id}.svg`;
+						const imgName = `badges/${badge.id === "contributed" ? #{id.split("_").pop()} : badge.id}.svg`;
+						img.src = "/images/"+imgName;
 						img.alt = "";
 						img.title = badge.description;
 
@@ -53,6 +54,8 @@ script.
 							p.classList.add("m-0");
 							p.appendChild(document.createTextNode(badge.name));
 							domBadge.appendChild(p);
+
+							window.dispatchEvent(new CustomEvent("pdm_notifs_add", { detail: { label: `Nouveau badge : ${badge.name}`, image: imgName, url: `/users/${encodeURIComponent(window.osm_user.name)}`, title: "Voir tous les badges" } }));
 						}
 						else {
 							const subdiv = document.createElement("div");

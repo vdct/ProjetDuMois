@@ -200,9 +200,9 @@ script.
 			for(let i=0; i < features.length; i++) {
 				for(let j=0; j < i; j++) {
 					if(features[i].source === features[j].source && (
-						features[i].properties.osm_id === features[j].properties.osm_id
-						|| features[i].properties.uuid === features[j].properties.uuid
-						|| features[i].properties.id === features[j].properties.id
+						(features[i].properties.osm_id && features[j].properties.osm_id && features[i].properties.osm_id === features[j].properties.osm_id)
+						|| (features[i].properties.uuid && features[j].properties.uuid && features[i].properties.uuid === features[j].properties.uuid)
+						|| (features[i].properties.id && features[j].properties.id && features[i].properties.id === features[j].properties.id)
 					)) {
 						features.splice(i, 1);
 						i--;

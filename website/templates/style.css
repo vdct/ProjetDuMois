@@ -226,17 +226,6 @@ a.navbar-brand:hover {
 	font-size: 1.2rem;
 }
 
-.pdm-user-button .dropdown-menu.show {
-	left: -50px;
-	z-index: 1010;
-}
-
-@media (max-width: 992px) {
-	.pdm-user-button .dropdown-menu.show {
-		left: -130px;
-	}
-}
-
 
 /*
  * Map

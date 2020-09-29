@@ -78,6 +78,14 @@ script.
 				}
 			});
 		}
+
+		for(let domDropdown of document.querySelectorAll(".pdm-user-button .dropdown")) {
+			domDropdown.addEventListener("shown.bs.dropdown", e => {
+				const menu = domDropdown.querySelector(".dropdown-menu");
+				if(!menu) { return; }
+				menu.style.left = `-${menu.offsetWidth - 60}px`;
+			});
+		}
 	});
 
 mixin user_button

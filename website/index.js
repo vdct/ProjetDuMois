@@ -6,6 +6,7 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const path = require('path');
+const fs = require('fs');
 const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
@@ -335,6 +336,14 @@ app.get('/users/:name', (req, res) => {
 
 // Images
 app.use('/images', express.static(__dirname+'/images'));
+
+// Static content
+fs.readdirSync(path.join(__dirname, 'static')).forEach(file => {
+	app.get(`/${file}`, (req, res) => {
+		res.sendFile(path.join(__dirname, 'static', file));
+	});
+});
+
 
 // Libraries
 const authorized = {

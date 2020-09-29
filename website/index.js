@@ -340,6 +340,7 @@ app.use('/images', express.static(__dirname+'/images'));
 // Static content
 fs.readdirSync(path.join(__dirname, 'static')).forEach(file => {
 	app.get(`/${file}`, (req, res) => {
+		if(file === "manifest.webmanifest") { res.contentType("application/manifest+json"); }
 		res.sendFile(path.join(__dirname, 'static', file));
 	});
 });

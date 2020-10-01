@@ -17,7 +17,7 @@
 	},
 	"datasources": [
 		{ "source": "osmose", "item": "8411", "country": "france*", "name": "Borne à compléter", "color": "#4A148C" },
-		{ "source": "osmose", "item": "8410", "country": "france*", "name": "Borne à importer" },
+		{ "source": "osmose", "item": "8410", "country": "france*", "name": "Borne à importer", "buttons": { "add": "Intégrer cette borne" } },
 		{
 			"source": "osm",
 			"name": "Borne dans OSM",
@@ -34,6 +34,24 @@
 		"all": {
 			"comment": "Intégration bornes de recharge véhicules électriques",
 			"hashtags": "balancetaborne"
+		},
+		"pdm": {
+			"fields": [
+				{ "type": "hidden", "tags": { "amenity": "charging_station", "ref:EU:EVSE": "*", "owner": "*", "socket:typee": "*", "socket:type2": "*", "socket:type2_combo": "*", "socket:chademo": "*", "socket:type3c": "*" } },
+				{ "type": "text", "name": "Nom de la borne", "tag": "name", "optional": true },
+				{ "type": "3states", "name": "Service payant ?", "tag": "fee" },
+				{ "type": "3states", "name": "Recharge pour voitures ?", "tag": "motorcar" },
+				{ "type": "3states", "name": "Recharge pour vélos ?", "tag": "bicycle" },
+				{ "type": "3states", "name": "Recharge pour scooter ?", "tag": "scooter" },
+				{ "type": "number", "name": "Nombre de places", "tag": "capacity", "description": "Nombre de véhicules qui peuvent être chargés en même temps", "optional": true },
+				{ "type": "text", "name": "Nom commercial du réseau", "tag": "network", "optional": true },
+				{ "type": "text", "name": "Gestionnaire du réseau", "tag": "operator", "optional": true },
+				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Types et nombre de prises, infos pratiques...", "optional": true }
+			],
+			"title": {
+				"add": "Ajouter une borne manquante",
+				"edit": "Compléter cette borne"
+			}
 		},
 		"iD": {
 			"background": "fr.ign.bdortho"

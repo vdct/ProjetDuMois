@@ -17,7 +17,7 @@
 	},
 	"datasources": [
 		{ "source": "osmose", "item": "8191", "country": "france*", "name": "Gendarmerie à compléter", "color": "#4A148C" },
-		{ "source": "osmose", "item": "8190", "country": "france*", "name": "Gendarmerie à ajouter" },
+		{ "source": "osmose", "item": "8190", "country": "france*", "name": "Gendarmerie à ajouter", "buttons": { "add": "Intégrer cette gendarmerie" } },
 		{
 			"source": "osm",
 			"name": "Gendarmerie dans OSM",
@@ -34,6 +34,32 @@
 		"all": {
 			"comment": "Intégration gendarmeries",
 			"hashtags": "ProjetOSMDuMois"
+		},
+		"pdm": {
+			"fields": [
+				{ "type": "hidden", "tags": { "amenity": "police", "official_name": "*", "operator:wikidata": "*", "opening_hours": "*" } },
+				{ "type": "text", "name": "Nom", "tag": "name" },
+				{ "type": "text", "name": "Nom complet", "tag": "official_name", "optional": true },
+				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
+				{ "type": "select", "name": "Type", "tag": "police:FR", "values": [
+					{ "v": "gendarmerie", "l": "Gendarmerie" },
+					{ "v": "police", "l": "Police nationale" },
+					{ "v": "police_municipale", "l": "Police municipale" }
+				] },
+				{ "type": "text", "name": "Téléphone", "tag": "phone", "optional": true, "description": "Au format international : +33 X XX XX XX XX" },
+				{ "type": "text", "name": "Fax", "tag": "fax", "optional": true, "description": "Au format international : +33 X XX XX XX XX" },
+				{ "type": "text", "name": "Courriel", "tag": "email", "optional": true },
+				{ "type": "select", "name": "Accessible en fauteuil roulant", "tag": "wheelchair", "values": [
+					{ "v": "yes", "l": "Complètement" },
+					{ "v": "limited", "l": "Partiellement" },
+					{ "v": "no", "l": "Pas du tout" }
+				] },
+				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, infos pratiques...", "optional": true }
+			],
+			"title": {
+				"add": "Ajouter une gendarmerie manquante",
+				"edit": "Compléter cette gendarmerie"
+			}
 		},
 		"iD": {
 			"background": "fr.ign.bdortho"

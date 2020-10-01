@@ -210,14 +210,16 @@ script.
 		setTimeout(() => showMarker(coordinates), 500);
 	}
 
-	editorMoveButton.addEventListener("click", e => {
-		window.onbeforeunload = null;
-		if(currentEditorData.coordinates || currentEditorData.originalCoordinates) {
-			map.setCenter(currentEditorData.coordinates || currentEditorData.originalCoordinates);
-		}
-		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: "noCancelLoc" } }));
-		askFeatureLocation(onEditedFeatureMoved);
-	});
+	if(editorModeDom) {
+		editorMoveButton.addEventListener("click", e => {
+			window.onbeforeunload = null;
+			if(currentEditorData.coordinates || currentEditorData.originalCoordinates) {
+				map.setCenter(currentEditorData.coordinates || currentEditorData.originalCoordinates);
+			}
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: "noCancelLoc" } }));
+			askFeatureLocation(onEditedFeatureMoved);
+		});
+	}
 
 	// Check and send to OSM
 	function onFeatureFormSubmit(e) {

@@ -23,7 +23,8 @@
 			"name": "Poste à ajouter",
 			"subtitles": {
 				"": "Il y a un poste électrique à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
-			}
+			},
+			"buttons": { "add": "Intégrer ce poste" }
 		},
 		{
 			"source": "osm",
@@ -41,6 +42,18 @@
 		"all": {
 			"comment": "Intégration poste électrique",
 			"hashtags": "ProjetOSMDuMois,BalanceTonPoste"
+		},
+		"pdm": {
+			"fields": [
+				{ "type": "hidden", "tags": { "power": "substation", "voltage": "*" } },
+				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
+				{ "type": "text", "name": "Référence GDO", "tag": "ref:FR:gdo", "description": "Code INSEE + \"P\" + numéro à 4 chiffres", "optional": true },
+				{ "type": "textarea", "name": "Autres informations", "tag": "note", "optional": true }
+			],
+			"title": {
+				"add": "Ajouter un poste manquant",
+				"edit": "Compléter ce poste"
+			}
 		},
 		"iD": {
 			"background": "fr.ign.bdortho"

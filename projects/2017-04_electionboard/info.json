@@ -12,6 +12,15 @@
 		"imposm": {
 			"types": ["point"],
 			"mapping": { "advertising": ["board"], "message": ["political"] }
+		},
+		"compare": {
+			"types": ["point", "polygon"],
+			"mapping": {
+				"amenity": ["school","community_centre","townhall","polling_station"],
+				"polling_station": ["__any__"],
+				"polling_station:ref": ["__any__"]
+			},
+			"radius": 150
 		}
 	},
 	"datasources": [
@@ -19,6 +28,17 @@
 			"source": "osm",
 			"name": "Panneau dans OSM",
 			"description": "Ce panneau électoral existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		},
+		{
+			"source": "notes",
+			"name": "Panneau à intégrer",
+			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
+			"terms": [ "panneau", "électoral", "élection" ]
+		},
+		{
+			"source": "osm-compare",
+			"name": "Lieu pouvant disposer d'un panneau",
+			"description": "Ce lieu est susceptible d'être équipé de panneaux électoraux. Vous pouvez vérifier sur place la localisation précise du panneau et l'ajouter à OSM."
 		}
 	],
 	"statistics": {
@@ -30,6 +50,17 @@
 		"all": {
 			"comment": "Ajout panneau d'affichage électoral",
 			"hashtags": "ProjectOfTheMonth"
+		},
+		"pdm": {
+			"fields": [
+				{ "type": "hidden", "tags": { "advertising": "board", "message": "political" } },
+				{ "type": "3states", "name": "Panneau présent toute l'année", "tag": "permanent", "optional": true },
+				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true }
+			],
+			"title": {
+				"add": "Ajouter un panneau manquant",
+				"edit": "Compléter ce panneau"
+			}
 		},
 		"iD": {
 			"background": "fr.ign.bdortho"

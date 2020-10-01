@@ -64,7 +64,7 @@ Les propriétés dans `info.json` sont les suivantes :
 * `summary` : résumé de la mission
 * `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
 * `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags))
-* `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs)
+* `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs, voir [la documentation Imposm](https://imposm.org/docs/imposm3/latest/mapping.html#tags) pour le format de ces champs)
 * `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
 * `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
 * `statistics` : configuration de l'affichage des statistiques sur la page du projet

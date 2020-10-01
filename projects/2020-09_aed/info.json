@@ -37,20 +37,13 @@
 			"subtitles": {
 				"fallback": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
 			},
-			"buttons": {
-				"done": "C'est fait",
-				"false": "Rien ici",
-				"add": "Intégrer ce défibrillateur"
-			}
+			"buttons": { "add": "Intégrer ce défibrillateur" }
 		},
 		{
 			"source": "notes",
 			"name": "DAE à intégrer",
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"terms": [ "défibrillateur", "defibrillateur", "dae", "deficoeur" ],
-			"buttons": {
-				"close": "C'est fait"
-			}
+			"terms": [ "défibrillateur", "defibrillateur", "dae", "deficoeur" ]
 		},
 		{
 			"source": "osm",

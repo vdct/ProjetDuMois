@@ -19,7 +19,7 @@
 		{
 			"source": "osm",
 			"name": "Lieu avec horaires de confinement",
-			"description": "Ce lieu a ses horaires durant le confinement renseignées dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+			"description": "Ce lieu a ses horaires durant le confinement renseignées dans OSM."
 		}
 	],
 	"statistics": {

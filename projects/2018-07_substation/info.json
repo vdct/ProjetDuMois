@@ -21,9 +21,7 @@
 			"item": "8280",
 			"country": "france*",
 			"name": "Poste à ajouter",
-			"subtitles": {
-				"": "Il y a un poste électrique à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
-			},
+			"description": "Il y a un poste électrique à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap.",
 			"buttons": { "add": "Intégrer ce poste" }
 		},
 		{
@@ -46,6 +44,12 @@
 		"pdm": {
 			"fields": [
 				{ "type": "hidden", "tags": { "power": "substation", "voltage": "*" } },
+				{ "type": "select", "name": "Type de poste", "tag": "_select1", "values": [
+					{ "l": "Petit bâtiment (mur béton)", "tags": { "substation": "minor_distribution", "location": "indoor" } },
+					{ "l": "Armoire (bloc vert/gris)", "tags": { "man_made": "street_cabinet", "street_cabinet": "power" } },
+					{ "l": "Sur un poteau (petit bloc gris)", "tags": { "power": "pole", "material": "concrete", "transformer": "distribution" } },
+					{ "l": "Souterrain", "tags": { "substation": "minor_distribution", "location": "underground" } }
+				] },
 				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
 				{ "type": "text", "name": "Référence GDO", "tag": "ref:FR:gdo", "description": "Code INSEE + \"P\" + numéro à 4 chiffres", "optional": true },
 				{ "type": "textarea", "name": "Autres informations", "tag": "note", "optional": true }

@@ -34,9 +34,7 @@
 			"source": "osmose",
 			"item": "8370", "country": "france*",
 			"name": "DAE à localiser",
-			"subtitles": {
-				"fallback": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap."
-			},
+			"description": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap.",
 			"buttons": { "add": "Intégrer ce défibrillateur" }
 		},
 		{

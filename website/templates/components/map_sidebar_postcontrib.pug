@@ -19,10 +19,13 @@ script.
 
 	// Send instant contribution
 	function addContribution(type) {
-		postContribBadgesDom.classList.remove("d-none");
-
+		// Old project : show nothing specific
+		if(!#{isActive}) {
+			postContribBadgesDom.classList.add("d-none");
+		}
 		// With auth : save contribution in DB, display badges
-		if(window.osm_user) {
+		else if(window.osm_user) {
+			postContribBadgesDom.classList.remove("d-none");
 			document.getElementById("pdm-postcontrib-anon").classList.add("d-none");
 			postContribAuthDom.innerHTML = `<div class="col text-center mb-3"><span class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></span></div>`;
 			postContribAuthDom.classList.remove("d-none");
@@ -84,6 +87,7 @@ script.
 		}
 		// No auth : show connect to OSM
 		else {
+			postContribBadgesDom.classList.remove("d-none");
 			document.getElementById("pdm-postcontrib-anon").classList.remove("d-none");
 			postContribAuthDom.classList.add("d-none");
 		}

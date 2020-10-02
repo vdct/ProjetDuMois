@@ -18,7 +18,8 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 			.forEach(ds => {
 				project.osmoseLabels[`${ds.item}_${ds.class || "all"}`] = {
 					name: ds.name,
-					subtitles: ds.subtitles
+					subtitles: ds.subtitles,
+					description: ds.description
 				};
 				project.osmoseButtons[`${ds.item}_${ds.class || "all"}`] = ds.buttons;
 			});

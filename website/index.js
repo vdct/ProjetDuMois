@@ -75,7 +75,7 @@ app.get('/projects/:id/map', (req, res) => {
 	const all = filterProjects(projects);
 	const isActive = all.current && all.current.id === req.params.id;
 	const mapstyle = getMapStyle(p);
-	res.render('pages/map', Object.assign({ CONFIG }, p, mapstyle, isActive));
+	res.render('pages/map', Object.assign({ CONFIG, isActive }, p, mapstyle));
 });
 
 // Project statistics

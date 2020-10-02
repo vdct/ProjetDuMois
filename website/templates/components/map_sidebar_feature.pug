@@ -258,7 +258,7 @@ script.
 			let editorTags = [];
 
 			for(let field of editors.pdm.fields) {
-				if(field.tag) { editorTags.push(field.tag); }
+				if(field.tag && !field.tag.startsWith("_")) { editorTags.push(field.tag); }
 				else if(field.tags) { editorTags = editorTags.concat(Object.keys(field.tags)); }
 
 				if(field.type !== "hidden") {
@@ -285,6 +285,45 @@ script.
 						p.appendChild(value);
 
 						div.appendChild(p);
+					}
+					else if(field.tag.startsWith("_")) {
+						// Check if value is found in tags
+						let foundValue;
+						for(let v of field.values) {
+							let tagsMatch = true;
+							for(let k in v.tags) {
+								if(tags[k] !== v.tags[k]) {
+									tagsMatch = false;
+									break;
+								}
+							}
+
+							if(tagsMatch) {
+								foundValue = v.l;
+								break;
+							}
+						}
+
+						// If found, display
+						if(foundValue) {
+							const p = document.createElement("p");
+							p.classList.add("mb-1");
+
+							const title = document.createElement("span");
+							title.classList.add("text-muted", "d-block");
+							title.appendChild(document.createTextNode(field.name));
+							p.appendChild(title);
+
+							const value = document.createElement("span");
+							value.classList.add("d-block");
+							value.appendChild(document.createTextNode(foundValue));
+							p.appendChild(value);
+
+							div.appendChild(p);
+						}
+						else {
+							toComplete.push(field.name);
+						}
 					}
 					else if(field.tag !== "note") {
 						toComplete.push(field.name);
@@ -322,6 +361,21 @@ script.
 		}
 	}
 
+	// Search for OSM feature in loaded data
+	function getOSMFeatureFromMap(featureId) {
+		if(!featureId) { return null; }
+		else {
+			for(let osmSourceId in osmSources) {
+				const sourceId = "osm_"+osmSourceId;
+				const features = map.querySourceFeatures(sourceId, { filter: ["==", ["get", "osm_id"], featureId], sourceLayer: `public.project_#{id.split("_").pop()}` });
+				if(features.length >= 1) {
+					return features.pop();
+				}
+			}
+			return null;
+		}
+	}
+
 	// Create DOM structure for feature description
 	function getDescription(feature) {
 		const s = feature.source;
@@ -339,7 +393,7 @@ script.
 			fetch(`#{CONFIG.OSMOSE_URL}/api/0.3/issue/${p.uuid}`)
 			.then(res => res.json())
 			.then(meta => {
-				const labels = osmoseLabels[`${meta.item}_${meta.class}`] || osmoseLabels[`${meta.item}_all`] || { name: meta.title.auto };
+				const labels = Object.assign({ name: meta.title.auto }, osmoseLabels[`${meta.item}_all`], osmoseLabels[`${meta.item}_${meta.class}`]);
 				const buttons = Object.assign({ done: "C'est fait", false: "Rien ici", add: "Intégrer cet objet" }, osmoseButtons[`${meta.item}_all`], osmoseButtons[`${meta.item}_${meta.class}`]);
 
 				let tags = [];
@@ -359,6 +413,17 @@ script.
 				}
 				tags.forEach(kv => tagsForEdit[kv.k] = kv.v);
 
+				const elem = meta.elems && meta.elems.length > 0 && meta.elems[0];
+				const origOsmFeatureId = elem && elem.type+"/"+elem.id;
+				const origOsmFeature = getOSMFeatureFromMap(origOsmFeatureId);
+				if(origOsmFeature) {
+					tagsForEdit = Object.assign(
+						{},
+						typeof origOsmFeature.properties.tags === "string" ? JSON.parse(origOsmFeature.properties.tags) : origOsmFeature.properties.tags,
+						tagsForEdit
+					);
+				}
+
 				let subtitle = meta.subtitle ? meta.subtitle.auto : "";
 				if(labels.subtitles) {
 					const subtitles = Object.keys(labels.subtitles).filter(s => subtitle.includes(s)).map(s => labels.subtitles[s]);
@@ -368,7 +433,8 @@ script.
 
 				resDiv.innerHTML = `
 					<h5>${labels.name}</h5>
-					<div class="alert alert-info">${subtitle.replace(/\n/g, "<br />")}</div>`;
+					${labels.description ? `<div class="alert alert-info">${labels.description}</div>` : ""}
+					<p>${subtitle.replace(/\n/g, "<br />")}</p>`;
 
 				if(tags.length > 0) {
 					getReadableTags(resDiv, tagsForEdit);
@@ -390,15 +456,14 @@ script.
 				divButtonFalse.title = "Marquer cet élément comme \""+buttons.false+"\" si le signalement n'est pas valide";
 				divButtonFalse.addEventListener("click", markOsmose("false", feature));
 
-				const elem = meta.elems && meta.elems.length > 0 && meta.elems[0];
-				createFeatureButton(resDiv, "add", "btn-block mt-3 mb-1 dropup", {
-					title: buttons.add,
+				createFeatureButton(resDiv, origOsmFeature ? "edit" : "add", "btn-block mt-3 mb-1 dropup", {
+					title: buttons[origOsmFeature ? "edit" : "add"],
 					tags: tagsForEdit,
-					osmid: elem && elem.type+"/"+elem.id,
+					osmid: origOsmFeature ? origOsmFeatureId : undefined,
+					originalCoordinates: origOsmFeature ? { lng: origOsmFeature.geometry.coordinates[0], lat: origOsmFeature.geometry.coordinates[1] } : originalCoordinates,
 					osmoseuuid: meta.uuid,
 					onExternalEdit: editors.pdm ? () => divButtons.insertBefore(divButtonDone, divButtonFalse) : null,
-					onInternalEdit: markOsmose("done", feature, true),
-					originalCoordinates
+					onInternalEdit: markOsmose("done", feature, true)
 				});
 
 				divButtons.appendChild(divButtonFalse);
@@ -422,7 +487,7 @@ script.
 					${cmt.html}
 				</div>`).join("")}`;
 
-			const tags = {
+			let tags = {
 				source: `#{CONFIG.OSM_URL}/note/${p.id}`
 			};
 
@@ -454,20 +519,6 @@ script.
 					}
 				});
 			});
-
-			// Check if feature corresponding to featureId can be found
-			let feature;
-			if(featureId) {
-				for(let osmSourceId in osmSources) {
-					const sourceId = "osm_"+osmSourceId;
-					const features = map.querySourceFeatures(sourceId, { filter: ["==", ["get", "osm_id"], featureId], sourceLayer: `public.project_#{id.split("_").pop()}` });
-					if(features.length >= 1) {
-						feature = features.pop();
-						break;
-					}
-				}
-				if(!feature) { delete featureId; }
-			}
 
 			const divButtons = document.createElement("div");
 			divButtons.classList.add("btn-group", "btn-block", "mt-1");
@@ -503,6 +554,15 @@ script.
 			divButtonComment.title = "Participer à la discussion sur cette note";
 			divButtonComment.href = `#{CONFIG.OSM_URL}/note/${p.id}`;
 			divButtonComment.target = "_blank";
+
+			const feature = getOSMFeatureFromMap(featureId);
+			if(feature) {
+				tags = Object.assign(
+					{},
+					typeof feature.properties.tags === "string" ? JSON.parse(feature.properties.tags) : feature.properties.tags,
+					tags
+				);
+			}
 
 			createFeatureButton(resDiv, feature ? "edit": "add", "btn-block mb-1 dropup", {
 				noteid: "note/"+p.id,

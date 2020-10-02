@@ -1,0 +1,70 @@
+a.d-inline-block.d-md-none.w-100.text-center.mb-2(href="/" title="Retour à la page d'accueil" style="border-bottom: 1px solid #bbb")
+	img.mb-2(style="max-width: 100%; max-height: 100px" src="/images/logo.png" alt="Projet du mois")
+
+div.map-legend
+	h5 Légende
+	each lg in legend
+		div(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
+			span(style=`background-color: ${lg.color}`)
+			| #{lg.label}
+
+//- Make legend symbol clickable to enable/disable layer
+-
+	const legendClickEvents = legend
+		.map(lg => lg.layerId)
+		.map((id,i) => `
+			const domLegend${i} = document.getElementById('pdm-legend-${id}');
+			domLegend${i}.addEventListener("click", e => {
+				if(domLegend${i}.classList.contains('text-line-through')) {
+					map.setFilter('${id}', null);
+					domLegend${i}.classList.remove('text-line-through');
+				}
+				else {
+					map.setFilter('${id}', ['boolean', false]);
+					domLegend${i}.classList.add('text-line-through');
+				}
+			});`)
+		.join("\n");
+
+script !{legendClickEvents}
+
+if editors.pdm
+	h5.mt-3.pt-2(style="border-top: 1px solid #bbb") Éditer
+	div#legend-edit-button
+
+h5.mt-3.pt-2(style="border-top: 1px solid #bbb") Fond de carte
+div.btn-group.btn-group-lg.w-100(role="group")
+	button.btn.btn-secondary#pdm-bg-map(role="button")
+		i.fa.fa-map.mr-1
+		| Plan
+	button.btn.btn-outline-secondary#pdm-bg-aerial(role="button")
+		i.fa.fa-satellite.mr-1
+		| Satellite
+
+script.
+	const btnBgMap = document.getElementById("pdm-bg-map");
+	const btnBgAerial = document.getElementById("pdm-bg-aerial");
+
+	btnBgMap.addEventListener("click", e => {
+		btnBgMap.classList.remove("btn-outline-secondary");
+		btnBgMap.classList.add("btn-secondary");
+		btnBgAerial.classList.remove("btn-secondary");
+		btnBgAerial.classList.add("btn-outline-secondary");
+		map.setLayoutProperty("bg_map", "visibility", "visible");
+		map.setLayoutProperty("bg_aerial", "visibility", "none");
+		if(window.innerWidth < 576) {
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+		}
+	});
+
+	btnBgAerial.addEventListener("click", e => {
+		btnBgAerial.classList.remove("btn-outline-secondary");
+		btnBgAerial.classList.add("btn-secondary");
+		btnBgMap.classList.remove("btn-secondary");
+		btnBgMap.classList.add("btn-outline-secondary");
+		map.setLayoutProperty("bg_map", "visibility", "none");
+		map.setLayoutProperty("bg_aerial", "visibility", "visible");
+		if(window.innerWidth < 576) {
+			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+		}
+	});

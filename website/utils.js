@@ -33,18 +33,27 @@ exports.queryParams = (obj) => {
 // Map style JSON
 exports.getMapStyle = (p) => {
 	const legend = [];
-	const sources = { osm: {
-		type: "raster",
-		tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
-		maxzoom: 19,
-		tileSize: 256,
-		attribution: "&copy; OpenStreetMap"
-	}};
-	const layers = [{
-		id: "osm",
-		source: "osm",
-		type: "raster"
-	}];
+	const sources = {
+		osm: {
+			type: "raster",
+			tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
+			maxzoom: 19,
+			tileSize: 256,
+			attribution: `<a href="https://wiki.osmfoundation.org/wiki/Terms_of_Use" target="_blank">&copy; OpenStreetMap</a>`
+		},
+		ign: {
+			type: "raster",
+			tiles: [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
+			maxzoom: 21,
+			minzoom: 2,
+			tileSize: 256,
+			attribution: `<a href="https://openstreetmap.fr/bdortho" target="_blank">&copy; BDOrtho IGN</a>`
+		}
+	};
+	const layers = [
+		{ id: "bg_map", source: "osm", type: "raster" },
+		{ id: "bg_aerial", source: "ign", type: "raster", layout: { visibility: "none" } }
+	];
 
 	if(p) {
 		const circlePaint = {

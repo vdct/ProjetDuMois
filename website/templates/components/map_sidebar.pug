@@ -7,19 +7,7 @@ div#pdm-map-sidebar.pdm-hidden
 	div.overflow-auto.h-100.w-100.pdm-sidebar-content
 		//- Default panel showing legend
 		div.pdm-sidebar-default.m-3
-			a.d-inline-block.d-md-none.w-100.text-center.mb-2(href="/" title="Retour à la page d'accueil" style="border-bottom: 1px solid #bbb")
-				img.mb-2(style="max-width: 100%; max-height: 100px" src="/images/logo.png" alt="Projet du mois")
-
-			div.map-legend
-				h5 Légende
-				each lg in legend
-					div(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
-						span(style=`background-color: ${lg.color}`)
-						| #{lg.label}
-
-				if editors.pdm
-					h5.mt-3 Éditer
-					div#legend-edit-button
+			include map_sidebar_legend.pug
 
 		//- Display features list
 		div.pdm-sidebar-features.m-3.d-none
@@ -36,7 +24,8 @@ div#pdm-map-sidebar.pdm-hidden
 		div.pdm-sidebar-postcontrib.m-3.d-none
 			include map_sidebar_postcontrib.pug
 
-include ./map_sidebar_feature.pug
+include map_sidebar_feature.pug
+
 script.
 	const sidebarDom = document.getElementById("pdm-map-sidebar");
 	if(window.innerWidth >= 768) { sidebarDom.classList.remove("pdm-hidden"); }
@@ -154,23 +143,3 @@ script.
 		}
 		updateHashMapSidebar();
 	});
-
-//- Make legend symbol clickable to enable/disable layer
--
-	const legendClickEvents = legend
-		.map(lg => lg.layerId)
-		.map((id,i) => `
-			const domLegend${i} = document.getElementById('pdm-legend-${id}');
-			domLegend${i}.addEventListener("click", e => {
-				if(domLegend${i}.classList.contains('text-line-through')) {
-					map.setFilter('${id}', null);
-					domLegend${i}.classList.remove('text-line-through');
-				}
-				else {
-					map.setFilter('${id}', ['boolean', false]);
-					domLegend${i}.classList.add('text-line-through');
-				}
-			});`)
-		.join("\n");
-
-script !{legendClickEvents}

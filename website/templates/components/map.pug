@@ -171,6 +171,7 @@ script.
 
 		// Move marker
 		showMarker(map.getCenter());
+		if(map.getZoom() < 18) { map.flyTo({ zoom: 18 }); }
 		map.on("move", mapMoveListener);
 
 		lastCallbackFeatureLocation = e => {

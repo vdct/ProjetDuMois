@@ -142,7 +142,8 @@ app.get('/projects/:id/stats', (req, res) => {
 					lineTension: 0
 				}
    			],
-			closedNotes: results.rows.length > 0 && results.rows[results.rows.length-1].closed
+			pctClosedNotes: results.rows.length > 0 && (results.rows[results.rows.length-1].closed / results.rows[results.rows.length-1].open * 100).toFixed(0),
+			openedNotes: results.rows.length > 0 && results.rows[results.rows.length-1].open
 		})));
 	}
 

@@ -192,7 +192,7 @@ script.
 
 			// Notes count + chart
 			if(res.chartNotes) {
-				addBlock(res.closedNotes, "notes résolues");
+				addBlock(res.openedNotes, `notes ouvertes (${res.pctClosedNotes}% résolues)`);
 
 				const myChart = new Chart(document.getElementById("stats-chart-notes").getContext("2d"), {
 					type: "line",

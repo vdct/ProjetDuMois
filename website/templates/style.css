@@ -315,18 +315,20 @@ a.navbar-brand:hover {
 	text-decoration: none !important;
 }
 
+.pdm-btn-layers.pdm-btn-enabled {
+	color: #28a745;
+}
+
 .map-legend > div {
 	display: flex;
 	align-items: center;
 	line-height: 1.5rem;
 	cursor: pointer;
-	align-items: baseline;
+	align-items: center;
 }
 
-.map-legend > div > span {
+.map-legend .pdm-color-patch {
 	margin-right: 5px;
-	width: 12px;
-	height: 12px;
 }
 
 .text-line-through {
@@ -497,7 +499,7 @@ a.navbar-brand:hover {
 	max-width: 80%;
 }
 
-.pdm-features-list-entry div.pdm-color-patch {
+.pdm-color-patch {
 	width: 20px;
 	height: 20px;
 	border-radius: 16px;

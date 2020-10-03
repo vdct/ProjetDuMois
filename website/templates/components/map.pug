@@ -65,28 +65,37 @@ script.
 	toggleZoomAlert();
 	map.on("zoom", toggleZoomAlert);
 
-	// Button for KML exports
-	class ExportControl {
+	// Button for switching between aerial imagery and map tiles
+	class TilesControl {
 		onAdd(map) {
 			this._map = map;
 			this._container = document.createElement('div');
-			this._container.className = "mapboxgl-ctrl map-ctrl-btn hide-low-zoom";
-			const osmoseLabels = !{JSON.stringify(osmoseLabels)};
-			if(osmoseLabels && Object.keys(osmoseLabels).length > 0) {
-				const [osmoseItem, osmoseClasses] = Object.keys(osmoseLabels)[0].split("_");
-				const osmose_params = `item=${osmoseItem}&class=${osmoseClasses !== "all" ? osmoseClasses : ""}`
-				const osmose_bbox = `${map.getBounds()._sw.lng}%2C${map.getBounds()._sw.lat}%2C${map.getBounds()._ne.lng}%2C${map.getBounds()._ne.lat}`
-				const osmose_export_url = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${osmose_params}&bbox=${osmose_bbox}`;
-				this._container.innerHTML = `<a title="Télécharger un fichier KML pour contribuer depuis votre smartphone" href="${osmose_export_url}"> 📲 </a>`;
-				return this._container;
-			}
-			else {
-				return document.createElement('div');
-			}
+			this._container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+			const btn = document.createElement("button");
+			btn.type = "button";
+			btn.title = "Afficher / masquer l'imagerie satellite";
+			btn.classList.add("pdm-btn-layers");
+			btn.innerHTML = `<i class="fa fa-layer-group" style="font-size: 18px"></i>`;
+
+			btn.addEventListener("click", e => {
+				if(!btn.classList.contains("pdm-btn-enabled")) {
+					map.setLayoutProperty("bg_map", "visibility", "none");
+					map.setLayoutProperty("bg_aerial", "visibility", "visible");
+					btn.classList.add("pdm-btn-enabled");
+				}
+				else {
+					map.setLayoutProperty("bg_map", "visibility", "visible");
+					map.setLayoutProperty("bg_aerial", "visibility", "none");
+					btn.classList.remove("pdm-btn-enabled");
+				}
+			});
+
+			this._container.appendChild(btn);
+			return this._container;
 		}
 	}
 
-	map.addControl(new ExportControl(), "top-right");
+	map.addControl(new TilesControl(), "top-right");
 
 	// Display notes layers if any
 	const notesSources = !{JSON.stringify(datasources.filter(ds => ds.source === "notes"))};

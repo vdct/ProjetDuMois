@@ -15,9 +15,43 @@ body {
 .display-4 {
 	font-size: 2.5rem;
 }
+
+@media (max-width: 576px) {
+	.jumbotron h1 {
+		font-size: 1.5rem;
+	}
+
+	.jumbotron .pdm-project-date {
+		font-size: 1.2rem;
+	}
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+	.jumbotron h1 {
+		font-size: 2rem;
+	}
+
+	.jumbotron .pdm-project-date {
+		font-size: 1.5rem;
+	}
+}
+
+@media (max-width: 768px) {
+	.jumbotron .pdm-project-badge {
+		right: 10px;
+		z-index: 10;
+	}
+}
+
 @media (min-width: 768px) {
 	.display-4 {
 		font-size: 3rem;
+	}
+
+	.jumbotron .pdm-project-badge {
+		right: 30px;
+		top: 30px;
+		z-index: 10;
 	}
 }
 
@@ -174,6 +208,12 @@ a.pdm-wide-link.map {
 	border-bottom: 1px solid #e5e5e5;
 	margin-bottom: 2rem;
 	z-index: 10000;
+}
+
+@media (max-width: 768px) {
+	.navbar-pdm {
+		margin-bottom: 0.5rem;
+	}
 }
 
 .navbar-pdm-links a {

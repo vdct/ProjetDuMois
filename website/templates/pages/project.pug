@@ -8,8 +8,8 @@ block navbar
 			span En ce moment
 	else
 		a(href="#contribute")
-			i.fa.fa-pen(title="Participer")
-			span Participer
+			i.fa.fa-question-circle(title="Participer")
+			span Comment participer
 	a(href="#statistics")
 		i.fa.fa-chart-bar(title="Statistiques")
 		span Statistiques
@@ -21,41 +21,36 @@ block navbar
 block content
 	div.container
 		//- Project summary
-		div#summary.jumbotron.p-4.p-md-5.mb-3.text-white.rounded.bg-dark
-			div.text-center
-				img.float-sm-none.float-md-right(src=icon alt="" width="130")
-			div.col-md-8.px-0
+		div#summary.jumbotron.py-2.px-3.pb-3.p-md-5.mb-3.text-white.rounded.bg-dark.position-relative
+			img.position-absolute.pdm-project-badge(src=icon alt="" width="100")
+			div.col-8.px-0
 				if isActive
-					h1.display-4.font-italic= `En ce moment : ${title.toLowerCase()}`
+					h1.font-italic= `En ce moment : ${title.toLowerCase()}`
 				else if isNext
-					h1.display-4.font-italic= `Prochainement : ${title.toLowerCase()}`
+					h1.font-italic= `Prochainement : ${title.toLowerCase()}`
 				else
-					h1.display-4.font-italic= title
-					p.display-4.text-capitalize= new Date(month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
-				p.lead.my-3= summary
-				p.lead.mb-0
-					a.btn.btn-primary.btn-lg(role="button" href="#contribute")
-						i.fa.fa-pen.mr-2
-						| Participer
+					h1.font-italic.mb-0= title
+					p.pdm-project-date.text-capitalize.mb-0.mb-md-2= new Date(month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+
+			div.btn-over-wide.d-flex.justify-content-center.align-items-center
+				a.pdm-wide-link.map(href=`/projects/${id}/map`)
+				a.btn.btn-primary.btn-lg(style="color: white")
+					i.fa.fa-pen.mr-2
+					| Contribuer
+
+			p.lead.mb-0.mt-md-2= summary
 
 	a#contribute
 	div.container-fluid.py-5
 		//- Contribute
 		div.container.blog-post
 			h2.blog-post-title.mb-2
-				i.fa.fa-pen.mr-2(style="font-size: 2.1rem")
-				| Participer
+				i.fa.fa-question-circle.mr-2(style="font-size: 2.1rem")
+				| Comment participer
 			if isNext
 				p Ce projet du mois commencera le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.
 			else if !isActive
 				p Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.
-			div.btn-over-wide.d-flex.justify-content-center.align-items-center
-				a.pdm-wide-link.map(href=`/projects/${id}/map`)
-				a.btn.btn-primary.btn-lg(style="color: white")
-					i.fa.fa-pen.mr-2
-					| Contribuer
-				a.btn.btn-light.btn-corner(style="bottom: 10px; left: 10px")
-					i.fa.fa-expand
 
 			div.mt-3!= howto
 			div.text-center

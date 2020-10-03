@@ -148,11 +148,12 @@ script.
 			});
 		}
 
-		for(let domDropdown of document.querySelectorAll(".pdm-user-button .dropdown")) {
+		for(let domUserBtn of document.querySelectorAll(".pdm-user-button")) {
+			const domDropdown = domUserBtn.querySelector(".dropdown");
 			domDropdown.addEventListener("shown.bs.dropdown", e => {
 				const menu = domDropdown.querySelector(".dropdown-menu");
 				if(!menu) { return; }
-				menu.style.left = `-${menu.offsetWidth - 60}px`;
+				menu.style.left = `-${menu.offsetWidth - domUserBtn.offsetWidth}px`;
 
 				const notifBadge = domDropdown.querySelector(".badge-info");
 				notifBadge.classList.add("d-none");

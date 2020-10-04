@@ -449,6 +449,7 @@ script.
 				editorDoneDom.classList.remove("d-none");
 				loadNotesOnMap();
 				cancelEdit(false, true);
+				addContribution('note');
 			})
 			.catch(e => {
 				console.error(e);

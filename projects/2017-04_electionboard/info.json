@@ -44,7 +44,7 @@
 	"statistics": {
 		"count": true,
 		"feature_name": "panneaux",
-		"points": { "add": 3, "edit": 1 }
+		"points": { "add": 3, "edit": 1, "note": 1 }
 	},
 	"editors": {
 		"all": {

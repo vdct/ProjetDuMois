@@ -28,6 +28,8 @@ const OSC_UPDATES_LOCAL = CONFIG.WORK_DIR + '/changes.local.osc.gz';
 const CSV_COUNT = CONFIG.WORK_DIR + '/count.csv';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
 const CSV_NOTES = CONFIG.WORK_DIR + '/notes.csv';
+const CSV_NOTES_CONTRIBS = CONFIG.WORK_DIR + '/user_notes.csv';
+const CSV_NOTES_USERS = CONFIG.WORK_DIR + '/usernames_notes.csv';
 
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql "postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
@@ -68,6 +70,8 @@ const today = new Date().toISOString().split("T")[0];
 const notesSources = project.datasources.filter(ds => ds.source === "notes");
 if(notesSources.length > 0) {
 	const notesPerDay = {};
+	const userNotes = [];
+	const userNames = {};
 	days.forEach(day => notesPerDay[day] = { open: 0, closed: 0 });
 
 	// Review each note source
@@ -86,6 +90,7 @@ if(notesSources.length > 0) {
 					if(!countedNotes.includes(f.properties.id)) {
 						countedNotes.push(f.properties.id);
 						if(booleanContains(CONFIG.GEOJSON_BOUNDS, f)) {
+							// Append note to count for each day it was opened
 							const start = f.properties.date_created.split(" ")[0];
 							const end = f.properties.closed_at ? f.properties.closed_at.split(" ")[0] : today;
 							days.forEach(day => {
@@ -96,6 +101,18 @@ if(notesSources.length > 0) {
 									notesPerDay[day].open++;
 								}
 							});
+
+							// Add as user contribution
+							if(f.properties.comments.length >= 1 && f.properties.comments[0].uid) {
+								userNotes.push([
+									project.id,
+									f.properties.comments[0].uid,
+									start,
+									"note",
+									(project.statistics && project.statistics.points && project.statistics.points.note) || 1
+								]);
+								userNames[f.properties.comments[0].uid] = f.properties.comments[0].user;
+							}
 						}
 					}
 				});
@@ -106,10 +123,27 @@ if(notesSources.length > 0) {
 
 	// Merge all statistics from all sources
 	Promise.all(promises).then(() => {
+		// Notes per day
 		const csvText = Object.entries(notesPerDay).map(e => `${project.id},${e[0]},${e[1].open},${e[1].closed}`).join("\n");
 		fs.writeFile(CSV_NOTES, csvText, (err) => {
-			console.log("Written note stats");
+			if(err) { console.error(err); }
+			else { console.log("Written note stats"); }
 		});
+
+		// User notes
+		const csvUserNotes = userNotes.map(un => un.join(",")).join("\n");
+		fs.writeFile(CSV_NOTES_CONTRIBS, csvUserNotes, (err) => {
+			if(err) { console.error(err); }
+			else { console.log("Written user notes contributions"); }
+		});
+
+		// User names from notes
+		const csvUserNames = Object.entries(userNames).map(e => `${e[0]},${e[1]}`).join("\n");
+		fs.writeFile(CSV_NOTES_USERS, csvUserNames, (err) => {
+			if(err) { console.error(err); }
+			else { console.log("Written user names from notes"); }
+		});
+
 		return true;
 	});
 }
@@ -170,10 +204,14 @@ ${separator}` : '';
 
 // Notes count (optional)
 const noteCounts = notesSources.length > 0 ? `
-echo "==== Count notes"
+echo "==== Notes statistics"
 ${PSQL} -c "DELETE FROM note_counts WHERE project = '${project.id}'"
 ${PSQL} -c "\\COPY note_counts FROM '${CSV_NOTES}' CSV"
-rm -f "${CSV_NOTES}"
+${PSQL} -c "\\COPY user_contributions(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS}' CSV"
+${PSQL} -c "CREATE TABLE user_names_notes(userid BIGINT, username VARCHAR)"
+${PSQL} -c "\\COPY user_names_notes FROM '${CSV_NOTES_USERS}' CSV"
+${PSQL} -c "INSERT INTO user_names SELECT userid, username FROM user_names_notes ON CONFLICT (userid) DO NOTHING; DROP TABLE user_names_notes;"
+rm -f "${CSV_NOTES}" "${CSV_NOTES_CONTRIBS}" "${CSV_NOTES_USERS}"
 ${separator}` : '';
 
 
@@ -239,7 +277,6 @@ ${separator}
 echo "==== Generate user contributions"
 ${PSQL} -f "${__dirname}/13_points.sql"
 ${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS \\$\\$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; \\$\\$ LANGUAGE plpgsql IMMUTABLE;"
-${PSQL} -c "DELETE FROM user_contributions WHERE NOT verified"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
 ${PSQL} -f "${__dirname}/15_badges.sql"
 ${separator}

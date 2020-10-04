@@ -231,7 +231,7 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 	}
 
 	// Check type of contribution
-	if(!req.query.type || !["add", "edit", "delete"].includes(req.query.type)) {
+	if(!req.query.type || !["add", "edit", "delete", "note"].includes(req.query.type)) {
 		return res.redirect('/error/400');
 	}
 

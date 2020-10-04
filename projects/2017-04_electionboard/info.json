@@ -30,12 +30,6 @@
 			"description": "Ce panneau électoral existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
 		},
 		{
-			"source": "notes",
-			"name": "Panneau à intégrer",
-			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"terms": [ "panneau", "électoral", "élection" ]
-		},
-		{
 			"source": "osm-compare",
 			"name": "Lieu pouvant disposer d'un panneau",
 			"description": "Ce lieu est susceptible d'être équipé de panneaux électoraux. Vous pouvez vérifier sur place la localisation précise du panneau et l'ajouter à OSM."

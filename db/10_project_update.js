@@ -3,6 +3,7 @@ const fs = require('fs');
 const projects = require('../website/projects');
 const { filterProjects } = require('../website/utils');
 const fetch = require('node-fetch');
+const booleanContains = require('@turf/boolean-contains').default;
 
 /*
  * Generates 09_project_update_tmp.sh script
@@ -78,19 +79,25 @@ if(notesSources.length > 0) {
 		));
 
 		// Process received notes
+		const countedNotes = [];
 		return Promise.all(subpromises).then(results => {
 			results.forEach(result => {
 				result.features.forEach(f => {
-					const start = f.properties.date_created.split(" ")[0];
-					const end = f.properties.closed_at ? f.properties.closed_at.split(" ")[0] : today;
-					days.forEach(day => {
-						if(f.properties.status === "closed" && end <= day) {
-							notesPerDay[day].closed++;
+					if(!countedNotes.includes(f.properties.id)) {
+						countedNotes.push(f.properties.id);
+						if(booleanContains(CONFIG.GEOJSON_BOUNDS, f)) {
+							const start = f.properties.date_created.split(" ")[0];
+							const end = f.properties.closed_at ? f.properties.closed_at.split(" ")[0] : today;
+							days.forEach(day => {
+								if(f.properties.status === "closed" && end <= day) {
+									notesPerDay[day].closed++;
+								}
+								else if(start <= day && day <= end) {
+									notesPerDay[day].open++;
+								}
+							});
 						}
-						else if(start <= day && day <= end) {
-							notesPerDay[day].open++;
-						}
-					});
+					}
 				});
 			});
 			return true;

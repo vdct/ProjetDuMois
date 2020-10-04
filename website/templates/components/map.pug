@@ -99,6 +99,8 @@ script.
 
 	// Display notes layers if any
 	const notesSources = !{JSON.stringify(datasources.filter(ds => ds.source === "notes"))};
+	const geojsonBounds = !{JSON.stringify(CONFIG.GEOJSON_BOUNDS)};
+
 	function loadNotesOnMap() {
 		if(notesSources.length > 0) {
 			notesSources.forEach((noteSource, nsid) => {
@@ -113,10 +115,15 @@ script.
 					.map(res => JSON.parse(res))
 					.forEach(res => {
 						res.features.forEach(feature => {
-							if(feature.properties.status === "open" && !existingNotesIds.includes(feature.properties.id)) {
-								feature.properties.pdm_note_source = nsid;
-								notes.features.push(feature);
+							if(
+								feature.properties.status === "open"
+								&& !existingNotesIds.includes(feature.properties.id)
+							) {
 								existingNotesIds.push(feature.properties.id);
+								if(booleanContains(geojsonBounds, feature)) {
+									feature.properties.pdm_note_source = nsid;
+									notes.features.push(feature);
+								}
 							}
 						});
 					});

@@ -4,6 +4,7 @@
   "description": "ProjetDuMois.fr est un tableau de bord pour encourager les contributions aux Projets du mois d'OpenStreetMap en France.",
   "main": "website/index.js",
   "scripts": {
+    "build:turf": "browserify node_modules/@turf/boolean-contains/index.js -s turf > website/static/turf.js",
     "start": "node --icu-data-dir=node_modules/full-icu website/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "project:update": "rm -f db/09_project_update_tmp.sh && node db/10_project_update.js",
@@ -21,6 +22,7 @@
   "homepage": "https://github.com/vdct/ProjetDuMois#readme",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.14.0",
+    "@turf/boolean-contains": "^6.0.1",
     "bootstrap": "^4.5.0",
     "bootstrap.native": "^3.0.10",
     "chart.js": "^2.9.3",
@@ -38,5 +40,8 @@
     "pg": "^8.3.0",
     "pug": "^3.0.0",
     "swiped-events": "^1.1.4"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.2"
   }
 }

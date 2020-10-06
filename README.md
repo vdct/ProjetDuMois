@@ -10,6 +10,8 @@ L'outil est libre et réalisé par une équipe de bénévoles. Vous pouvez nous 
 * [En nous faisant des retours d'expériences et suggestions](https://github.com/vdct/ProjetDuMois/issues)
 * [En proposant du code](DEVELOP.md) pour de nouvelles fonctionnalités ou des correctifs de bugs
 
+Ce projet adhère aux [principes pour le développement numérique](https://digitalprinciples.org/).
+
 
 ## L'équipe
 

@@ -23,7 +23,7 @@ script.
 			searchBarSymbol.lastChild.classList.remove("d-none");
 
 			timerSearchInput = setTimeout(() => {
-				lastText = text.slice(0);
+				lastText = text.slice(0).trim();
 				fetch(`#{CONFIG.NOMINATIM_URL}/search?q=${encodeURIComponent(text)}&format=json&countrycodes=fr&limit=1`)
 				.then(res => res.json())
 				.then(results => {

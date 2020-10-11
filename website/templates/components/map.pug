@@ -1,5 +1,11 @@
 div#map.map-main
+
 div.alert.alert-warning.map-alert.font-weight-bold.show-low-zoom Zoomez ou lancez une recherche pour commencer
+
+div#map-alert-loading.alert.alert-info.map-alert.font-weight-bold.d-none
+	div.spinner-border.text-primary.align-middle.mr-2(role="status" style="width: 48px; height: 48px")
+	| Chargement en cours
+
 div#edit-feature-location.alert.alert-primary.map-alert.d-none
 	| Déplacer la carte pour positionner l'objet à créer
 	div.btn-group.btn-block.mt-1
@@ -10,9 +16,10 @@ div#edit-feature-location.alert.alert-primary.map-alert.d-none
 			i.fa.fa-ban.mr-2
 			| Annuler
 
+
 //- This runs on client
 script.
-	const hasLocation = window.location.hash !== "";
+	const hashParams = new URLSearchParams(window.location.hash);
 	const listOfSources = !{JSON.stringify(pdmSources)};
 
 	// Map init
@@ -31,6 +38,37 @@ script.
 		else { map.addImage('pdm-exclamation', image); }
 	});
 
+	// Initial load of certain features
+	if(hashParams.has("load") && /^osm~[a-z]+\/[0-9]+$/.test(hashParams.get("load"))) {
+		const domLoadingFeature = document.getElementById("map-alert-loading");
+		domLoadingFeature.classList.remove("d-none");
+		const initialLoadFeature = hashParams.get("load");
+		const onMapLoadShowFeature = () => {
+			let filter, layers;
+			const [ type, id ] = initialLoadFeature.split("~");
+
+			if(type === "osm") {
+				if(id.startsWith("note/")) {
+					filter = ["==", ["to-string", ["get", "id"]], id.split("/").pop()];
+					layers = listOfSources.filter(ps => ps.startsWith("notes_"));
+				}
+				else {
+					filter = ["==", ["get", "osm_id"], id];
+					layers = listOfSources.filter(ps => ps.startsWith("osm_") || ps.startsWith("osm-compare_"));
+				}
+			}
+
+			const matches = map.queryRenderedFeatures({ filter, layers });
+
+			if(matches.length > 0) {
+				showFeature(matches[0]);
+				domLoadingFeature.classList.add("d-none");
+				map.off("data", onMapLoadShowFeature);
+			}
+		};
+		map.on("data", onMapLoadShowFeature);
+	}
+
 	// Add feature button
 	createFeatureButton(document.body, "add", "btn-floating btn-primary hide-low-zoom", { mini: true });
 	if(editors.pdm) {
@@ -40,7 +78,7 @@ script.
 	// Geolocate
 	const geoloc = new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true } });
 	map.addControl(geoloc);
-	if(!hasLocation) {
+	if(!hashParams.has("map")) {
 		map.on("load", () => geoloc.trigger());
 	}
 

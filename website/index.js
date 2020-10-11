@@ -79,6 +79,18 @@ app.get('/projects/:id/map', async (req, res) => {
 	res.render('pages/map', Object.assign({ CONFIG, isActive }, p, mapstyle));
 });
 
+// Project notes list
+app.get('/projects/:id/issues', (req, res) => {
+	if(!req.params.id || !projects[req.params.id]) {
+		return res.redirect('/error/404');
+	}
+
+	const p = projects[req.params.id];
+	const all = filterProjects(projects);
+	const isActive = all.current && all.current.id === req.params.id;
+	res.render('pages/issues', Object.assign({ CONFIG, isActive }, p));
+});
+
 // Project statistics
 app.get('/projects/:id/stats', (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {

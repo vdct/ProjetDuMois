@@ -1,0 +1,114 @@
+div#menu-swiper.toggle-map-sidebar.d-sm-none
+	span
+
+div.pdm-sidebar#pdm-issues-sidebar.pdm-hidden.pdm-sidebar
+	div.pdm-sidebar-mask.toggle-map-sidebar
+
+	div.overflow-auto.h-100.w-100.pdm-sidebar-content
+		//- Filters
+		div.pdm-sidebar-filters.m-3
+			a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title="Retour à la page d'accueil")
+				img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt="Projet du mois")
+
+			div.btn-group.w-100.mb-2.mt-2(role="group")
+				a.btn.btn-outline-secondary.w-50(href=`/projects/${id}/map` role="button")
+					i.fa.fa-map.mr-1
+					| Carte
+				button.btn.btn-secondary.w-50(type="button" disabled="")
+					i.fa.fa-list.mr-1
+					| Liste
+
+			form#filters.mt-3
+				p.mb-1 Afficher uniquement les signalements
+				div.form-group.form-check.m-0
+					input#filterReadyMerge.form-check-input(type="checkbox" name="ready")
+					label.form-check-label(for="filterReadyMerge")
+						span.badge.badge-pill.badge-success Prêt à intégrer
+				div.form-group.form-check.m-0
+					input#filterPicture.form-check-input(type="checkbox" name="picture")
+					label.form-check-label(for="filterPicture") Avec photo
+				div.form-group.form-check.m-0
+					input#filterAnonymous.form-check-input(type="checkbox" name="anonymous")
+					label.form-check-label(for="filterAnonymous") Anonymes
+
+script.
+	const issuesSidebarDom = document.getElementById("pdm-issues-sidebar");
+	const issuesFilters = issuesSidebarDom.querySelector("#filters");
+	issuesFilters.reset();
+
+	// Close sidebar button
+	for(let d of document.querySelectorAll(".toggle-map-sidebar")) {
+		d.addEventListener("click", () => {
+			if(issuesSidebarDom.classList.contains("pdm-hidden")) {
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true } }));
+			}
+			else {
+				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+			}
+		});
+	}
+
+	// Filters changes
+	issuesFilters.addEventListener("change", e => {
+		window.dispatchEvent(new CustomEvent("pdm_filter_issues", { detail: { filters: Object.fromEntries([...new FormData(issuesFilters)]) } }));
+	});
+
+	// Add custom filters
+	function addCustomFilters(filters) {
+		filters.forEach(flt => {
+			const fltDom = document.createElement("div");
+			fltDom.classList.add("form-group", "form-check", "m-0");
+
+			const fltInput = document.createElement("input");
+			fltInput.id = "filter_"+flt;
+			fltInput.classList.add("form-check-input");
+			fltInput.type = "checkbox";
+			fltInput.name = flt;
+			fltDom.appendChild(fltInput);
+
+			const fltLabel = document.createElement("label");
+			fltLabel.classList.add("form-check-label");
+			fltLabel.setAttribute("for", fltInput.id);
+			fltLabel.innerHTML = `<span class="badge badge-pill badge-secondary">${flt}</span>`;
+			fltDom.appendChild(fltLabel);
+
+			issuesFilters.appendChild(fltDom);
+		});
+	}
+
+	// Swipe menu
+	document.getElementById("menu-swiper").addEventListener("swiped-right", e => {
+		e.preventDefault();
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true } }));
+	});
+	issuesSidebarDom.querySelector(".pdm-sidebar-mask").addEventListener("swiped-left", e => {
+		e.preventDefault();
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+	});
+	issuesSidebarDom.addEventListener("swiped-left", e => {
+		e.preventDefault();
+		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
+	});
+
+	// Change visible panel
+	const panelFiltersDom = issuesSidebarDom.querySelector(".pdm-sidebar-filters");
+
+	window.addEventListener("pdm_sidebar_use", e => {
+		if(e.detail.open) {
+			issuesSidebarDom.classList.remove("pdm-hidden");
+			issuesListDom.classList.remove("no-sidebar");
+		}
+		if(e.detail.close) {
+			issuesSidebarDom.classList.add("pdm-hidden");
+			issuesListDom.classList.add("no-sidebar");
+			e.detail.panel = "default";
+		}
+		switch(e.detail.panel) {
+			case "filters":
+			default:
+				panelFiltersDom.classList.remove("d-none");
+				break;
+		}
+	});
+
+	if(window.innerWidth >= 768) { window.addEventListener("load", () => window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true } }))); }

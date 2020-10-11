@@ -1,7 +1,7 @@
 div#menu-swiper.toggle-map-sidebar.d-sm-none
 	span
 
-div#pdm-map-sidebar.pdm-hidden
+div#pdm-map-sidebar.pdm-sidebar.pdm-hidden
 	div.pdm-sidebar-mask.toggle-map-sidebar
 
 	div.overflow-auto.h-100.w-100.pdm-sidebar-content
@@ -32,15 +32,20 @@ script.
 
 	// Update hash
 	const updateHashMapSidebar = () => {
+		const currentParams = new URLSearchParams((window.location.hash || "#").substring(1));
+
 		if(sidebarDom.classList.contains("pdm-hidden")) {
-			window.history.replaceState(null, null, window.location.hash.replace(/sidebar&/g, ""));
+			currentParams.delete("sidebar");
+			window.history.replaceState(null, null, "#"+currentParams.toString().replace(/%2F/g, "/"));
 		}
-		else if(!window.location.hash.includes("sidebar")) {
-			window.location.hash = window.location.hash.replace("#", "#sidebar&");
+		else if(!currentParams.has("sidebar")) {
+			currentParams.set("sidebar", "");
+			window.location.hash = "#"+currentParams.toString().replace(/%2F/g, "/");
 		}
 	};
 	window.addEventListener("hashchange", e => {
-		if(!window.location.hash.includes("sidebar") && !sidebarDom.classList.contains("pdm-hidden")) {
+		const currentParams = new URLSearchParams((window.location.hash || "#").substring(1));
+		if(!currentParams.has("sidebar") && !sidebarDom.classList.contains("pdm-hidden")) {
 			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
 		}
 	});

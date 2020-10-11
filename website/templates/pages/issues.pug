@@ -1,0 +1,15 @@
+doctype html
+html(lang="fr")
+	head
+		include ../common/head.pug
+
+		//- Specific libraries
+		script(src="/lib/swiped-events/swiped-events.js")
+		script(src="/turf.js")
+		script.
+			const booleanContains = turf.default;
+
+	body(data-swipe-ignore="true")
+		include ../components/issues_navbar.pug
+		include ../components/issues_sidebar.pug
+		include ../components/issues_list.pug

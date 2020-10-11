@@ -1,0 +1,185 @@
+div.d-none#map-marker-plus
+	include ../../images/marker_plus.svg
+div.d-none#map-marker-edit
+	include ../../images/marker_edit.svg
+
+script.
+	// Generate button for feature creation / editing
+	function createFeatureButton(container, mode = "add", classes = null, options = {}) {
+		if(options.mini && !editors.pdm) { return; }
+
+		const optsPdm = Object.fromEntries(Object.entries(options).filter(e => ["tags", "onInternalEdit", "originalCoordinates"].includes(e[0])));
+		const title = options.title || (editors.pdm && editors.pdm.title[mode]) || "Plus de détails";
+		const { lat, lng } = options.originalCoordinates || (map && map.getCenter()) || { lat: 0, lng: 0 };
+
+		// Main button
+		const button = document.createElement(options.page === "issues" ? "a" : "button");
+		button.classList.add("editor-add-btn", "btn");
+		button.setAttribute(options.page === "issues" ? "role" : "type", "button");
+		button.setAttribute("title", title);
+
+		let buttonIcon = document.createElement("span");
+		buttonIcon.classList.add("d-inline-block", "container-svg-fa");
+		buttonIcon.style.height = options.mini ? "24px" : "30px";
+		buttonIcon.appendChild(document.getElementById(mode === "add" ? "map-marker-plus" : "map-marker-edit").firstChild.cloneNode(true));
+
+		// PdM action
+		const pdmfct = options.page !== "issues" && (mode === "add" ?
+				e => onStartNewFeature(optsPdm)
+				: e => onStartEditFeature(Object.assign({ osmid: options.osmid }, optsPdm)));
+
+		if(options.mini) {
+			if(classes.includes("btn-floating")) {
+				buttonIcon = document.createElement("i");
+				buttonIcon.classList.add("fa", "fa-plus");
+			}
+			button.appendChild(buttonIcon);
+			button.addEventListener("click", onStartNewFeature);
+			if(typeof classes === "string" && classes.length > 0) { button.classList.add(...classes.split(" ")); }
+			container.appendChild(button);
+		}
+		else {
+			let dropButton;
+			button.appendChild(buttonIcon);
+
+			button.classList.add("btn-primary", "d-flex", "align-items-center", "justify-content-center");
+			buttonIcon.classList.add("mr-3");
+
+			// Group
+			const group = document.createElement("div");
+			group.classList.add("btn-group");
+			if(typeof classes === "string" && classes.length > 0) { group.classList.add(...classes.split(" ")); }
+
+			button.appendChild(document.createTextNode(title));
+			group.appendChild(button);
+
+			// Dropdown menu
+			const dropdown = document.createElement("div");
+			dropdown.classList.add("dropdown-menu");
+
+			if(editors.pdm && (window.osm_user || !(options.noteid || options.osmoseuuid))) {
+				// Split dropdown button
+				dropButton = document.createElement("button");
+				dropButton.classList.add("btn", "btn-primary", "dropdown-toggle");
+				dropButton.setAttribute("type", "button");
+				dropButton.setAttribute("data-toggle", "dropdown");
+				group.appendChild(dropButton);
+
+				dropButton.classList.add("dropdown-toggle-split");
+				button.classList.add("w-100");
+
+				const editWithPdm = document.createElement("a");
+				editWithPdm.classList.add("dropdown-item");
+				editWithPdm.appendChild(document.createTextNode("Avec l'éditeur intégré"));
+				dropdown.appendChild(editWithPdm);
+
+				if(options.page === "issues") {
+					editWithPdm.href = `/projects/#{id}/map#map=18/${lat}/${lng}&load=osm~${options.noteid}`;
+					editWithPdm.target = "_blank";
+					button.href = editWithPdm.href;
+					button.target = "_blank";
+				}
+				else {
+					button.addEventListener("click", pdmfct);
+					editWithPdm.addEventListener("click", pdmfct);
+				}
+			}
+			else {
+				if(!classes.includes("dropup")) {
+					group.classList.add("dropdown");
+				}
+				button.classList.add("dropdown-toggle", "text-wrap");
+				button.setAttribute("data-toggle", "dropdown");
+			}
+
+			const editWithApp = document.createElement("a");
+			editWithApp.classList.add("dropdown-item", "d-sm-none");
+			editWithApp.href = `geo:${lat},${lng}`;
+			editWithApp.appendChild(document.createTextNode("Avec une appli mobile"));
+			dropdown.appendChild(editWithApp);
+
+			const editWithID = document.createElement("a");
+			editWithID.classList.add("dropdown-item", "d-none", "d-sm-block");
+			editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&#{idParams}`;
+			editWithID.target = "_blank";
+			editWithID.appendChild(document.createTextNode("Avec iD"));
+			dropdown.appendChild(editWithID);
+
+			const editWithJOSM = document.createElement("a");
+			editWithJOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
+			editWithJOSM.addEventListener("click", () => {
+				const { lat, lng } = options.originalCoordinates || map.getCenter();
+				const urlsToLoad = [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lng+0.0005}&left=${lng-0.0005}${options.osmid && `&select=${options.osmid.replace("/", "")}` || ""}&#{josmParams}`];
+				if(options.tags && !options.osmid && Object.keys(options.tags).length > 0) {
+					urlsToLoad.push(`#{CONFIG.JOSM_REMOTE_URL}/add_node?lon=${lng}&lat=${lat}&addtags=${encodeURIComponent(Object.entries(options.tags).map(e => e.join("=")).join("|"))}`);
+				}
+				const next = () => {
+					const url = urlsToLoad.shift();
+					if(url) {
+						fetch(url)
+						.then(() => setTimeout(next, 3000))
+						.catch(e => {
+							console.error(e);
+							alert("Une erreur s'est produite avec la télécommande JOSM");
+						});
+					}
+				};
+				next();
+			});
+			editWithJOSM.appendChild(document.createTextNode("Avec JOSM"));
+			dropdown.appendChild(editWithJOSM);
+
+			if(options.osmoseuuid) {
+				const editWithOsmose = document.createElement("a");
+				editWithOsmose.classList.add("dropdown-item", "d-none", "d-sm-block");
+				editWithOsmose.href = `#{CONFIG.OSMOSE_URL}/fr/error/${options.osmoseuuid}`;
+				editWithOsmose.target = "_blank";
+				editWithOsmose.appendChild(document.createTextNode("Via Osmose"));
+				dropdown.appendChild(editWithOsmose);
+			}
+
+			if(options.textnote) {
+				const editWithPdmNote = document.createElement("a");
+				editWithPdmNote.classList.add("dropdown-item");
+				editWithPdmNote.appendChild(document.createTextNode("Via une note de carte"));
+				editWithPdmNote.addEventListener("click", onStartTextNote);
+				dropdown.appendChild(editWithPdmNote);
+			}
+
+			const editWithOSM = document.createElement("a");
+			editWithOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
+			editWithOSM.href = `#{CONFIG.OSM_URL}/${options.noteid || options.osmid || ""}#map=18/${lat}/${lng}`;
+			editWithOSM.target = "_blank";
+			editWithOSM.appendChild(document.createTextNode("Via OSM.org"));
+			dropdown.appendChild(editWithOSM);
+
+			const editWithMapillary = document.createElement("a");
+			editWithMapillary.classList.add("dropdown-item", "d-none", "d-sm-block");
+			editWithMapillary.href = `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lng}&z=18`;
+			editWithMapillary.target = "_blank";
+			editWithMapillary.appendChild(document.createTextNode("Via Mapillary"));
+			dropdown.appendChild(editWithMapillary);
+
+			if(options.onExternalEdit) {
+				editWithApp.addEventListener("click", options.onExternalEdit);
+				editWithID.addEventListener("click", options.onExternalEdit);
+				editWithJOSM.addEventListener("click", options.onExternalEdit);
+				editWithOSM.addEventListener("click", options.onExternalEdit);
+				editWithMapillary.addEventListener("click", options.onExternalEdit);
+			}
+
+			if(options.mapcoords) {
+				map.on("moveend", () => {
+					const { lat, lng } = map.getCenter();
+					editWithApp.href = `geo:${lat},${lng}`;
+					editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&#{idParams}`;
+					editWithOSM.href = `#{CONFIG.OSM_URL}/${options.noteid || options.osmid || ""}#map=18/${lat}/${lng}`;
+					editWithMapillary.href = `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lng}&z=18`;
+				});
+			}
+
+			group.appendChild(dropdown);
+			container.appendChild(group);
+			new BSN.Dropdown(dropButton || button);
+		}
+	}

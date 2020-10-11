@@ -35,26 +35,6 @@ include ../components/user_button
 script.
 	Chart.defaults.global.defaultFontSize = 15;
 
-	function stringQs(str) {
-		const u = str.split('?');
-
-		if(u.length > 1) {
-			const p = u[1].split('#')[0];
-
-			return p.split('&').filter(function (pair) {
-				return pair !== '';
-			}).reduce(function(obj, pair){
-				var parts = pair.split('=');
-				obj[decodeURIComponent(parts[0])] = (null === parts[1]) ?
-					'' : decodeURIComponent(parts[1]);
-				return obj;
-			}, {});
-		}
-		else {
-			return {};
-		}
-	}
-
 	const osmApi = new OsmRequest({
 		endpoint: "#{CONFIG.OSM_URL}",
 		oauthConsumerKey: "#{CONFIG.OSM_API_KEY}",
@@ -65,14 +45,14 @@ script.
 		url: "#{CONFIG.OSM_URL}",
 		oauth_consumer_key: "#{CONFIG.OSM_API_KEY}",
 		oauth_secret: "#{CONFIG.OSM_API_SECRET}",
-		landing: window.location.href,
+		landing: window.location.href.replace(window.location.search, ""),
 		singlepage: true
 	};
 	const auth = osmAuth(authOpts);
 	let authWait;
 
-	const params = stringQs(window.location.href);
-	const token = params.oauth_token || localStorage.getItem("oauth_token") || null;
+	const params = new URLSearchParams((window.location.search || "?").substring(1));
+	const token = params.get("oauth_token") || localStorage.getItem("oauth_token") || null;
 
 	function checkAuth() {
 		if(auth.authenticated()) {
@@ -142,7 +122,7 @@ script.
 		if(token) {
 			auth.bootstrapToken(token, () => {
 				checkAuth();
-				window.history.replaceState(null, null, window.location.href.replace("?oauth_token="+token, ""));
+				window.history.replaceState(null, null, window.location.href.replace(window.location.search, ""));
 				localStorage.setItem("oauth_token", token);
 			});
 		}

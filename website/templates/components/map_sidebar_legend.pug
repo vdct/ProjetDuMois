@@ -2,6 +2,15 @@ a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title="Retour à la p
 	img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt="Projet du mois")
 
 
+//- Switch between map and list
+div.btn-group.w-100.mb-2.mt-2(role="group")
+	button.btn.btn-secondary.w-50(type="button" disabled="")
+		i.fa.fa-map.mr-1
+		| Carte
+	a.btn.btn-outline-secondary.w-50(href=`/projects/${id}/issues` role="button")
+		i.fa.fa-list.mr-1
+		| Liste
+
 //- Legend entries
 div.map-legend.mb-2.pb-2(style="border-bottom: 1px solid #bbb")
 	each lg in legend

@@ -1,0 +1,321 @@
+div#issues-list.row.no-gutters.no-sidebar
+	div.col-12.mt-5.text-center
+		span.spinner-border.text-primary(role="status" style="width: 3rem; height: 3rem;")
+
+script.
+	const issuesListDom = document.getElementById("issues-list");
+	const editors = !{JSON.stringify(editors)};
+	const editorsHashtags = ((editors && editors.all && editors.all.hashtags) || "").split(",");
+
+include edit_button.pug
+
+script.
+	const customFilters = new Set();
+
+	// Manage pseudo-responsive layout according to page width
+	function fillPage(issues) {
+		issuesListDom.innerHTML = `<div class="col-12 mt-3 text-center"><img src="/images/empty.svg" alt="" style="height: 128px" /><p style="font-size: 2rem;">Aucun signalement pour l'instant !</p></div>`;
+
+		if(issues.length > 0) {
+			// Fill columns with issues
+			issues.forEach((issue, i) => {
+				issuesListDom.insertBefore(getIssueDom(issue, i), issuesListDom.lastChild);
+			});
+
+			issuesListDom.lastChild.classList.add("d-none");
+
+			addCustomFilters([...customFilters]);
+		}
+	}
+
+	// Look for pictures to display extracted from notes text
+	// Regexes from https://github.com/ENT8R/NotesReview/blob/main/js/linkify.js
+	const IMAGE_HOSTING_REGEX = [
+		[ /http(?:s)?:\/\/upload\.wikimedia\.org\/wikipedia\/(.+?)\/(?:thumb\/)?(\w\/\w\w)\/(.+?\.(?:jpg|jpeg|png))(?:\/.+?\.(?:jpg|jpeg|png))?/gi, 'https://upload.wikimedia.org/wikipedia/$1/thumb/$2/$3/300px-$3' ],
+		[ /http(?:s)?:\/\/commons\.wikimedia\.org\/wiki\/File:(.+?\.(?:jpg|jpeg|png|svg))/gi, 'https://commons.wikimedia.org/wiki/Special:FilePath/$1?width=300' ],
+		[ /http(?:s)?:\/\/(?:www\.)?mapillary\.com\/map\/im\/(\w+)/gi, 'https://images.mapillary.com/$1/thumb-320.jpg' ]
+	];
+
+	function searchPicturesInNote(issue) {
+		const regex = /<a href="(.+?(\.(jpg|png|jpeg|gif)|mapillary\.com\/map\/im\/\w+))"/gi;
+		return issue.properties.comments.map(c => [...c.html.matchAll(regex)])
+			.flat()
+			.map(m => m[1])
+			.map(m => {
+				for(let rgx of IMAGE_HOSTING_REGEX) {
+					if(rgx[0].test(m)) {
+						return m.replace(rgx[0], rgx[1]);
+					}
+				}
+				return m;
+			});
+	}
+
+	function findHashtagsInNote(issue) {
+		const regex = /\s(\#[a-zA-Z0-9]+)/g;
+		return [...issue.properties.comments[0].html.matchAll(regex)].map(m => m[1].toLowerCase());
+	}
+
+	// Create DOM for a single issue
+	function getIssueDom(issue, pdmIssueId) {
+		const issueContainer = document.createElement("div");
+		issueContainer.classList.add("pdm-issue-container", "col-12", "col-md-6", "col-lg-4", "col-xl-3");
+
+		const issueDom = document.createElement("div");
+		issueDom.classList.add("card", "mx-1", "my-2", "pdm-issue", "shadow-sm");
+
+		// Other comments (if any)
+		const commentsDom = document.createElement("div");
+		commentsDom.classList.add("d-none", "mb-3");
+
+		// Header
+		const issueUserDom = document.createElement("div");
+		issueUserDom.classList.add("card-header");
+		if(issue.properties.comments.length > 1) {
+			const badgeComms = document.createElement("span");
+			badgeComms.classList.add("badge", "badge-pill", "badge-primary", "float-right", "cursor-pointer");
+			badgeComms.setAttribute("data-filter", "comments");
+			badgeComms.appendChild(document.createTextNode(`${issue.properties.comments.length - 1} commentaire(s)`));
+			badgeComms.addEventListener("click", e => commentsDom.classList.toggle("d-none"));
+			issueUserDom.appendChild(badgeComms);
+		}
+		issueUserDom.appendChild(document.createTextNode("Note OSM"));
+		issueUserDom.appendChild(document.createElement("br"));
+		const smallDom = document.createElement("small");
+		smallDom.classList.add("text-muted");
+		if(issue.properties.comments[0].user) {
+			const userLink = document.createElement("a");
+			userLink.href = `#{CONFIG.OSM_URL}/user/${issue.properties.comments[0].user}`;
+			userLink.title = "Profil OSM";
+			userLink.target = "_blank";
+			userLink.appendChild(document.createTextNode(issue.properties.comments[0].user));
+			smallDom.appendChild(userLink);
+		}
+		else {
+			smallDom.appendChild(document.createTextNode("Anonyme"));
+		}
+		smallDom.appendChild(document.createTextNode(` - ${new Date(issue.properties.comments[0].date.split(" ")[0]).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`));
+		issueUserDom.appendChild(smallDom);
+		if(!issue.properties.comments[0].user) { issueUserDom.setAttribute("data-filter", "anonymous"); }
+		issueDom.appendChild(issueUserDom);
+
+		// Image
+		const pictures = searchPicturesInNote(issue);
+		if(pictures.length > 0) {
+			if(pictures.length === 1) {
+				const issueImgDom = document.createElement("img");
+				issueImgDom.classList.add("card-img", "card-img-center");
+				issueImgDom.src = pictures[0];
+				issueImgDom.setAttribute("loading", "lazy");
+				issueImgDom.setAttribute("data-filter", "picture");
+				issueDom.appendChild(issueImgDom);
+			}
+			else {
+				const issueImgCarousel = document.createElement("div");
+				issueImgCarousel.setAttribute("data-filter", "picture");
+				issueImgCarousel.id = "carouselImg"+pdmIssueId;
+				issueImgCarousel.classList.add("carousel", "slide");
+
+				issueImgCarousel.innerHTML = `<a class="carousel-control-prev" href="#${issueImgCarousel.id}" role="button" data-slide="prev">
+						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+						<span class="sr-only">Précédent</span>
+					</a>
+					<a class="carousel-control-next" href="#${issueImgCarousel.id}" role="button" data-slide="next">
+						<span class="carousel-control-next-icon" aria-hidden="true"></span>
+						<span class="sr-only">Suivant</span>
+					</a>`;
+
+				const carouselIndicators = document.createElement("ol");
+				carouselIndicators.classList.add("carousel-indicators");
+				carouselIndicators.innerHTML = pictures.map((p,i) => `<li data-target="#${issueImgCarousel.id}" data-slide-to="${i}" class="${i === 0 ? "active" : ""}"></li>`).join("");
+				issueImgCarousel.appendChild(carouselIndicators);
+
+				const carouselInner = document.createElement("div");
+				carouselInner.classList.add("carousel-inner");
+				carouselInner.innerHTML = pictures.map((p,i) => `<div class="carousel-item ${i === 0 ? "active" : ""}"><img src="${p}" loading="lazy" class="d-block w-100" /></div>`).join("");
+				issueImgCarousel.appendChild(carouselInner);
+
+				issueDom.appendChild(issueImgCarousel);
+				new BSN.Carousel(issueImgCarousel, { interval: false });
+			}
+		}
+
+		// Body
+		const issueBodyDom = document.createElement("div");
+		issueBodyDom.classList.add("card-body");
+		issueDom.appendChild(issueBodyDom);
+
+		//
+		// Metadata
+		//
+
+		// Issue details
+		const noteHastags = findHashtagsInNote(issue);
+		noteHastags.sort((a,b) => b.length - a.length);
+		const issueTextDom = document.createElement("div");
+		issueTextDom.classList.add("card-text");
+		issueTextDom.innerHTML = issue.properties.comments[0].html.split("Plus d'infos sur la résolution")[0].split("Via ProjetDuMois.fr")[0];
+		issueBodyDom.appendChild(issueTextDom);
+
+		// Read tags from editor
+		let tags = { source: `#{CONFIG.OSM_URL}/note/${issue.properties.id}` };
+		if(editors.pdm && editors.pdm.fields) {
+			editors.pdm.fields.filter(fld => fld.type === "hidden").forEach(fld => {
+				Object.entries(fld.tags).filter(e => e[1] !== "*").forEach(e => tags[e[0]] = e[1]);
+			});
+		}
+
+		// Other comments
+		if(issue.properties.comments.length > 1) {
+			const notesStatuses = { "opened": "Ouvert", "closed": "Fermé", "reopened": "Réouvert", "commented": null };
+			commentsDom.innerHTML = issue.properties.comments.slice(1).map((cmt, i) => `<div class="border-top pdm-note-comment pt-2 mt-2">
+				<div class="text-muted" style="font-size: 0.9rem">
+					${notesStatuses[cmt.action] ? notesStatuses[cmt.action]+" par " : ""}${cmt.user || "une personne anonyme"} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+				</div>
+				${cmt.html}
+			</div>`).join("");
+			issueBodyDom.appendChild(commentsDom);
+		}
+
+		// Badges
+		const badges = noteHastags
+		.filter(t => !editorsHashtags.includes(t.substring(1)) && t.length >= 3)
+		.map(t => {
+			const b = document.createElement("span");
+			b.classList.add("badge", "badge-pill", "badge-secondary", "mr-1");
+			b.setAttribute("data-filter", t.substring(1).toLowerCase());
+			b.appendChild(document.createTextNode(t.substring(1).toLowerCase()));
+			customFilters.add(t.substring(1));
+			return b;
+		});
+
+		// Can be processed directly ?
+		if(issue.properties.comments[0].text.includes("Attributs renseignés :")) {
+			const badgeDirect = document.createElement("span");
+			badgeDirect.classList.add("badge", "badge-pill", "badge-success", "mr-1");
+			badgeDirect.setAttribute("data-filter", "ready");
+			badgeDirect.appendChild(document.createTextNode("Prêt à intégrer"));
+			badges.push(badgeDirect);
+		}
+
+		if(badges.length > 0) {
+			const badgesDom = document.createElement("div");
+			badgesDom.classList.add("mb-2", "mt-n2");
+			badges.forEach(b => badgesDom.appendChild(b));
+			issueBodyDom.appendChild(badgesDom);
+		}
+
+		// Edit button
+		let featureId = undefined;
+		issue.properties.comments.forEach(cmt => {
+			cmt.text.split("\n").forEach(line => {
+				const parts = line.split("=");
+					if(parts.length >= 2) {
+						const key = parts[0];
+						const value = parts.slice(1).join("=");
+						if(/^[a-zA-Z:_\-0-9]+$/.test(key.trim()) && value.trim().length > 0) {
+							tags[key.trim()] = value.trim();
+						}
+					}
+					// Check for OSM ID
+					else {
+						const found = line.match(/(node|way|relation)\/[0-9]+/);
+						if(found) {
+							featureId = found[0];
+						}
+					}
+			});
+		});
+		createFeatureButton(issueBodyDom, featureId ? "edit": "add", "btn-block mb-1 dropup", {
+			noteid: "note/"+issue.properties.id,
+			osmid: featureId,
+			tags,
+			title: featureId ? "Compléter" : "Éditer",
+			page: "issues",
+			originalCoordinates: { lng: issue.geometry.coordinates[0], lat: issue.geometry.coordinates[1] }
+		});
+
+		issueContainer.appendChild(issueDom);
+		return issueContainer;
+	}
+
+	// Handle user filters
+	window.addEventListener("pdm_filter_issues", e => {
+		const filterBadgeCss = Object.keys(e.detail.filters).map(b => "[data-filter="+b+"]");
+
+		let hasAtLeastOneResult = false;
+		for(let card of issuesListDom.querySelectorAll("div.pdm-issue-container")) {
+			if(filterBadgeCss.length > 0) {
+				if(filterBadgeCss.filter(b => card.querySelector(b)).length === filterBadgeCss.length) {
+					card.classList.remove("d-none");
+					hasAtLeastOneResult = true;
+				}
+				else {
+					card.classList.add("d-none");
+				}
+			}
+			else {
+				card.classList.remove("d-none");
+				hasAtLeastOneResult = true;
+			}
+		}
+
+		if(hasAtLeastOneResult) {
+			issuesListDom.lastChild.classList.add("d-none");
+		}
+		else {
+			issuesListDom.lastChild.classList.remove("d-none");
+		}
+	});
+
+
+	//
+	// Load issues
+	//
+	const issues = [];
+
+	// Notes
+	// Display notes layers if any
+	const notesSources = !{JSON.stringify(datasources.filter(ds => ds.source === "notes"))};
+	const geojsonBounds = !{JSON.stringify(CONFIG.GEOJSON_BOUNDS)};
+
+	function loadNotesAsIssues() {
+		if(notesSources.length > 0) {
+			notesSources.forEach((noteSource, nsid) => {
+				const promises = noteSource.terms.map(term => osmApi.fetchNotesSearch(term, 'json', 10000, 0));
+
+				Promise.all(promises).then(results => {
+					// Merge and dedupe notes
+					const existingNotesIds = [];
+
+					results
+					.map(res => JSON.parse(res))
+					.forEach(res => {
+						res.features.forEach(feature => {
+							if(
+								feature.properties.status === "open"
+								&& !existingNotesIds.includes(feature.properties.id)
+							) {
+								existingNotesIds.push(feature.properties.id);
+								if(booleanContains(geojsonBounds, feature)) {
+									feature.properties.pdm_note_source = nsid;
+									feature.properties.pdm_type = "note";
+									issues.push(feature);
+								}
+							}
+						});
+					});
+
+					// Sort by most recent comment
+					issues.sort((a,b) => b.properties.comments[b.properties.comments.length-1].date.localeCompare(a.properties.comments[a.properties.comments.length-1].date));
+
+					fillPage(issues);
+				});
+			});
+		}
+		else {
+			fillPage([]);
+		}
+	}
+
+	loadNotesAsIssues();

@@ -40,6 +40,21 @@ block content
 
 			p.lead.mb-0.mt-md-2= summary
 
+	if isRecentPast
+		div.container-fluid.py-5.pdm-section-highlight
+			div.blog-post.container
+				h2.blog-post-title.mb-2
+					i.fa.fa-birthday-cake.mr-2(style="font-size: 2.1rem")
+					| Un grand merci à tous !
+				p Merci à toutes les contributrices et tous les contributeurs d'avoir fait de ce projet un succès. Sans vous tous, OpenStreetMap ne serait rien !
+
+				include ../components/wordcloud.pug
+				div#word-cloud.w-100.m-0.d-none(style="height: 250px")
+
+				a.btn.btn-primary.btn-lg.my-2(href="#statistics")
+					i.fa.fa-chart-bar.mr-2
+					| Voir les statistiques
+
 	a#contribute
 	div.container-fluid.py-5
 		//- Contribute

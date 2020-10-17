@@ -1,0 +1,25 @@
+script(src="/lib/wordcloud/wordcloud.js")
+script.
+	function createWordCloud(cloud, words) {
+		const canvas = document.createElement("canvas");
+		canvas.width = (window.devicePixelRatio || 1) * cloud.clientWidth;
+		canvas.height = (window.devicePixelRatio || 1) * cloud.clientHeight;
+		canvas.style.width = cloud.clientWidth+"px";
+		canvas.style.height = cloud.clientHeight+"px";
+		cloud.appendChild(canvas);
+		WordCloud(canvas, {
+			list: words,
+			gridSize: Math.round(16 * canvas.clientWidth / 1024),
+			weightFactor: function (size) {
+				return size * (window.devicePixelRatio || 1);
+			},
+			color: function (word, weight) {
+				return word === "Merci !" ? "red" : "gray";
+			},
+			rotateRatio: 0,
+			backgroundColor: '#f6f6f6',
+			shrinkToFit: true,
+			drawOutOfBound: false,
+			wait: 1
+		});
+	}

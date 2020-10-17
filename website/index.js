@@ -62,7 +62,8 @@ app.get('/projects/:id', (req, res) => {
 	const all = filterProjects(projects);
 	const isActive = all.current && all.current.id === req.params.id;
 	const isNext = all.next && all.next.id === req.params.id;
-	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, projects: all }, p));
+	const isRecentPast = all.past && all.past[all.past.length-1].id === req.params.id && new Date(p.end_date).getTime() >= Date.now() - 30*24*60*60*1000;
+	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, isRecentPast, projects: all }, p));
 });
 
 // Project map editor
@@ -361,7 +362,8 @@ const authorized = {
 	},
 	"osm-auth": { "osmauth.js": "osmauth.min.js" },
 	"osm-request": { "osmrequest.js": "dist/OsmRequest.js" },
-	"swiped-events": { "swiped-events.js": "dist/swiped-events.min.js" }
+	"swiped-events": { "swiped-events.js": "dist/swiped-events.min.js" },
+	"wordcloud": { "wordcloud.js": "src/wordcloud2.js" }
 };
 
 app.get('/lib/:modname/:file', (req, res) => {

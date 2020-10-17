@@ -81,6 +81,7 @@ script.
 
 			// Leaderboard
 			if(res.leaderboard) {
+				let wordCloud = [];
 				document.getElementById("stats-leaderboard-container").classList.remove("d-none");
 				document.getElementById("stats-leaderboard-noauth").classList.add("d-none");
 
@@ -163,9 +164,21 @@ script.
 						podium.appendChild(podiumStep);
 					}
 
+					// Set-up word cloud if any
+					if(#{isRecentPast}) {
+						wordCloud.push([lb.username, 10]);
+					}
+
 					return tr;
 				})
 				.forEach(d => leaderboardBody.appendChild(d));
+
+				if(#{isRecentPast}) {
+					const wordCloudDom = document.getElementById("word-cloud");
+					wordCloudDom.classList.remove("d-none");
+					wordCloud.unshift(["Merci !", 50]);
+					createWordCloud(wordCloudDom, wordCloud);
+				}
 			}
 			else {
 				document.getElementById("stats-leaderboard-container").classList.add("d-none");

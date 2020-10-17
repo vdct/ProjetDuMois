@@ -39,7 +39,8 @@
     "osm-request": "^1.2.10",
     "pg": "^8.3.0",
     "pug": "^3.0.0",
-    "swiped-events": "^1.1.4"
+    "swiped-events": "^1.1.4",
+    "wordcloud": "^1.1.1"
   },
   "devDependencies": {
     "browserify": "^16.5.2"

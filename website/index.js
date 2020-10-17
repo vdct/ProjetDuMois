@@ -67,7 +67,7 @@ app.get('/projects/:id', (req, res) => {
 });
 
 // Project map editor
-app.get('/projects/:id/map', (req, res) => {
+app.get('/projects/:id/map', async (req, res) => {
 	if(!req.params.id || !projects[req.params.id]) {
 		return res.redirect('/error/404');
 	}
@@ -75,7 +75,7 @@ app.get('/projects/:id/map', (req, res) => {
 	const p = projects[req.params.id];
 	const all = filterProjects(projects);
 	const isActive = all.current && all.current.id === req.params.id;
-	const mapstyle = getMapStyle(p);
+	const mapstyle = await getMapStyle(p);
 	res.render('pages/map', Object.assign({ CONFIG, isActive }, p, mapstyle));
 });
 

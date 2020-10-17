@@ -1,4 +1,5 @@
 const CONFIG = require('../config.json');
+const fetch = require('node-fetch');
 
 // Get current+past projects
 exports.filterProjects = (projects) => {
@@ -32,160 +33,154 @@ exports.queryParams = (obj) => {
 
 // Map style JSON
 exports.getMapStyle = (p) => {
-	const legend = [];
-	const sources = {
-		osm: {
-			type: "raster",
-			tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
-			maxzoom: 19,
-			tileSize: 256,
-			attribution: `<a href="https://wiki.osmfoundation.org/wiki/Terms_of_Use" target="_blank">&copy; OpenStreetMap</a>`
-		},
-		ign: {
-			type: "raster",
-			tiles: [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
-			maxzoom: 21,
-			minzoom: 2,
-			tileSize: 256,
-			attribution: `<a href="https://openstreetmap.fr/bdortho" target="_blank">&copy; BDOrtho IGN</a>`
-		}
-	};
-	const layers = [
-		{ id: "bg_map", source: "osm", type: "raster" },
-		{ id: "bg_aerial", source: "ign", type: "raster", layout: { visibility: "none" } }
-	];
-
-	if(p) {
-		const circlePaint = {
-			"circle-color": "white",
-			"circle-stroke-opacity": [ "interpolate", ["linear"], ["zoom"], 7, 0, 7.5, 1 ],
-			"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 7, 0, 7.5, 1 ],
-			"circle-radius": [
-				"interpolate",
-				["linear"],
-				["zoom"],
-				7, 2,
-				11, 3,
-				19, 7
-			],
-			"circle-stroke-width": [
-				"interpolate",
-				["linear"],
-				["zoom"],
-				7, 2,
-				11, 3,
-				19, 7
-			]
+	return fetch("https://tile-vect.openstreetmap.fr/styles/basic/style.json")
+	.then(res => res.json())
+	.then(style => {
+		const legend = [];
+		const sources = {
+			ign: {
+				type: "raster",
+				tiles: [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
+				maxzoom: 21,
+				minzoom: 2,
+				tileSize: 256,
+				attribution: `<a href="https://openstreetmap.fr/bdortho" target="_blank">&copy; BDOrtho IGN</a>`
+			}
 		};
+		const layers = [
+			{ id: "bg_aerial", source: "ign", type: "raster", layout: { visibility: "none" } }
+		];
 
-		// OSM Compare
-		p.datasources
-		.filter(ds => "osm-compare" === ds.source)
-		.forEach((ds, dsid) => {
-			const id = `${ds.source}_${dsid}`;
-			const color = ds.color || "#FF7043"; // Orange
-			const layer = `public.project_${p.id.split("_").pop()}_compare_tiles_filtered`;
-			sources[id] = {
-				type: "vector",
-				tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
-				minzoom: 9,
-				maxzoom: 14
+		if(p) {
+			const circlePaint = {
+				"circle-color": "white",
+				"circle-stroke-opacity": [ "interpolate", ["linear"], ["zoom"], 7, 0, 7.5, 1 ],
+				"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 7, 0, 7.5, 1 ],
+				"circle-radius": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					7, 2,
+					11, 3,
+					19, 7
+				],
+				"circle-stroke-width": [
+					"interpolate",
+					["linear"],
+					["zoom"],
+					7, 2,
+					11, 3,
+					19, 7
+				]
 			};
 
-			layers.push({
-				id: id,
-				source: id,
-				type: "circle",
-				"source-layer": layer,
-				paint: {
-					"circle-color": color,
-					"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 9, 0, 10, 1 ],
-					"circle-radius": [ "interpolate", ["linear"], ["zoom"], 9, 2, 11, 3, 13, 5, 19, 12 ]
-				}
+			// OSM Compare
+			p.datasources
+			.filter(ds => "osm-compare" === ds.source)
+			.forEach((ds, dsid) => {
+				const id = `${ds.source}_${dsid}`;
+				const color = ds.color || "#FF7043"; // Orange
+				const layer = `public.project_${p.id.split("_").pop()}_compare_tiles_filtered`;
+				sources[id] = {
+					type: "vector",
+					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+					minzoom: 9,
+					maxzoom: 14
+				};
+
+				layers.push({
+					id: id,
+					source: id,
+					type: "circle",
+					"source-layer": layer,
+					paint: {
+						"circle-color": color,
+						"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 9, 0, 10, 1 ],
+						"circle-radius": [ "interpolate", ["linear"], ["zoom"], 9, 2, 11, 3, 13, 5, 19, 12 ]
+					}
+				});
+
+				legend.push({ color, label: ds.name, layerId: id });
 			});
 
-			legend.push({ color, label: ds.name, layerId: id });
-		});
+			// OSM
+			p.datasources
+			.filter(ds => "osm" === ds.source)
+			.forEach((ds, dsid) => {
+				const id = `${ds.source}_${dsid}`;
+				const color = ds.color || "#2E7D32"; // Green
+				const layer = `public.project_${p.id.split("_").pop()}`;
+				sources[id] = {
+					type: "vector",
+					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+					minzoom: 7,
+					maxzoom: 14
+				};
 
-		// OSM
-		p.datasources
-		.filter(ds => "osm" === ds.source)
-		.forEach((ds, dsid) => {
-			const id = `${ds.source}_${dsid}`;
-			const color = ds.color || "#2E7D32"; // Green
-			const layer = `public.project_${p.id.split("_").pop()}`;
-			sources[id] = {
-				type: "vector",
-				tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
-				minzoom: 7,
-				maxzoom: 14
-			};
+				layers.push({
+					id: id,
+					source: id,
+					type: "circle",
+					"source-layer": layer,
+					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
+				});
 
-			layers.push({
-				id: id,
-				source: id,
-				type: "circle",
-				"source-layer": layer,
-				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
+				legend.push({ color, label: ds.name, layerId: id });
 			});
 
-			legend.push({ color, label: ds.name, layerId: id });
-		});
+			// Osmose
+			p.datasources
+			.filter(ds => ds.source === "osmose")
+			.forEach(ds => {
+				const id = `osmose_${ds.item}_${ds.class || "all"}`;
+				const params = { item: ds.item, class: ds.class, country: ds.country };
+				const color = ds.color || "#b71c1c"; // Red
 
-		// Osmose
-		p.datasources
-		.filter(ds => ds.source === "osmose")
-		.forEach(ds => {
-			const id = `osmose_${ds.item}_${ds.class || "all"}`;
-			const params = { item: ds.item, class: ds.class, country: ds.country };
-			const color = ds.color || "#b71c1c"; // Red
+				sources[id] = {
+					type: "vector",
+					tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
+					minzoom: 7,
+					maxzoom: 18
+				};
 
-			sources[id] = {
-				type: "vector",
-				tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
-				minzoom: 7,
-				maxzoom: 18
-			};
+				layers.push({
+					id: id,
+					source: id,
+					type: "circle",
+					"source-layer": "issues",
+					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
+				});
 
-			layers.push({
-				id: id,
-				source: id,
-				type: "circle",
-				"source-layer": "issues",
-				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
+				legend.push({ color, label: ds.name, layerId: id });
 			});
 
-			legend.push({ color, label: ds.name, layerId: id });
-		});
+			// Notes
+			p.datasources
+			.filter(ds => ds.source === "notes")
+			.forEach((ds, dsid) => {
+				const id = `notes_${dsid}`;
+				const color = ds.color || "#01579B"; // Blue
+				sources[id] = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
 
-		// Notes
-		p.datasources
-		.filter(ds => ds.source === "notes")
-		.forEach((ds, dsid) => {
-			const id = `notes_${dsid}`;
-			const color = ds.color || "#01579B"; // Blue
-			sources[id] = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
+				layers.push({
+					id: id,
+					source: id,
+					type: "circle",
+					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
+				});
 
-			layers.push({
-				id: id,
-				source: id,
-				type: "circle",
-				paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
+				legend.push({ color, label: ds.name, layerId: id });
 			});
+		}
 
-			legend.push({ color, label: ds.name, layerId: id });
-		});
-	}
+		style.sources = Object.assign(style.sources, sources);
+		style.layers = style.layers.concat(layers);
 
-	return {
-		mapstyle: {
-			version: 8,
-			name: "ProjetDuMois.fr",
-			sources: sources,
-			layers: layers
-		},
-		legend
-	};
+		return {
+			mapstyle: style,
+			legend
+		};
+	});
 };
 
 // Get badges description

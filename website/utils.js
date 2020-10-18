@@ -33,7 +33,7 @@ exports.queryParams = (obj) => {
 
 // Map style JSON
 exports.getMapStyle = (p) => {
-	return fetch("https://tile-vect.openstreetmap.fr/styles/basic/style.json")
+	return fetch("https://tile-vect.openstreetmap.fr/styles/liberty/style.json")
 	.then(res => res.json())
 	.then(style => {
 		const legend = [];

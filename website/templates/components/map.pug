@@ -13,6 +13,7 @@ div#edit-feature-location.alert.alert-primary.map-alert.d-none
 //- This runs on client
 script.
 	const hasLocation = window.location.hash !== "";
+	const listOfSources = !{JSON.stringify(pdmSources)};
 
 	// Map init
 	const map = new mapboxgl.Map({
@@ -197,7 +198,10 @@ script.
 	// Handle map click
 	function onMapClick(e) {
 		if(!map || !e) { return; }
-		const features = map.queryRenderedFeatures(e.point);
+		let features = map.queryRenderedFeatures(e.point);
+		if(features && features.length > 0) {
+			features = features.filter(f => listOfSources.includes(f.source));
+		}
 
 		if(!features || features.length === 0) {
 			if(!lastCallbackFeatureLocation) {
@@ -229,8 +233,14 @@ script.
 			if(features.length > 1) {
 				window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { open: true, panel: "features", features: features } }));
 			}
-			else {
+			else if(features.length === 1) {
 				showFeature(features[0], e)
+			}
+			else {
+				if(!lastCallbackFeatureLocation) {
+					cancelEdit();
+					showMarker();
+				}
 			}
 		}
 	}
@@ -257,8 +267,7 @@ script.
 
 //- Generate hover events for each layer dynamically on server
 -
-	const hoverEvents = mapstyle.layers
-		.map(l => l.id)
+	const hoverEvents = pdmSources
 		.map(id => `map.on('mouseenter', '${id}', () => { map.getCanvas().style.cursor = 'pointer'; });\nmap.on('mouseleave', '${id}', () => { map.getCanvas().style.cursor = ''; });`)
 		.join("\n");
 

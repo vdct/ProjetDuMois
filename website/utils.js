@@ -6,13 +6,13 @@ exports.filterProjects = (projects) => {
 	const prjs = { past: [], current: null, next: null };
 	Object.values(projects).forEach(project => {
 		// Check dates
-		if(new Date(project.start_date).getTime() <= Date.now() && Date.now() <= new Date(project.end_date).getTime()) {
+		if(new Date(project.start_date).getTime() <= Date.now() && Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime()) {
 			prjs.current = project;
 		}
 		else if(Date.now() <= new Date(project.start_date).getTime()) {
 			prjs.next = project;
 		}
-		else if(new Date(project.end_date).getTime() < Date.now()) {
+		else if(new Date(project.end_date+"T23:59:59Z").getTime() < Date.now()) {
 			prjs.past.push({
 				id: project.id,
 				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
@@ -178,7 +178,8 @@ exports.getMapStyle = (p) => {
 
 		return {
 			mapstyle: style,
-			legend
+			legend,
+			pdmSources: Object.keys(sources)
 		};
 	});
 };

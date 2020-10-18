@@ -67,7 +67,7 @@ script.
 			};
 
 			// Blocks for small stats
-			if(new Date("#{end_date}").getTime() >= Date.now()) {
+			if(new Date("#{end_date}T23:59:59Z").getTime() >= Date.now()) {
 				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - Date.now()) / (1000*3600*24)), "jours restants");
 			}
 			else {
@@ -185,11 +185,10 @@ script.
 				document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
 			}
 
-			const yAxeLinear = { ticks: { beginAtZero: true, precision: 0 } };
+			const yAxeLinear = { ticks: { precision: 0 } };
 			const yAxeLogarithmic = {
 				type: 'logarithmic',
 				ticks: {
-					beginAtZero: true,
 					callback: (value, index, values) => Number(value.toString())
 				},
 				afterBuildTicks: (chartObj) => {

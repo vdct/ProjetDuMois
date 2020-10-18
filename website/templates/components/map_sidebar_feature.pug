@@ -482,7 +482,7 @@ script.
 				<div class="alert alert-info">${noteSource.description}</div>
 				${cmts.map((cmt, i) => `<div class="${i == cmts.length - 1 ? "" : "border-bottom"} pdm-note-comment pb-2 mb-2">
 					<div class="text-muted" style="font-size: 0.9rem">
-						${notesStatuses[cmt.action]} par ${cmt.user || "une personne anonyme"} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString()}
+						${notesStatuses[cmt.action]} par ${cmt.user || "une personne anonyme"} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
 					</div>
 					${cmt.html}
 				</div>`).join("")}`;

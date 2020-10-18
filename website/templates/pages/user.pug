@@ -94,7 +94,7 @@ block content
 
 			// Small stats
 			document.getElementById("stats-changeset").innerHTML = details.changesets && details.changesets.count ? details.changesets.count : "0";
-			document.getElementById("stats-account").innerHTML = new Date(details.account_created).toLocaleDateString(navigator.locale, { day: 'numeric', month: 'long', year: 'numeric' });
+			document.getElementById("stats-account").innerHTML = new Date(details.account_created).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
 		})
 		.catch(e => {
 			console.error(e);

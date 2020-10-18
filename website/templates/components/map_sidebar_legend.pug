@@ -5,24 +5,26 @@ a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title="Retour à la p
 //- Legend entries
 div.map-legend.mb-2.pb-2(style="border-bottom: 1px solid #bbb")
 	each lg in legend
-		div(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
+		label.switch(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
 			div.pdm-color-patch(style=`border-color: ${lg.color}`)
-			| #{lg.label}
+			div.switch-text= lg.label
+			div.switch-box
+				input(type="checkbox")
+				span.slider.round
 
 //- Make legend symbol clickable to enable/disable layer
 -
 	const legendClickEvents = legend
 		.map(lg => lg.layerId)
 		.map((id,i) => `
-			const domLegend${i} = document.getElementById('pdm-legend-${id}');
-			domLegend${i}.addEventListener("click", e => {
-				if(domLegend${i}.classList.contains('text-line-through')) {
+			const domLegend${i} = document.getElementById('pdm-legend-${id}').querySelector("input");
+			domLegend${i}.checked = true;
+			domLegend${i}.addEventListener("change", e => {
+				if(domLegend${i}.checked) {
 					map.setFilter('${id}', null);
-					domLegend${i}.classList.remove('text-line-through');
 				}
 				else {
 					map.setFilter('${id}', ['boolean', false]);
-					domLegend${i}.classList.add('text-line-through');
 				}
 			});`)
 		.join("\n");

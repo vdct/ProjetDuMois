@@ -49,7 +49,12 @@ block content
 				p Merci à toutes les contributrices et tous les contributeurs d'avoir fait de ce projet un succès. Sans vous tous, OpenStreetMap ne serait rien !
 
 				include ../components/wordcloud.pug
-				div#word-cloud.w-100.m-0.d-none(style="height: 250px")
+				div#word-cloud.w-100.m-0(style="height: 250px")
+				script.
+					const wordsTmp = [];
+					for(let i=0; i < 100; i++) { wordsTmp.push(["Merci", Math.floor(Math.random()*30)]); }
+					wordsTmp.unshift(["Merci !", 50]);
+					createWordCloud(document.getElementById("word-cloud"), wordsTmp);
 
 				a.btn.btn-primary.btn-lg.my-2(href="#statistics")
 					i.fa.fa-chart-bar.mr-2

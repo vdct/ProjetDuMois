@@ -165,7 +165,7 @@ script.
 					}
 
 					// Set-up word cloud if any
-					if(#{isRecentPast}) {
+					if(#{isRecentPast || "false"}) {
 						wordCloud.push([lb.username, 10]);
 					}
 
@@ -173,7 +173,7 @@ script.
 				})
 				.forEach(d => leaderboardBody.appendChild(d));
 
-				if(#{isRecentPast}) {
+				if(#{isRecentPast || "false"}) {
 					const wordCloudDom = document.getElementById("word-cloud");
 					wordCloudDom.classList.remove("d-none");
 					wordCloud.unshift(["Merci !", 50]);

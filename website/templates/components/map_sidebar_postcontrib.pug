@@ -20,7 +20,7 @@ script.
 	// Send instant contribution
 	function addContribution(type) {
 		// Old project : show nothing specific
-		if(!#{isActive}) {
+		if(!#{isActive || "false"}) {
 			postContribBadgesDom.classList.add("d-none");
 		}
 		// With auth : save contribution in DB, display badges

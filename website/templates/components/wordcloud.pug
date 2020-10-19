@@ -6,6 +6,7 @@ script.
 		canvas.height = (window.devicePixelRatio || 1) * cloud.clientHeight;
 		canvas.style.width = cloud.clientWidth+"px";
 		canvas.style.height = cloud.clientHeight+"px";
+		cloud.innerHTML = '';
 		cloud.appendChild(canvas);
 		WordCloud(canvas, {
 			list: words,

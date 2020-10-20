@@ -41,7 +41,7 @@ exports.getMapStyle = (p) => {
 			ign: {
 				type: "raster",
 				tiles: [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
-				maxzoom: 21,
+				maxzoom: 19,
 				minzoom: 2,
 				tileSize: 256,
 				attribution: `<a href="https://openstreetmap.fr/bdortho" target="_blank">&copy; BDOrtho IGN</a>`

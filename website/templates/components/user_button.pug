@@ -72,7 +72,7 @@ script.
 			txt.classList.add("d-none", "d-sm-inline", "ml-1");
 			domConnect.appendChild(icon);
 			domConnect.appendChild(txt);
-			domConnect.title = "Se déconnecter";
+			domConnect.title = "#{__("Se déconnecter")}";
 		}
 
 		for(let domConnect of document.getElementsByClassName("pdm-user-button")) {
@@ -91,11 +91,11 @@ script.
 			const icon = document.createElement("i");
 			icon.classList.add("fa", "fa-sign-in-alt");
 			const txt = document.createElement("span");
-			txt.appendChild(document.createTextNode("S'inscrire / Se connecter"));
+			txt.appendChild(document.createTextNode("#{__("S'inscrire / Se connecter")}"));
 			txt.classList.add("d-none", "d-sm-inline", "ml-1");
 			domConnect.appendChild(icon);
 			domConnect.appendChild(txt);
-			domConnect.title = "S'inscrire / Se connecter";
+			domConnect.title = "#{__("S'inscrire / Se connecter")}";
 		}
 
 		for(let domConnect of document.getElementsByClassName("pdm-user-button")) {
@@ -118,7 +118,7 @@ script.
 				auth.authenticate((err, res) => {
 					if(err) {
 						console.error(err);
-						alert("Une erreur s'est produite à la connexion, veuillez réessayer");
+						alert("#{__("Une erreur s'est produite à la connexion, veuillez réessayer")}");
 						logout();
 					}
 					else {
@@ -134,7 +134,7 @@ script.
 					auth.authenticate((err, res) => {
 						if(err) {
 							console.error(err);
-							alert("Une erreur s'est produite à la connexion, veuillez réessayer");
+							alert("#{__("Une erreur s'est produite à la connexion, veuillez réessayer")}");
 							logout();
 						}
 						else {
@@ -163,32 +163,32 @@ script.
 
 mixin user_button
 	div.pdm-user-button
-		button.connect-osm-ub.btn.btn-outline-secondary.text-truncate.ml-2(role="button" title="S'inscrire / Se connecter")
+		button.connect-osm-ub.btn.btn-outline-secondary.text-truncate.ml-2(role="button" title=__("S'inscrire / Se connecter"))
 			i.fa.fa-sign-in-alt
-			span.d-none.d-lg-inline.ml-1 S'inscrire / Se connecter
+			span.d-none.d-lg-inline.ml-1= __("S'inscrire / Se connecter")
 
 		div.dropdown.d-none
 			button.btn.btn-outline-secondary.dropdown-toggle.text-truncate.ml-2(role="button" title="Menu" data-toggle="dropdown")
 				i.fa.fa-user
-				span.d-none.d-lg-inline.ml-1.pdm-username Utilisateur
-				span.badge.badge-info.ml-1.d-none(title="Notifications non-lues")
+				span.d-none.d-lg-inline.ml-1.pdm-username= __("Utilisateur")
+				span.badge.badge-info.ml-1.d-none(title=__("Notifications non-lues"))
 					i.fa.fa-bell
 			div.dropdown-menu
 				div.pdm-notifs.d-none
 					h6.dropdown-header
 						i.fa.fa-bell.mr-1
-						| Notifications
+						| #{__("Notifications")}
 					div.dropdown-divider
 
 				a.dropdown-item.pdm-user-page-btn(href="")
 					i.fa.fa-medal.mr-1
-					| Mes badges
+					| #{__("Mes badges")}
 				div.dropdown-divider
 				a.disconnect-osm-ub.dropdown-item
 					i.fa.fa-sign-out-alt.mr-1
-					| Se déconnecter
+					| #{__("Se déconnecter")}
 
 mixin user_connect
 	button.connect-osm.btn.btn-lg.btn-primary(role="button")
 		i.fa.fa-sign-in-alt
-		span.d-none.d-sm-inline.ml-1 S'inscrire / Se connecter
+		span.d-none.d-sm-inline.ml-1= __("S'inscrire / Se connecter")

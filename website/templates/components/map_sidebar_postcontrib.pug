@@ -1,15 +1,15 @@
-p Votre contribution a bien été prise en compte, merci pour votre participation !
+p= __("Votre contribution a bien été prise en compte, merci pour votre participation !")
 
 div#pdm-postcontrib-badges.d-none
-	h5 Badges obtenus
+	h5= __("Badges obtenus")
 	div#pdm-postcontrib-anon.d-none
-		p Vous n'êtes pas connecté avec un compte OpenStreetMap. Inscrivez-vous ou connectez-vous pour collecter des badges !
+		p= __("Vous n'êtes pas connecté avec un compte OpenStreetMap. Inscrivez-vous ou connectez-vous pour collecter des badges !")
 		div.text-center.mb-3
 			+user_connect
 	div#pdm-postcontrib-auth.d-none.row
 
-button#pdm-postcontrib-map.btn.btn-outline-primary.btn-block.d-md-none(type="button") Retour à la carte
-button#pdm-postcontrib-ok.btn.btn-outline-primary.btn-block.d-none.d-md-block(type="button") OK
+button#pdm-postcontrib-map.btn.btn-outline-primary.btn-block.d-md-none(type="button")= __("Retour à la carte")
+button#pdm-postcontrib-ok.btn.btn-outline-primary.btn-block.d-none.d-md-block(type="button")= __("OK")
 
 script.
 	document.getElementById("pdm-postcontrib-map").addEventListener("click", e => window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } })));
@@ -58,7 +58,7 @@ script.
 							p.appendChild(document.createTextNode(badge.name));
 							domBadge.appendChild(p);
 
-							window.dispatchEvent(new CustomEvent("pdm_notifs_add", { detail: { label: `Nouveau badge : ${badge.name}`, image: imgName, url: `/users/${encodeURIComponent(window.osm_user.name)}`, title: "Voir tous les badges" } }));
+							window.dispatchEvent(new CustomEvent("pdm_notifs_add", { detail: { label: `#{__("Nouveau badge")} : ${badge.name}`, image: imgName, url: `/users/${encodeURIComponent(window.osm_user.name)}`, title: "#{__("Voir tous les badges")}" } }));
 						}
 						else {
 							const subdiv = document.createElement("div");

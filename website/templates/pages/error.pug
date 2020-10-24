@@ -3,25 +3,25 @@ extends ../layout.pug
 
 block navbar
 	a(href="/#summary")
-		i.fa.fa-calendar-day(title="En ce moment")
-		span En ce moment
+		i.fa.fa-calendar-day(title=__("En ce moment"))
+		span= __("En ce moment")
 	a(href="/#statistics")
-		i.fa.fa-chart-bar(title="Statistiques")
-		span Statistiques
+		i.fa.fa-chart-bar(title=__("Statistiques"))
+		span= __("Statistiques")
 	a(href="/#data")
-		i.fa.fa-file-download(title="Données")
-		span Données
+		i.fa.fa-file-download(title=__("Données"))
+		span= __("Données")
 
 
 block content
 	div.container
 		h2.mb-2
 			i.fa.fa-exclamation-triangle.mr-2
-			| Erreur #{httpcode}
+			| #{__("Erreur %s", httpcode)}
 		//- Wide image
 		a(href="/")
-			img.w-100.rounded-lg(src="/images/httperror.png" title="Retour à l'accueil" alt="Erreur #{httpcode} : rien que le désert ici...")
+			img.w-100.rounded-lg(src="/images/httperror.png" title=__("Retour à l'accueil") alt=__("Erreur %s : rien que le désert ici...", httpcode))
 
 		//- Where to go
 		div.lead.text-center.m-5
-			a(href="/") Accueil | Découvrir le projet du mois
+			a(href="/")= __("Accueil | Découvrir le projet du mois")

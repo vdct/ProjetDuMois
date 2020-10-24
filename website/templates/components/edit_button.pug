@@ -9,7 +9,7 @@ script.
 		if(options.mini && !editors.pdm) { return; }
 
 		const optsPdm = Object.fromEntries(Object.entries(options).filter(e => ["tags", "onInternalEdit", "originalCoordinates"].includes(e[0])));
-		const title = options.title || (editors.pdm && editors.pdm.title[mode]) || "Plus de détails";
+		const title = options.title || (editors.pdm && editors.pdm.title[mode]) || "#{__("Plus de détails")}";
 		const { lat, lng } = options.originalCoordinates || (map && map.getCenter()) || { lat: 0, lng: 0 };
 
 		// Main button
@@ -70,7 +70,7 @@ script.
 
 				const editWithPdm = document.createElement("a");
 				editWithPdm.classList.add("dropdown-item");
-				editWithPdm.appendChild(document.createTextNode("Avec l'éditeur intégré"));
+				editWithPdm.appendChild(document.createTextNode("#{__("Avec l'éditeur intégré")}"));
 				dropdown.appendChild(editWithPdm);
 
 				if(options.page === "issues") {
@@ -95,14 +95,14 @@ script.
 			const editWithApp = document.createElement("a");
 			editWithApp.classList.add("dropdown-item", "d-sm-none");
 			editWithApp.href = `geo:${lat},${lng}`;
-			editWithApp.appendChild(document.createTextNode("Avec une appli mobile"));
+			editWithApp.appendChild(document.createTextNode("#{__("Avec une appli mobile")}"));
 			dropdown.appendChild(editWithApp);
 
 			const editWithID = document.createElement("a");
 			editWithID.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&#{idParams}`;
 			editWithID.target = "_blank";
-			editWithID.appendChild(document.createTextNode("Avec iD"));
+			editWithID.appendChild(document.createTextNode("#{__("Avec iD")}"));
 			dropdown.appendChild(editWithID);
 
 			const editWithJOSM = document.createElement("a");
@@ -126,7 +126,7 @@ script.
 				};
 				next();
 			});
-			editWithJOSM.appendChild(document.createTextNode("Avec JOSM"));
+			editWithJOSM.appendChild(document.createTextNode("#{__("Avec JOSM")}"));
 			dropdown.appendChild(editWithJOSM);
 
 			if(options.osmoseuuid) {
@@ -134,14 +134,14 @@ script.
 				editWithOsmose.classList.add("dropdown-item", "d-none", "d-sm-block");
 				editWithOsmose.href = `#{CONFIG.OSMOSE_URL}/fr/error/${options.osmoseuuid}`;
 				editWithOsmose.target = "_blank";
-				editWithOsmose.appendChild(document.createTextNode("Via Osmose"));
+				editWithOsmose.appendChild(document.createTextNode("#{__("Via Osmose")}"));
 				dropdown.appendChild(editWithOsmose);
 			}
 
 			if(options.textnote) {
 				const editWithPdmNote = document.createElement("a");
 				editWithPdmNote.classList.add("dropdown-item");
-				editWithPdmNote.appendChild(document.createTextNode("Via une note de carte"));
+				editWithPdmNote.appendChild(document.createTextNode("#{__("Via une note de carte")}"));
 				editWithPdmNote.addEventListener("click", onStartTextNote);
 				dropdown.appendChild(editWithPdmNote);
 			}
@@ -150,14 +150,14 @@ script.
 			editWithOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithOSM.href = `#{CONFIG.OSM_URL}/${options.noteid || options.osmid || ""}#map=18/${lat}/${lng}`;
 			editWithOSM.target = "_blank";
-			editWithOSM.appendChild(document.createTextNode("Via OSM.org"));
+			editWithOSM.appendChild(document.createTextNode("#{__("Via OSM.org")}"));
 			dropdown.appendChild(editWithOSM);
 
 			const editWithMapillary = document.createElement("a");
 			editWithMapillary.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithMapillary.href = `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lng}&z=18`;
 			editWithMapillary.target = "_blank";
-			editWithMapillary.appendChild(document.createTextNode("Via Mapillary"));
+			editWithMapillary.appendChild(document.createTextNode("#{__("Via Mapillary")}"));
 			dropdown.appendChild(editWithMapillary);
 
 			if(options.onExternalEdit) {

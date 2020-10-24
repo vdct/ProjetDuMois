@@ -32,7 +32,7 @@ script.
 	// Close note on OSM
 	function closeNote(p) {
 		if(window.osm_user && osmApi) {
-			osmApi.closeNote(p.id, "Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)")
+			osmApi.closeNote(p.id, "#{__("Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)")}")
 			.then(() => {
 				const source = map.getSource(`notes_${p.pdm_note_source}`);
 				const notes = source._data;
@@ -42,7 +42,7 @@ script.
 				addContribution('add');
 			})
 			.catch(e => {
-				alert("Une erreur s'est produite lors de la modification de la note");
+				alert("#{__("Une erreur s'est produite lors de la modification de la note")}");
 				console.error(e);
 			});
 		}
@@ -58,7 +58,7 @@ script.
 			map.setFilter(f.layer.id, ["!", ["in", ["get", "osm_id"], ["literal", filteredOsmIds]]]);
 		})
 		.catch(e => {
-			alert("Une erreur s'est produite lors de l'enregistrement, merci de réessayer plus tard");
+			alert("#{__("Une erreur s'est produite lors de l'enregistrement, merci de réessayer plus tard")}");
 			console.error(e);
 		});
 	}
@@ -71,7 +71,7 @@ script.
 
 			const label = document.createElement("label");
 			label.classList.add("m-0", "text-muted");
-			label.appendChild(document.createTextNode(rawTagsLabel || "Attributs"));
+			label.appendChild(document.createTextNode(rawTagsLabel || "#{__("Attributs")}"));
 			div.appendChild(label);
 
 			const textarea = document.createElement("textarea");
@@ -107,7 +107,7 @@ script.
 							valueText = field.values.find(v => v.v === tags[field.tag]).l;
 						}
 						else if(field.type === "3states" && ["yes", "no"].includes(tags[field.tag])) {
-							valueText = tags[field.tag] === "yes" ? "Oui" : "Non";
+							valueText = tags[field.tag] === "yes" ? "#{__("Oui")}" : "#{__("Non")}";
 						}
 
 						const value = document.createElement("span");
@@ -175,7 +175,7 @@ script.
 
 				const title = document.createElement("span");
 				title.classList.add("text-muted", "d-block");
-				title.appendChild(document.createTextNode("Attributs à renseigner"));
+				title.appendChild(document.createTextNode("#{__("Attributs à renseigner")}"));
 				p.appendChild(title);
 
 				const value = document.createElement("ul");
@@ -225,7 +225,7 @@ script.
 			.then(res => res.json())
 			.then(meta => {
 				const labels = Object.assign({ name: meta.title.auto }, osmoseLabels[`${meta.item}_all`], osmoseLabels[`${meta.item}_${meta.class}`]);
-				const buttons = Object.assign({ done: "C'est fait", false: "Rien ici", add: "Intégrer cet objet" }, osmoseButtons[`${meta.item}_all`], osmoseButtons[`${meta.item}_${meta.class}`]);
+				const buttons = Object.assign({ done: "#{__("C'est fait")}", false: "#{__("Rien ici")}", add: "#{__("Intégrer cet objet")}" }, osmoseButtons[`${meta.item}_all`], osmoseButtons[`${meta.item}_${meta.class}`]);
 
 				let tags = [];
 				let tagsForEdit = {};
@@ -306,7 +306,7 @@ script.
 			const noteSource = notesSources[p.pdm_note_source];
 			const buttons = Object.assign({ close: "C'est fait" }, noteSource.buttons);
 			const cmts = typeof p.comments === "object" ? p.comments : JSON.parse(p.comments);
-			const notesStatuses = { "opened": "Ouvert", "closed": "Fermé", "reopened": "Réouvert", "commented": "Commentaire" };
+			const notesStatuses = { "opened": "#{__("Ouvert")}", "closed": "#{__("Fermé")}", "reopened": "#{__("Réouvert")}", "commented": "#{__("Commentaire")}" };
 
 			resDiv.innerHTML = `
 				<h5>${noteSource.name}</h5>
@@ -362,7 +362,7 @@ script.
 			divButtonDone.appendChild(document.createTextNode("✔ "+buttons.close));
 			divButtonDone.addEventListener("click", () => closeNote(p));
 			const labelConnected = "Marquer cet élément comme \""+buttons.close+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
-			const labelDisconnected = "Vous devez être connecté pour marquer la note comme résolue.";
+			const labelDisconnected = "#{__("Vous devez être connecté pour marquer la note comme résolue.")}";
 			if(!window.osm_user) {
 				divButtonDone.setAttribute("disabled", "");
 				divButtonDone.title = labelDisconnected;
@@ -384,7 +384,7 @@ script.
 			divButtonComment.classList.add("btn", "btn-secondary", "w-50");
 			divButtonComment.role = "button";
 			divButtonComment.appendChild(document.createTextNode("💬 Commenter"));
-			divButtonComment.title = "Participer à la discussion sur cette note";
+			divButtonComment.title = "#{__("Participer à la discussion sur cette note")}";
 			divButtonComment.href = `#{CONFIG.OSM_URL}/note/${p.id}`;
 			divButtonComment.target = "_blank";
 
@@ -442,7 +442,7 @@ script.
 
 			const divButtonFalse = document.createElement("button");
 			divButtonFalse.classList.add("btn", "btn-warning", "btn-block", "mt-2");
-			divButtonFalse.appendChild(document.createTextNode("✘ Rien ici"));
+			divButtonFalse.appendChild(document.createTextNode("#{__("✘ Rien ici")}"));
 			divButtonFalse.title = "Marquer qu'il n'y a rien ici si vous n'avez pas vu de #{statistics.feature_name} sur le terrain";
 			divButtonFalse.addEventListener("click", e => ignoreOsmCompare(feature));
 			resDiv.appendChild(divButtonFalse);

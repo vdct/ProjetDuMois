@@ -97,7 +97,7 @@ script.
 			auth.authenticate((err, res) => {
 				if(err) {
 					console.error(err);
-					alert("Une erreur s'est produite à la connexion, veuillez réessayer");
+					alert("#{__("Une erreur s'est produite à la connexion, veuillez réessayer")}");
 					logout();
 				}
 				else {

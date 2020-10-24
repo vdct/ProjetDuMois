@@ -1,5 +1,5 @@
-a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title="Retour à la page d'accueil")
-	img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt="Projet du mois")
+a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title=__("Retour à la page d'accueil"))
+	img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt=__("Projet du mois"))
 
 
 //- Switch between map and list
@@ -14,7 +14,7 @@ div.btn-group.w-100.mb-2.mt-2(role="group")
 //- Legend entries
 div.map-legend.mb-2.pb-2(style="border-bottom: 1px solid #bbb")
 	each lg in legend
-		label.switch(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
+		label.switch(id=`pdm-legend-${lg.layerId}` title=__("Afficher/masquer la couche"))
 			div.pdm-color-patch(style=`border-color: ${lg.color}`)
 			div.switch-text= lg.label
 			div.switch-box
@@ -47,9 +47,9 @@ if editors.pdm
 
 
 //- KML Export button
-a#pdm-export-kml.btn.btn-block.btn-outline-secondary(role="button" title="Télécharger un fichier KML pour contribuer avec une application de smartphone")
+a#pdm-export-kml.btn.btn-block.btn-outline-secondary(role="button" title=__("Télécharger un fichier KML pour contribuer avec une application de smartphone"))
 	i.fa.fa-download.mr-1
-	| Exporter les points à vérifier
+	| #{__("Exporter les points à vérifier")}
 
 script.
 	const osmoseLabels = !{JSON.stringify(osmoseLabels)};

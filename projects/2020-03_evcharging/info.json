@@ -37,7 +37,7 @@
 		},
 		"pdm": {
 			"fields": [
-				{ "type": "hidden", "tags": { "amenity": "charging_station", "ref:EU:EVSE": "*", "owner": "*", "socket:typee": "*", "socket:type2": "*", "socket:type2_combo": "*", "socket:chademo": "*", "socket:type3c": "*" } },
+				{ "type": "hidden", "tags": { "amenity": "charging_station", "ref:EU:EVSE": "*", "owner": "*", "socket:typee": "*", "socket:type2": "*", "socket:type2_combo": "*", "socket:chademo": "*", "socket:type3c": "*", "source": "*" } },
 				{ "type": "text", "name": "Nom de la borne", "tag": "name", "optional": true },
 				{ "type": "3states", "name": "Service payant ?", "tag": "fee" },
 				{ "type": "3states", "name": "Recharge pour voitures ?", "tag": "motorcar" },

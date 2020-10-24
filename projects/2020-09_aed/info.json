@@ -67,7 +67,7 @@
 		},
 		"pdm": {
 			"fields": [
-				{ "type": "hidden", "tags": { "emergency": "defibrillator", "ref:FR:GeoDAE": "*" } },
+				{ "type": "hidden", "tags": { "emergency": "defibrillator", "ref:FR:GeoDAE": "*", "source": "*" } },
 				{ "type": "3states", "name": "À l'intérieur d'un bâtiment ?", "tag": "indoor" },
 				{ "type": "textarea", "name": "Localisation précise", "tag": "defibrillator:location", "description": "Exemple : derrière le comptoir de l'accueil" },
 				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },

@@ -47,7 +47,7 @@
 		},
 		"pdm": {
 			"fields": [
-				{ "type": "hidden", "tags": { "advertising": "board", "message": "political" } },
+				{ "type": "hidden", "tags": { "advertising": "board", "message": "political", "source": "*" } },
 				{ "type": "3states", "name": "Panneau présent toute l'année", "tag": "permanent", "optional": true },
 				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true }
 			],

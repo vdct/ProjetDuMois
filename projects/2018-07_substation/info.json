@@ -43,7 +43,7 @@
 		},
 		"pdm": {
 			"fields": [
-				{ "type": "hidden", "tags": { "power": "substation", "voltage": "*" } },
+				{ "type": "hidden", "tags": { "power": "substation", "voltage": "*", "source": "*" } },
 				{ "type": "select", "name": "Type de poste", "tag": "_select1", "values": [
 					{ "l": "Petit bâtiment (mur béton)", "tags": { "substation": "minor_distribution", "location": "indoor" } },
 					{ "l": "Armoire (bloc vert/gris)", "tags": { "man_made": "street_cabinet", "street_cabinet": "power" } },

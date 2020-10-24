@@ -318,6 +318,8 @@ script.
 					${cmt.html}
 				</div>`).join("")}`;
 
+			createPicturesCarousel(resDiv, searchPicturesInNote({ properties: { comments: cmts } }), { classes: "mb-3" });
+
 			let tags = {
 				source: `#{CONFIG.OSM_URL}/note/${p.id}`
 			};
@@ -386,19 +388,19 @@ script.
 			divButtonComment.href = `#{CONFIG.OSM_URL}/note/${p.id}`;
 			divButtonComment.target = "_blank";
 
-			const feature = getOSMFeatureFromMap(featureId);
-			if(feature) {
+			const osmFeature = getOSMFeatureFromMap(featureId);
+			if(osmFeature) {
 				tags = Object.assign(
 					{},
-					typeof feature.properties.tags === "string" ? JSON.parse(feature.properties.tags) : feature.properties.tags,
+					typeof osmFeature.properties.tags === "string" ? JSON.parse(osmFeature.properties.tags) : osmFeature.properties.tags,
 					tags
 				);
 			}
 
-			createFeatureButton(resDiv, feature ? "edit": "add", "btn-block mb-1 dropup", {
+			createFeatureButton(resDiv, osmFeature ? "edit": "add", "btn-block mb-1 dropup", {
 				noteid: "note/"+p.id,
-				osmid: feature ? featureId : undefined,
-				originalCoordinates: feature ? { lng: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1] } : originalCoordinates,
+				osmid: osmFeature ? featureId : undefined,
+				originalCoordinates: osmFeature ? { lng: osmFeature.geometry.coordinates[0], lat: osmFeature.geometry.coordinates[1] } : originalCoordinates,
 				tags,
 				onExternalEdit: editors.pdm ? () => divButtons.insertBefore(divButtonDone, divButtonComment) : null,
 				onInternalEdit: () => closeNote(p)
@@ -417,6 +419,7 @@ script.
 				<div class="alert alert-info">${osmSource.description}</div>`;
 
 			getReadableTags(resDiv, tags);
+			createPicturesCarousel(resDiv, searchPicturesInOSMTags(tags), { classes: "mb-1" });
 
 			createFeatureButton(resDiv, "edit", "btn-block mt-2 dropup", {
 				osmid: p.osm_id,

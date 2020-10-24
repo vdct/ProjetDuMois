@@ -364,16 +364,17 @@ fs.readdirSync(path.join(__dirname, 'static')).forEach(file => {
 const authorized = {
 	"bootstrap": { "bootstrap.css": "dist/css/bootstrap.min.css" },
 	"bootstrap.native": { "bootstrap.js": "dist/bootstrap-native.min.js" },
-	"mapbox-gl": {
-		"mapbox-gl.js": "dist/mapbox-gl.js",
-		"mapbox-gl.css": "dist/mapbox-gl.css"
-	},
 	"chart.js": {
 		"chart.js": "dist/Chart.bundle.min.js",
 		"chart.css": "dist/Chart.min.css"
 	},
+	"mapbox-gl": {
+		"mapbox-gl.js": "dist/mapbox-gl.js",
+		"mapbox-gl.css": "dist/mapbox-gl.css"
+	},
 	"osm-auth": { "osmauth.js": "osmauth.min.js" },
 	"osm-request": { "osmrequest.js": "dist/OsmRequest.js" },
+	"pic4carto": { "pic4carto.js": "dist/P4C.min.js" },
 	"swiped-events": { "swiped-events.js": "dist/swiped-events.min.js" },
 	"wordcloud": { "wordcloud.js": "src/wordcloud2.js" }
 };

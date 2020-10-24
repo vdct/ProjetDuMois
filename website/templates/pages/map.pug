@@ -7,9 +7,11 @@ html(lang="fr")
 		//- Map specific libraries
 		script(src="/lib/mapbox-gl/mapbox-gl.js")
 		script(src="/lib/swiped-events/swiped-events.js")
+		script(src="/lib/pic4carto/pic4carto.js")
 		script(src="/turf.js")
 		script.
 			const booleanContains = turf.default;
+		include ../components/pictures.pug
 
 	body(data-swipe-ignore="true")
 		include ../components/map_navbar.pug

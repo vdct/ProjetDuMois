@@ -1,0 +1,77 @@
+script.
+	// Regexes from https://github.com/ENT8R/NotesReview/blob/main/js/linkify.js
+	const IMAGE_HOSTING_REGEX = [
+		[ /http(?:s)?:\/\/upload\.wikimedia\.org\/wikipedia\/(.+?)\/(?:thumb\/)?(\w\/\w\w)\/(.+?\.(?:jpg|jpeg|png))(?:\/.+?\.(?:jpg|jpeg|png))?/gi, 'https://upload.wikimedia.org/wikipedia/$1/thumb/$2/$3/300px-$3' ],
+		[ /http(?:s)?:\/\/commons\.wikimedia\.org\/wiki\/File:(.+?\.(?:jpg|jpeg|png|svg))/gi, 'https://commons.wikimedia.org/wiki/Special:FilePath/$1?width=300' ],
+		[ /http(?:s)?:\/\/(?:www\.)?mapillary\.com\/map\/im\/(\w+)/gi, 'https://images.mapillary.com/$1/thumb-320.jpg' ]
+	];
+
+	// Look for pictures to display extracted from notes text
+	function searchPicturesInNote(issue) {
+		const regex = /<a href="(.+?(\.(jpg|png|jpeg|gif)|mapillary\.com\/map\/im\/\w+))"/gi;
+		return issue.properties.comments.map(c => [...c.html.matchAll(regex)])
+			.flat()
+			.map(m => m[1])
+			.map(m => {
+				for(let rgx of IMAGE_HOSTING_REGEX) {
+					if(rgx[0].test(m)) {
+						return m.replace(rgx[0], rgx[1]);
+					}
+				}
+				return m;
+			});
+	}
+
+	// Extract pictures from OSM tags
+	function searchPicturesInOSMTags(tags) {
+		try {
+			return new P4C.PicturesManager().getPicturesFromTags(tags) || [];
+		}
+		catch(e) {
+			console.error(e);
+			return [];
+		}
+	}
+
+	// Generate carousel DOM using list of pictures
+	function createPicturesCarousel(container, pictures, options = {}) {
+		if(pictures.length > 0) {
+			const cssClasses = (options.classes || "").split(" ");
+			if(pictures.length === 1) {
+				const imgDom = document.createElement("img");
+				imgDom.classList.add("card-img", "card-img-center", ...cssClasses);
+				imgDom.src = pictures[0];
+				imgDom.setAttribute("loading", "lazy");
+				imgDom.setAttribute("data-filter", "picture");
+				container.appendChild(imgDom);
+			}
+			else {
+				const carousel = document.createElement("div");
+				carousel.setAttribute("data-filter", "picture");
+				carousel.id = options.id || "picturesCarousel";
+				carousel.classList.add("carousel", "slide", ...cssClasses);
+
+				carousel.innerHTML = `<a class="carousel-control-prev" href="#${carousel.id}" role="button" data-slide="prev">
+						<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+						<span class="sr-only">Précédent</span>
+					</a>
+					<a class="carousel-control-next" href="#${carousel.id}" role="button" data-slide="next">
+						<span class="carousel-control-next-icon" aria-hidden="true"></span>
+						<span class="sr-only">Suivant</span>
+					</a>`;
+
+				const carouselIndicators = document.createElement("ol");
+				carouselIndicators.classList.add("carousel-indicators");
+				carouselIndicators.innerHTML = pictures.map((p,i) => `<li data-target="#${carousel.id}" data-slide-to="${i}" class="${i === 0 ? "active" : ""}"></li>`).join("");
+				carousel.appendChild(carouselIndicators);
+
+				const carouselInner = document.createElement("div");
+				carouselInner.classList.add("carousel-inner");
+				carouselInner.innerHTML = pictures.map((p,i) => `<div class="carousel-item ${i === 0 ? "active" : ""}"><img src="${p}" loading="lazy" class="d-block w-100" /></div>`).join("");
+				carousel.appendChild(carouselInner);
+
+				container.appendChild(carousel);
+				new BSN.Carousel(carousel, { interval: false });
+			}
+		}
+	}

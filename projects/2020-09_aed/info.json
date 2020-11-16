@@ -1,9 +1,9 @@
 {
 	"id": "2020-09_aed",
-	"title": "Défibrillateurs",
+	"title": "Defibrillators",
 	"start_date": "2020-08-24",
 	"end_date": "2020-10-18",
-	"summary": "Les défibrillateurs automatiques externes (DAE) permettent de secourir les personnes lors d'un arrêt cardiaque. Ces équipements de premiers secours sont essentiels, pourtant leur localisation n'est pas toujours connue. Ce mois-ci, complétons ensemble OpenStreetMap pour offrir une liste exhaustive des défibrillateurs en France ! #DéfiCoeur",
+	"summary": "Automatic External Defibrillators (AEDs) are used to rescue people in case of heart attack. This first aid equipments are essential, yet their location is not always known. This month, let's complete OpenStreetMap together to offer a comprehensive list of defibrillators in France!",
 	"links": {
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/Defibrillateurs",
 		"osmblog": "https://www.openstreetmap.fr/projet-du-mois-defibrillateurs/"
@@ -33,55 +33,55 @@
 		{
 			"source": "osmose",
 			"item": "8370", "country": "france*",
-			"name": "DAE à localiser",
-			"description": "Il y a un défibrillateur à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap.",
-			"buttons": { "add": "Intégrer ce défibrillateur" }
+			"name": "AED to be integrated",
+			"description": "There is a defibrillator nearby. Check its exact location on the field, then add it to OpenStreetMap.",
+			"buttons": { "add": "Integrate this defibrillator" }
 		},
 		{
 			"source": "notes",
-			"name": "DAE à intégrer",
-			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
+			"name": "Notes to be integrated",
+			"description": "Someone has created a note here, check and then edit OSM to integrate the information.",
 			"terms": [ "défibrillateur", "defibrillateur", "dae", "deficoeur", "defibrillator" ]
 		},
 		{
 			"source": "osm",
-			"name": "DAE dans OSM",
-			"description": "Ce défibrillateur existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+			"name": "AED in OSM",
+			"description": "This defibrillator already exists in OSM. You could add or update its informations if necessary."
 		},
 		{
 			"source": "osm-compare",
-			"name": "Lieu pouvant disposer d'un DAE",
-			"description": "Ce lieu est susceptible de disposer d'un défibrillateur. Vous pouvez vérifier sur place la localisation de l'appareil et l'ajouter à OSM."
+			"name": "Place that may be equipped",
+			"description": "A defibrillator could be available at this location. You can check on site its location and add it to OSM."
 		}
 	],
 	"statistics": {
 		"count": true,
-		"feature_name": "défibrillateurs",
-		"osmose_tasks": "défibrillateurs officiels intégrés",
+		"feature_name": "defibrillators",
+		"osmose_tasks": "official integrated defibrillators",
 		"points": { "add": 3, "edit": 1, "note": 1 }
 	},
 	"editors": {
 		"all": {
-			"comment": "Ajout de défibrillateur automatique externe",
+			"comment": "Adding automatic external defibrillator",
 			"hashtags": "projetdumois,projetdumoisfr,deficoeur"
 		},
 		"pdm": {
 			"fields": [
 				{ "type": "hidden", "tags": { "emergency": "defibrillator", "ref:FR:GeoDAE": "*", "source": "*" } },
-				{ "type": "3states", "name": "À l'intérieur d'un bâtiment ?", "tag": "indoor" },
-				{ "type": "textarea", "name": "Localisation précise", "tag": "defibrillator:location", "description": "Exemple : derrière le comptoir de l'accueil" },
-				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
-				{ "type": "number", "name": "Niveau où le trouver", "tag": "level", "description": "0 pour RDC, 1 pour 1er étage... uniquement en intérieur", "optional": true },
-				{ "type": "select", "name": "Qui peut y accéder ?", "tag": "access", "optional": true, "values": [
-					{ "v": "yes", "l": "Tout le monde" },
-					{ "v": "customers", "l": "Clients uniquement" },
-					{ "v": "private", "l": "Personnes autorisées uniquement" }
+				{ "type": "3states", "name": "Inside a building?", "tag": "indoor" },
+				{ "type": "textarea", "name": "Accurate localization", "tag": "defibrillator:location", "description": "Example: behind the reception desk" },
+				{ "type": "text", "name": "Operator", "tag": "operator", "optional": true },
+				{ "type": "number", "name": "Level where to find it", "tag": "level", "description": "0 for ground floor, 1 for 1st floor... only indoors.", "optional": true },
+				{ "type": "select", "name": "Who has access to it?", "tag": "access", "optional": true, "values": [
+					{ "v": "yes", "l": "Everybody" },
+					{ "v": "customers", "l": "Customers only" },
+					{ "v": "private", "l": "Authorised people only" }
 				] },
-				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, modèle, infos pratiques...", "optional": true }
+				{ "type": "textarea", "name": "Additional informations", "tag": "note", "description": "Timetables, brand, model, useful information…", "optional": true }
 			],
 			"title": {
-				"add": "Ajouter un défibrillateur manquant",
-				"edit": "Compléter ce défibrillateur"
+				"add": "Add a missing defibrillator",
+				"edit": "Complete this defibrillator"
 			}
 		},
 		"iD": {
@@ -89,6 +89,6 @@
 		}
 	},
 	"opendata": [
-		{ "title": "Défibrillateurs automatiques externes", "via": "data.gouv.fr", "url": "https://www.data.gouv.fr/fr/datasets/defibrillateurs-automatiques-externes-issus-dopenstreetmap/" }
+		{ "title": "Automatic external defibrillators", "via": "data.gouv.fr", "url": "https://www.data.gouv.fr/fr/datasets/defibrillateurs-automatiques-externes-issus-dopenstreetmap/" }
 	]
 }

@@ -167,7 +167,7 @@ script.
 			// Check if there are other tags to display as raw
 			const leftTags = Object.keys(tags).filter(t => !editorTags.includes(t));
 			if(leftTags.length > 0) {
-				getReadableTags(container, Object.fromEntries(Object.entries(tags).filter(e => leftTags.includes(e[0]))), "Autres attributs");
+				getReadableTags(container, Object.fromEntries(Object.entries(tags).filter(e => leftTags.includes(e[0]))), "#{__("Autres attributs")}" );
 			}
 
 			if(toComplete.length > 0) {

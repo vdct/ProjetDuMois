@@ -1,6 +1,6 @@
-# Contribuer au développement de ProjetDuMois.fr
+# Contribute to the development of ProjetDuMois.fr
 
-## Dépendances
+## Dependencies
 
 * NodeJS >= 9
 * Curl, Awk, Grep, Sed, xsltproc
@@ -10,7 +10,7 @@
 * [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 * [Imposm](https://imposm.org/) >= 3
 * [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
-* Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
+* Dependencies of [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
 
 ## Installation
@@ -23,108 +23,108 @@ npm install
 ```
 
 
-## Configuration générale
+## General configuration
 
-La configuration générale de l'outil est à renseigner dans `config.json`. Un modèle est proposé dans le fichier `config.example.json`. Les paramètres sont les suivants :
+The general configuration of the tool is to be filled in `config.json`. There is a suggested model in the `config.example.json` file. The parameters are as follows:
 
-* `OSM_USER` : nom d'utilisateur OpenStreetMap pour la récupération de l'historique des modifications avec métadonnées
-* `OSM_PASS` : mot de passe associé au compte utilisateur OSM
-* `OSM_API_KEY` : clé d'API OSM
-* `OSM_API_SECRET` : secret lié à la clé d'API OSM
-* `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
-* `DB_NAME` : nom de la base PostgreSQL (exemple `pdm`)
-* `DB_HOST` : nom d'hôte de la base PostgreSQL (exemple `localhost`)
-* `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)
-* `DB_USER` : nom d'utilisateur pour la base PostgreSQL (exemple `postgres`)
-* `DB_PASS` : mot de passe pour la base PostgreSQL (exemple `postgres`)
-* `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
-* `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
-* `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
-* `OSMOSE_URL` : instance Osmose à utiliser (exemple `https://osmose.openstreetmap.fr`)
-* `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
-* `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
-* `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
-* `PDM_TILES_URL` : URL d'accès au service *pg_tileserv*, qui met à disposition les couches dans votre base de données
-* `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
+* `OSM_USER`: OpenStreetMap username for retrieving the modification history with metadata
+* `OSM_PASS`: password associated with the OSM user account
+* `OSM_API_KEY`: OSM API key
+* `OSM_API_SECRET`: secret linked to the OSM API key
+* `OSH_PBF_URL`: URL of the OSH.PBF file (history and metadata, example `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
+* `DB_NAME`: name of the PostgreSQL database (example `pdm`)
+* `DB_HOST`: hostname of the PostgreSQL database (example `localhost`)
+* `DB_PORT`: port number of the PostgreSQL database (example `5432`)
+* `DB_USER`: username for the PostgreSQL database (example `postgres`)
+* `DB_PASS`: password for the PostgreSQL database (example `postgres`)
+* `WORK_DIR`: download and temporary storage folder (must have capacity to store the OSH PBF file, example `/tmp/pdm`)
+* `OSM_URL`: OpenStreetMap instance to use (example `https://www.openstreetmap.org`)
+* `JOSM_REMOTE_URL`: address of the JOSM server to reach (example `http://localhost:8111`)
+* `OSMOSE_URL`: Osmose instance to use (example `https://osmose.openstreetmap.fr`)
+* `NOMINATIM_URL`: instance of Nominatim to use (example `https://nominatim.openstreetmap.org`)
+* `MAPILLARY_URL`: Mapillary instance to use (example `https://www.mapillary.com`)
+* `REPOSITORY_URL`: URL of the software repository (example `https://github.com/vdct/ProjetDuMois`)
+* `PDM_TILES_URL`: URL to access the *pg_tileserv* service, which provides the layers in your database
+* `GEOJSON_BOUNDS`: object of `Geometry` type (polygon or multipolygon) in GeoJSON delimiting the area to search for OSM notes.
 
 
-## Configuration des projets
+## Project configuration
 
-Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-répertoire doit contenir les fichiers suivants :
+Each project is defined via a subdirectory of `projects'. Each subdirectory must contain the following files :
 
-* `info.json` : métadonnées du projet
-* `howto.md` : descriptif des tâches à réaliser au format Markdown (utiliser les niveaux de titres >= 3)
-* `analysis.sql` : script SQL qui interprète la table des changements sur les objets OSM pertinents
+* `info.json` : project metadata
+* `howto.md`: description of tasks to be performed in Markdown format (use title levels >= 3)
+* `analysis.sql`: SQL script that interprets the table of changes on the relevant OSM objects
 
-Les propriétés dans `info.json` sont les suivantes :
+The properties in `info.json` are as follows:
 
-* `id` : identifiant de la mission (caractères autorisés : A-Z, 0-9, _ et -)
-* `title` : nom de la mission (assez court)
-* `start_date` : date de début de la mission (format AAAA-MM-JJ)
-* `end_date` : date de fin de la mission (format AAAA-MM-JJ)
-* `summary` : résumé de la mission
-* `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
-* `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags))
-* `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs, voir [la documentation Imposm](https://imposm.org/docs/imposm3/latest/mapping.html#tags) pour le format de ces champs)
-* `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
-* `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
-* `statistics` : configuration de l'affichage des statistiques sur la page du projet
-* `statistics.count` : activer le comptage des objets dans OSM
-* `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
-* `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
-* `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `analysis.sql`)
-* `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+* `id`: mission identifier (authorized characters: A-Z, 0-9, _ and -)
+* `title`: name of the mission (short enough)
+* `start_date`: start date of the mission (format YYYYY-MM-DD)
+* `end_date`: end date of the mission (format YYYYY-MM-DD)
+* `summary`: summary of the mission
+* `links`: definition of the URLs for links to third party pages (OSM wiki)
+* `database.osmium_tag_filter` : Osmium filter on the tags to be applied to keep only the relevant OSM objects (for example `nwr/*:covid19`, [syntax described here](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags))
+* `database.imposm`: configuration for importing updated OSM data (`types` for geometry types to be taken into account, `mapping` for attributes, see [the Imposm documentation](https://imposm.org/docs/imposm3/latest/mapping.html#tags) for the format of these fields)
+* `database.compare`: configuration for the search of OpenStreetMap objects to compare, follows the format of `database.imposm` with an additional property `radius` (reconciliation radius in meters)
+* `datasources`: list of data sources that appear on the page (see below)
+* `statistics`: configuration of statistics display on the project page
+* `statistics.count`: enable object counting in OSM
+* `statistics.feature_name`: name to display to the user for these objects
+* `statistics.osmose_tasks`: name of the tasks performed via Osmose
+* `statistics.points`: configuration of the points obtained according to the type of contribution (in relation with `analysis.sql`)
+* `editors`: specific configuration to each OSM editor. For iD, it is possible to use [the parameters listed here](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
-### Sources de données
+### Data sources
 
-Plusieurs sources de données sont mobilisables, et sont à faire apparaître dans le champ `datasources` du fichier `info.json`.
+Several data sources can be used, and are to be displayed in the `datasources` field of the `info.json` file.
 
 #### Osmose
 
-[Osmose](https://wiki.openstreetmap.org/wiki/Osmose) est un outil d'analyse qualité et d'aide à l'intégration de données ouvertes. Les propriétés à renseigner sont les suivantes :
+[Osmose](https://wiki.openstreetmap.org/wiki/Osmose) is a tool for quality analysis and open data integration. The properties to be filled in are the following:
 
-* `source` : type de source, valeur obligatoire `osmose`
-* `item` : numéro d'item (code à quatre chiffres)
-* `class` : (optionel) numéro de classe (code à plusieurs chiffres)
-* `country` : (optionel) motif de nom de pays Osmose (exemple `france*`)
-* `name` : nom à faire apparaître à l'utilisateur
-* `subtitles` : (optionel) objet clé > valeur pour remplacer les sous-titres des signalements Osmose (recherche par motif)
-* `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "done": "C'est fait", "false": "Rien ici" }`)
+* `source`: source type, mandatory value `osmose`
+* `item`: item number (four-digit code)
+* `class` : (optional) class number (multi-digit code)
+* `country` : (optional) Osmose country name pattern (example `france*`)
+* `name`: name to be displayed to the user
+* `subtitles` : (optional) key object > value to replace the subtitles of Osmose reports (search by pattern)
+* `buttons` : label to be displayed on the edit buttons (example `{ "done": "It's done", "false": "Nothing here" }`)
 
-#### Notes OSM
+#### OSM Notes
 
-Les [notes OpenStreetMap](https://wiki.openstreetmap.org/wiki/Notes) sont une méthode simple pour envoyer des commentaires textuels par dessus la carte, et faciliter la contribution par des publics novices. Les propriétés à renseigner sont les suivantes :
+The [OpenStreetMap notes](https://wiki.openstreetmap.org/wiki/Notes) are a simple method for sending text comments on the map, and facilitate contribution by novice audiences. The properties to be filled in are the following:
 
-* `source` : type de source, valeur obligatoire `notes`
-* `name` : nom à faire apparaître à l'utilisateur
-* `description` : texte descriptif indiquant la méthode de résolution d'une note
-* `terms` : liste des termes à rechercher dans les notes (au singulier)
-* `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "close": "C'est fait" }`)
+* `source`: source type, mandatory value `notes`
+* `name`: name to be displayed to the user
+* `description`: descriptive text explaining the resolution method for a note
+* `terms`: list of terms to search for in the notes (singular)
+* `buttons` : label to display on the edit buttons (example `{ "close": "It's done" }`)
 
-#### Objets OpenStreetMap
+#### OpenStreetMap objects
 
-Les objets actuellement présents dans OpenStreetMap peuvent être affichés pour éviter les doublons et permettre leur édition. Les propriétés à renseigner sont les suivantes :
+Objects currently present in OpenStreetMap can be displayed to avoid duplicates and allow editing. The properties to be filled in are the following:
 
-* `source` : type de source, valeur obligatoire `osm`
-* `name` : nom à faire apparaître à l'utilisateur
-* `description` : texte descriptif de l'objet affiché
+* `source`: source type, mandatory value `osm`
+* `name`: name to be displayed to the user
+* `description` : descriptive text of the displayed object
 
-Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database` de `info.json`.
+This source can appear only once, and corresponds to the objects searched for in the `database` options of `info.json`.
 
-#### Objets OpenStreetMap pour comparaison
+#### OpenStreetMap objects for comparison
 
-Des objets indirectement liés au projet mais pertinents pour la contribution peuvent également apparaître. Les propriétés à renseigner sont les suivantes :
+Objects indirectly related to the project but relevant to the contribution may also appear. The properties to be filled in are the following:
 
-* `source` : type de source, valeur obligatoire `osm-compare`
-* `name` : nom à faire apparaître à l'utilisateur
-* `description` : texte descriptif de l'objet affiché
+* `source`: type of source, mandatory value `osm-compare`
+* `name`: name to be displayed to the user
+* `description` : descriptive text of the displayed object
 
-Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
+This source can only appear once, and corresponds to the objects searched for in the `database.compare` options of `info.json`.
 
 
-## Base de données
+## Database
 
-La base de données s'appuie sur PostgreSQL. Pour créer la base :
+The database relies on PostgreSQL. To create the database :
 
 ```bash
 psql -c "CREATE DATABASE pdm"
@@ -134,14 +134,14 @@ npm run features:update
 ./db/21_features_update_tmp.sh init
 ```
 
-Le script suivant est à lancer quotidiennement pour récupérer les statistiques de contribution (notes, objets ajoutés, badges obtenus) :
+The following script has to be launched daily to retrieve the contribution statistics (notes, objects added, badges obtained):
 
 ```bash
 npm run project:update
 ./db/09_project_update_tmp.sh
 ```
 
-Le script suivant est à lancer chaque heure pour mettre à jour les objets venant d'OpenStreetMap à afficher sur la carte :
+The following script has to be run every hour to update the objects coming from OpenStreetMap to be displayed on the map:
 
 ```bash
 npm run features:update
@@ -149,21 +149,22 @@ npm run features:update
 ```
 
 
-## Site web
+## Website
 
-Le code de l'interface web se trouve dans le dossier `website`. Il s'agit d'un serveur [ExpressJS](http://expressjs.com/), combiné à des modèles [Pug](https://pugjs.org).
+The code for the web interface can be found in the `website` folder. This is an [ExpressJS](http://expressjs.com/) server, combined with [Pug](https://pugjs.org) templates.
 
-Pour lancer le site web :
+To launch the web site :
 
 ```bash
 npm run start
 ```
 
-Le site est visible à l'adresse [localhost:3000](http://localhost:3000).
+The site can be viewed at [localhost:3000](http://localhost:3000).
 
-Les modèles Pug sont dans le sous-dossier `templates`. Celui-ci est organisé selon la logique suivante :
+The Pug templates are in the `templates` sub-folder. It is organized according to the following logic:
 
-* Dans `templates`, le modèle général `layout.pug` et son fichier CSS
-* Dans `common`, les éléments génériques à toutes les pages (`<head>`, en-tête, pied de page)
-* Dans `components`, les composants principaux qui peuplent les pages (carte, bloc statistiques...)
-* Dans `pages`, chacune des pages du site (accueil, carte, page projet...)
+* In `templates`, the general model `layout.pug` and its CSS file
+* In `common`, generic elements to all pages (`<head>`, header, footer)
+* In `components`, the main components that populate the pages (map, statistics block...)
+* In `pages`, each page of the site (home, map, project page...)
+

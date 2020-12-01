@@ -1,0 +1,94 @@
+{
+	"id": "2020-09_aed",
+	"title": "Defibrillatoren",
+	"start_date": "2020-08-24",
+	"end_date": "2020-10-18",
+	"summary": "Les défibrillateurs automatiques externes (DAE) permettent de secourir les personnes lors d'un arrêt cardiaque. Ces équipements de premiers secours sont essentiels, pourtant leur localisation n'est pas toujours connue. Ce mois-ci, complétons ensemble OpenStreetMap pour offrir une liste exhaustive des défibrillateurs en France ! #DéfiCoeur",
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/DE:Project_of_the_month_Switzerland",
+		"osmblog": "tbd"
+	},
+	"database": {
+		"osmium_tag_filter": "n/emergency=defibrillator",
+		"imposm": {
+			"types": ["point"],
+			"mapping": { "emergency": ["defibrillator"] }
+		},
+		"compare": {
+			"types": ["point", "polygon"],
+			"mapping": {
+				"aeroway": ["aerodrome"],
+				"amenity": ["college","university","ferry_terminal","cinema","community_centre","theatre","conference_centre","townhall","arts_centre"],
+				"highway": ["services"],
+				"leisure": ["ice_rink","sports_centre","stadium","water_park"],
+				"railway": ["station"],
+				"shop": ["department_store","mall","supermarket","wholesale"],
+				"tourism": ["camp_site","hotel","museum","theme_park","zoo"],
+				"information": ["office"]
+			},
+			"radius": 100
+		}
+	},
+	"datasources": [
+		{
+			"source": "osmose",
+			"item": "8370", "country": "france*",
+			"name": "AED zu lokalisieren",
+			"description": "In der Nähe befindet sich ein Defibrillator. Überprüfen Sie die genaue Position im Feld und fügen Sie sie dann zu OpenStreetMap hinzu.",
+			"buttons": { "add": "Defibrillator hinzufügen" }
+		},
+		{
+			"source": "notes",
+			"name": "AED zu integrieren",
+			"description": "Jemand hat hier eine Notiz erstellt. Überprüfen Sie OSM und bearbeiten Sie es, um die Informationen aufzunehmen.",
+			"terms": [ "defibrillator", "defi", "aed"]
+		},
+		{
+			"source": "osm",
+			"name": "AED in OSM",
+			"description": "Dieser Defibrillator ist bereits in OSM vorhanden. Sie können die Informationen bei Bedarf vervollständigen oder ändern."
+		},
+		{
+			"source": "osm-compare",
+			"name": "Ort, der einen AED haben kann",
+			"description": "Dieser Ort hat wahrscheinlich einen Defibrillator. Sie können den Standort des Geräts vor Ort überprüfen und zu OSM hinzufügen."
+		}
+	],
+	"statistics": {
+		"count": true,
+		"feature_name": "défibrillateurs",
+		"osmose_tasks": "défibrillateurs officiels intégrés",
+		"points": { "add": 3, "edit": 1, "note": 1 }
+	},
+	"editors": {
+		"all": {
+			"comment": "Zusatz eines externen automatischen Defibrillators",
+			"hashtags": "potm,projektdesmonats,defi,aed,defikarte.ch"
+		},
+		"pdm": {
+			"fields": [
+				{ "type": "hidden", "tags": { "emergency": "defibrillator", "ref:EN:defibrillator": "*", "source": "*" } },
+				{ "type": "3states", "name": "Drinnen oder Draussen", "tag": "indoor" },
+				{ "type": "textarea", "name": "exakter Standort", "tag": "defibrillator:location", "description": "Zum Beispiel: an der Wand neben der Telefonkabine" },
+				{ "type": "text", "name": "Betreiber", "tag": "operator", "optional": true },
+				{ "type": "number", "name": "Etage", "tag": "level", "description": "0 für Erdgeschoss, 1 für 1. Stock ... nur drinnen", "optional": true },
+				{ "type": "select", "name": "Zugang gewährleistet?", "tag": "access", "optional": true, "values": [
+					{ "v": "yes", "l": "Weltweit" },
+					{ "v": "customers", "l": "Nur für Kunden" },
+					{ "v": "private", "l": "Nur autorisierte Personen" }
+				] },
+				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, modèle, infos pratiques...", "optional": true }
+			],
+			"title": {
+				"add": "Fügen Sie einen fehlenden Defibrillator hinzu",
+				"edit": "Defibrillator vervollständigen"
+			}
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	},
+	"opendata": [
+		{ "title": "Défibrillateurs automatiques externes", "via": "data.gouv.fr", "url": "https://www.data.gouv.fr/fr/datasets/defibrillateurs-automatiques-externes-issus-dopenstreetmap/" }
+	]
+}

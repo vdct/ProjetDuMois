@@ -1,0 +1,4 @@
+Ziel ist es, die Liste der Defibrillatoren in OpenStreetMap so weit wie möglich zu vervollständigen. Es gibt zwei Möglichkeiten, dies zu tun:
+
+* Durchsuchen Sie Ihre Nachbarschaft oder Stadt und finden Sie die fehlenden Defibrillatoren: Diese werden in [öffentlich zugänglichen Einrichtungen] installiert (Geschäfte, Verwaltungen, Sportzentren ...). Jede Gemeinde hat in der Regel mindestens einen Defibrillator an zentraler Stelle. Großstädte haben sie überall.
+* Überprüfen und integrieren Sie die auf der Karte aufgeführten Defibrillatoren: Diese stammen aus Openstreetmap.Fügen Sie sie basierend auf Ihren lokalen Kenntnissen oder Feldbesuchen zu OSM hinzu.

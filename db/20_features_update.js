@@ -18,7 +18,7 @@ const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
 const OSC_FULL = CONFIG.WORK_DIR + '/changes_features.osc.gz';
 const OSC_LOCAL = CONFIG.WORK_DIR + '/changes_features.local.osc.gz';
-const PSQL_DB = `postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}`;
+const PSQL_DB = `postgres://${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}`;
 const OUTPUT_SCRIPT = __dirname+'/21_features_update_tmp.sh';
 
 

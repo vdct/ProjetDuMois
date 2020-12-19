@@ -2,4 +2,5 @@
 /diffs
 /config.json
 /db/*_tmp.sh
+/db/*_tmp.sql
 /db/13_points.sql

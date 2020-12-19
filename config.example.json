@@ -14,6 +14,7 @@
 	"DB_HOST": "localhost",
 	"DB_PORT": "5432",
 	"DB_NAME": "pdm",
+	"DB_USE_IMPOSM_UPDATE": true,
 	"WORK_DIR": "/tmp/pdm",
 	"GEOJSON_BOUNDS": {
 		"type": "Polygon",

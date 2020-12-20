@@ -196,8 +196,8 @@ for day in "\${days[@]}"; do
 done
 
 # Insert CSV into database
-${PSQL} -c "DELETE FROM feature_counts WHERE project = '${project.id}'"
-${PSQL} -c "\\COPY feature_counts FROM '${CSV_COUNT}' CSV"
+${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project = '${project.id}'"
+${PSQL} -c "\\COPY pdm_feature_counts FROM '${CSV_COUNT}' CSV"
 rm -rf "${CSV_COUNT}"
 ${separator}` : '';
 
@@ -205,12 +205,12 @@ ${separator}` : '';
 // Notes count (optional)
 const noteCounts = notesSources.length > 0 ? `
 echo "==== Notes statistics"
-${PSQL} -c "DELETE FROM note_counts WHERE project = '${project.id}'"
-${PSQL} -c "\\COPY note_counts FROM '${CSV_NOTES}' CSV"
-${PSQL} -c "\\COPY user_contributions(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS}' CSV"
-${PSQL} -c "CREATE TABLE user_names_notes(userid BIGINT, username VARCHAR)"
-${PSQL} -c "\\COPY user_names_notes FROM '${CSV_NOTES_USERS}' CSV"
-${PSQL} -c "INSERT INTO user_names SELECT userid, username FROM user_names_notes ON CONFLICT (userid) DO NOTHING; DROP TABLE user_names_notes;"
+${PSQL} -c "DELETE FROM pdm_note_counts WHERE project = '${project.id}'"
+${PSQL} -c "\\COPY pdm_note_counts FROM '${CSV_NOTES}' CSV"
+${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS}' CSV"
+${PSQL} -c "CREATE TABLE pdm_user_names_notes(userid BIGINT, username VARCHAR)"
+${PSQL} -c "\\COPY pdm_user_names_notes FROM '${CSV_NOTES_USERS}' CSV"
+${PSQL} -c "INSERT INTO pdm_user_names SELECT userid, username FROM pdm_user_names_notes ON CONFLICT (userid) DO NOTHING; DROP TABLE pdm_user_names_notes;"
 rm -f "${CSV_NOTES}" "${CSV_NOTES_CONTRIBS}" "${CSV_NOTES_USERS}"
 ${separator}` : '';
 
@@ -269,7 +269,7 @@ ${separator}
 
 echo "==== Init changes table in database"
 ${PSQL} -f ${__dirname}/11_project_init_tables.sql
-${PSQL} -c "\\COPY osm_changes FROM '${CSV_CHANGES}' CSV"
+${PSQL} -c "\\COPY pdm_changes FROM '${CSV_CHANGES}' CSV"
 ${PSQL} -f ${__dirname}/12_project_post_import_changes.sql
 rm -f "${CSV_CHANGES}"
 ${separator}

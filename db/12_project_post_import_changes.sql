@@ -1,17 +1,17 @@
 -- Create indexes
-CREATE INDEX osm_changes_action_idx ON osm_changes(action);
-CREATE INDEX osm_changes_osmid_idx ON osm_changes(osmid);
-CREATE INDEX osm_changes_version_idx ON osm_changes(version);
+CREATE INDEX ON pdm_changes(action);
+CREATE INDEX ON pdm_changes(osmid);
+CREATE INDEX ON pdm_changes(version);
 
 -- Update user names
-INSERT INTO user_names
+INSERT INTO pdm_user_names
 SELECT DISTINCT ON (userid) userid, username
-FROM osm_changes
+FROM pdm_changes
 WHERE userid IS NOT NULL
 ORDER BY userid, ts DESC
 ON CONFLICT (userid)
 DO UPDATE SET username = EXCLUDED.username;
 
 -- Compute indexes
-REINDEX TABLE user_names;
-REINDEX TABLE osm_compare_exclusions;
+REINDEX TABLE pdm_user_names;
+REINDEX TABLE pdm_compare_exclusions;

@@ -132,7 +132,7 @@ app.get('/projects/:id/stats', (req, res) => {
 	if(p.datasources.find(ds => ds.source === "notes")) {
 		allPromises.push(pool.query(`
 			SELECT ts, open, closed
-			FROM note_counts
+			FROM pdm_note_counts
 			WHERE project = $1
 			ORDER BY ts
 		`, [req.params.id])
@@ -162,7 +162,7 @@ app.get('/projects/:id/stats', (req, res) => {
 	if(p.statistics.count) {
 		allPromises.push(pool.query(`
 			SELECT ts, amount
-			FROM feature_counts
+			FROM pdm_feature_counts
 			WHERE project = $1
 		`, [req.params.id])
 		.then(results => ({
@@ -247,7 +247,7 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 	}
 
 	// Update user name in DB
-	pool.query('INSERT INTO user_names(userid, username) VALUES ($1, $2) ON CONFLICT (userid) DO UPDATE SET username = EXCLUDED.username', [req.params.userid, req.query.username])
+	pool.query('INSERT INTO pdm_user_names(userid, username) VALUES ($1, $2) ON CONFLICT (userid) DO UPDATE SET username = EXCLUDED.username', [req.params.userid, req.query.username])
 	.then(r1 => {
 		// Get badges before edit
 		pool.query('SELECT * FROM get_badges($1, $2)', [req.params.id, req.params.userid])
@@ -255,7 +255,7 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 			const badgesBefore = r2.rows;
 
 			// Insert contribution
-			pool.query('INSERT INTO user_contributions(project, userid, ts, contribution, verified, points) VALUES ($1, $2, current_timestamp, $3, false, get_points($1, $3))', [req.params.id, req.params.userid, req.query.type])
+			pool.query('INSERT INTO pdm_user_contribs(project, userid, ts, contribution, verified, points) VALUES ($1, $2, current_timestamp, $3, false, get_points($1, $3))', [req.params.id, req.params.userid, req.query.type])
 			.then(r3 => {
 				// Get badges after contribution
 				pool.query('SELECT * FROM get_badges($1, $2)', [req.params.id, req.params.userid])
@@ -295,7 +295,7 @@ app.post('/projects/:id/ignore/:osmtype/:osmid', (req, res) => {
 		return res.redirect('/error/400');
 	}
 
-	pool.query('INSERT INTO osm_compare_exclusions(project, osm_id, userid) VALUES ($1, $2, $3) ON CONFLICT (project, osm_id) DO UPDATE SET ts = current_timestamp, userid = $3', [req.params.id, req.params.osmtype+"/"+req.params.osmid, req.query.user_id])
+	pool.query('INSERT INTO pdm_compare_exclusions(project, osm_id, userid) VALUES ($1, $2, $3) ON CONFLICT (project, osm_id) DO UPDATE SET ts = current_timestamp, userid = $3', [req.params.id, req.params.osmtype+"/"+req.params.osmid, req.query.user_id])
 	.then(() => {
 		res.send();
 	})
@@ -311,7 +311,7 @@ app.get('/users/:name', (req, res) => {
 	}
 
 	// Find user in database
-	pool.query(`SELECT userid FROM user_names WHERE username = $1`, [ req.params.name ])
+	pool.query(`SELECT userid FROM pdm_user_names WHERE username = $1`, [ req.params.name ])
 	.then(res1 => {
 		if(res1.rows.length === 1) {
 			const userid = res1.rows[0].userid;

@@ -116,7 +116,7 @@ BEGIN
 	ELSE
 		-- Best contributor through all projects
 		SELECT userid, COUNT(*) INTO result_userid, result_count
-		FROM user_contributions
+		FROM pdm_user_contribs
 		GROUP BY userid
 		ORDER BY COUNT(*) DESC
 		LIMIT 1;
@@ -131,7 +131,7 @@ BEGIN
 			RETURN next;
 		ELSE
 			SELECT COUNT(*)::FLOAT / result_count * 100 INTO progress
-			FROM user_contributions
+			FROM pdm_user_contribs
 			WHERE userid = the_userid;
 			IF progress >= 50 THEN
 				description := 'Détronez la personne ayant le plus de points à ce jour';

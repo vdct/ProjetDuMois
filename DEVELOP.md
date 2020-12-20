@@ -35,8 +35,6 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `DB_NAME` : nom de la base PostgreSQL (exemple `pdm`)
 * `DB_HOST` : nom d'hôte de la base PostgreSQL (exemple `localhost`)
 * `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)
-* `DB_USER` : nom d'utilisateur pour la base PostgreSQL (exemple `postgres`)
-* `DB_PASS` : mot de passe pour la base PostgreSQL (exemple `postgres`)
 * `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 * `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
 * `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
@@ -47,6 +45,12 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `PDM_TILES_URL` : URL d'accès au service *pg_tileserv*, qui met à disposition les couches dans votre base de données
 * `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
 
+### Connection à Postgresql
+
+Aucun identifiant ni mot de passe ne sont ajoutés à la configuration de l'application.  
+Ajoutez un fichier ~/.pgpass (chmod 600) pour l'utilisateur applicatif afin de permettre à psql ou ses dépendances de s'authentifier.
+
+Voir https://www.postgresql.org/docs/current/libpq-pgpass.html
 
 ## Configuration des projets
 

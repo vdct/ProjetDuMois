@@ -13,8 +13,6 @@
 	"PDM_TILES_URL": "http://localhost:7800",
 	"DB_HOST": "localhost",
 	"DB_PORT": "5432",
-	"DB_USER": "postgres",
-	"DB_PASS": "postgres",
 	"DB_NAME": "pdm",
 	"WORK_DIR": "/tmp/pdm",
 	"GEOJSON_BOUNDS": {

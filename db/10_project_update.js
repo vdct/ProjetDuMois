@@ -32,7 +32,7 @@ const CSV_NOTES_CONTRIBS = CONFIG.WORK_DIR + '/user_notes.csv';
 const CSV_NOTES_USERS = CONFIG.WORK_DIR + '/usernames_notes.csv';
 
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
-const PSQL = `psql "postgres://${CONFIG.DB_USER}:${CONFIG.DB_PASS}@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
+const PSQL = `psql "postgres://@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
 const OUTPUT_SQL_POINTS = __dirname+'/13_points.sql';
 

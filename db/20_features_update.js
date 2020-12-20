@@ -13,6 +13,7 @@ const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop
 const OSM_PBF_LATEST_UNSTABLE = OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf");
 const OSM_PBF_LATEST_UNSTABLE_FILTERED = OSM_PBF_LATEST.replace(".osm.pbf", ".new-local.osm.pbf");
 const OSM_POLY = OSM_PBF_LATEST.replace("-internal.osm.pbf", ".poly");
+const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE;
 const IMPOSM_YML = CONFIG.WORK_DIR + '/imposm.yml';
 const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
@@ -20,15 +21,15 @@ const OSC_FULL = CONFIG.WORK_DIR + '/changes_features.osc.gz';
 const OSC_LOCAL = CONFIG.WORK_DIR + '/changes_features.local.osc.gz';
 const PSQL_DB = `postgres://${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}`;
 const OUTPUT_SCRIPT = __dirname+'/21_features_update_tmp.sh';
-
+const UNINSTALL_SCRIPT = __dirname+'/91_project_uninstall_tmp.sql';
 
 // Generate Imposm YAML config file
 const yamlData = {
 	tables: {},
 	tags: { load_all: true }
 };
-const preSQL = [];
-const postSQL = [];
+const preSQL = []; // Suppression des ressources projets
+const postSQL = []; // Creation des ressources projets
 const postUpdateSQL = [];
 
 Object.entries(projects).forEach(e => {
@@ -43,9 +44,11 @@ Object.entries(projects).forEach(e => {
 		]
 	};
 
-	project.database.imposm.types.forEach(type => {
-		yamlData.tables[`${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
-	});
+	if (IMPOSM_ENABLED) {
+		project.database.imposm.types.forEach(type => {
+			yamlData.tables[`${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
+		});
+	}
 
 	preSQL.push(`DROP VIEW IF EXISTS project_${id.split("_").pop()} CASCADE`);
 	postSQL.push(
@@ -60,9 +63,11 @@ Object.entries(projects).forEach(e => {
 	// Comparison tables
 	if(project.database.compare) {
 		// Table definition
-		project.database.compare.types.forEach(type => {
-			yamlData.tables[`${id.split("_").pop()}_compare_${type}`] = Object.assign({ type }, tableData, { mapping: project.database.compare.mapping });
-		});
+		if (IMPOSM_ENABLED){
+			project.database.compare.types.forEach(type => {
+				yamlData.tables[`${id.split("_").pop()}_compare_${type}`] = Object.assign({ type }, tableData, { mapping: project.database.compare.mapping });
+			});
+		}
 
 		preSQL.push(`DROP VIEW IF EXISTS project_${id.split("_").pop()}_compare CASCADE`);
 		postSQL.push(
@@ -88,14 +93,17 @@ Object.entries(projects).forEach(e => {
 	}
 });
 
-fs.writeFile(IMPOSM_YML, yaml.safeDump(yamlData), err => {
-	if(err) {
-		throw new Error(err);
-	}
-});
+if (IMPOSM_ENABLED){
+	fs.writeFile(IMPOSM_YML, yaml.safeDump(yamlData), err => {
+		if(err) {
+			throw new Error(err);
+		}
+	});
+}
 
 // View for multi-type layers
 const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t");
+const sqlToScript = sqlin => sqlin.map(vs => (`${vs};`)).join("\n\t");
 const preSQLFull = preSQL.length > 0 ? sqlToFull(preSQL) : "";
 const postSQLFull = postSQL.length > 0 ? sqlToFull(postSQL) : "";
 const postUpdateSQLFull = postUpdateSQL.length > 0 ? sqlToFull(postUpdateSQL) : "";
@@ -105,7 +113,7 @@ const postUpdateSQLFull = postUpdateSQL.length > 0 ? sqlToFull(postUpdateSQL) : 
 const separator = `echo "-------------------------------------------------------------------"
 echo ""`;
 
-const script = `#!/bin/bash
+var script = `#!/bin/bash
 
 # Script for updating OSM features for each project
 # Generated automatically by npm run features:update
@@ -128,45 +136,63 @@ osmium apply-changes "${OSM_PBF_LATEST}" \\
 osmium extract -p "${OSM_POLY}" -s simple "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
 rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
 ${separator}
+`;
 
-if [ "$mode" == "init" ]; then
-	echo "==== Initial import with Imposm"
-	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
-	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
-	mkdir -p "${IMPOSM_CACHE_DIR}"
-	imposm import -mapping "${IMPOSM_YML}" \\
-		-read "${OSM_PBF_LATEST}" \\
-		-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
-		-diff -diffdir "${IMPOSM_DIFF_DIR}"
+if (IMPOSM_ENABLED){
+	script += `if [ "$mode" == "init" ]; then
+		echo "==== Initial import with Imposm"
+		rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
+		mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
+		mkdir -p "${IMPOSM_CACHE_DIR}"
+		imposm import -mapping "${IMPOSM_YML}" \\
+			-read "${OSM_PBF_LATEST}" \\
+			-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
+			-diff -diffdir "${IMPOSM_DIFF_DIR}"
 
-	${preSQLFull}
+		${preSQLFull}
 
-	imposm import -write \\
-		-connection "${PSQL_DB}?prefix=project_" \\
-		-mapping "${IMPOSM_YML}" \\
-		-cachedir "${IMPOSM_CACHE_DIR}" \\
-		-dbschema-import public -diff
+		imposm import -write \\
+			-connection "${PSQL_DB}?prefix=project_" \\
+			-mapping "${IMPOSM_YML}" \\
+			-cachedir "${IMPOSM_CACHE_DIR}" \\
+			-dbschema-import public -diff
 
-	${postSQLFull}
-else
-	echo "==== Apply latest changes to database"
-	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
-	imposm diff -mapping "${IMPOSM_YML}" \\
-		-cachedir "${IMPOSM_CACHE_DIR}" \\
-		-dbschema-production public \\
-		-connection "${PSQL_DB}?prefix=project_" \\
-		"${OSC_LOCAL}"
+		${postSQLFull}
+	else
+		echo "==== Apply latest changes to database"
+		osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
+		imposm diff -mapping "${IMPOSM_YML}" \\
+			-cachedir "${IMPOSM_CACHE_DIR}" \\
+			-dbschema-production public \\
+			-connection "${PSQL_DB}?prefix=project_" \\
+			"${OSC_LOCAL}"
 
-	${postUpdateSQLFull}
-	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
-	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
-fi
-${separator}
+		${postUpdateSQLFull}
+		rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
+		mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
+	fi
+`;
+}else{
+	script += `if [ "$mode" == "init" ]; then
+		${postSQLFull}
+	else
+		${postUpdateSQLFull}
+	fi
+`;
+}
+script += `${separator}
 
 echo "Done"
 `;
 
+// Script de mise à jour
 fs.writeFile(OUTPUT_SCRIPT, script, { mode: 0o766 }, err => {
 	if(err) { throw new Error(err); }
-	console.log("Done");
+	console.log("Update script done");
+});
+
+// Ecriture du script d'uninstall des projets
+fs.writeFile(UNINSTALL_SCRIPT, sqlToScript(preSQL), { mode: 0o766 }, err => {
+	if(err) { throw new Error(err); }
+	console.log("Uninstall script done");
 });

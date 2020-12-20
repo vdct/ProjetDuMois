@@ -34,7 +34,8 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
 * `DB_NAME` : nom de la base PostgreSQL (exemple `pdm`)
 * `DB_HOST` : nom d'hôte de la base PostgreSQL (exemple `localhost`)
-* `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)
+* `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)*
+* `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens)
 * `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 * `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
 * `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
@@ -78,6 +79,22 @@ Les propriétés dans `info.json` sont les suivantes :
 * `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
 * `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `analysis.sql`)
 * `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+
+### Se passer d'imposm3
+
+Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.  
+Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
+
+Dans le cas où imposm3 serait désactivé, il faudra produire des vues matérialisées pour chaque projet configurés, avec la structure suivante:
+
+```sql
+osm_id BIGINT,
+name VARCHAR(255)
+tags hstore
+geom GEOMETRY
+```
+
+Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
 
 ### Sources de données
 

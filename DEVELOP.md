@@ -48,7 +48,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 
 ### Connection à Postgresql
 
-Aucun identifiant ni mot de passe ne sont ajoutés à la configuration de l'application.  
+Aucun identifiant ni mot de passe ne sont ajoutés à la configuration de l'application.
 Ajoutez un fichier ~/.pgpass (chmod 600) pour l'utilisateur applicatif afin de permettre à psql ou ses dépendances de s'authentifier.
 
 Voir https://www.postgresql.org/docs/current/libpq-pgpass.html
@@ -82,7 +82,7 @@ Les propriétés dans `info.json` sont les suivantes :
 
 ### Se passer d'imposm3
 
-Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.  
+Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.
 Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
 
 Dans le cas où imposm3 serait désactivé, il faudra produire des vues matérialisées pour chaque projet configurés, avec la structure suivante:
@@ -177,6 +177,7 @@ Le code de l'interface web se trouve dans le dossier `website`. Il s'agit d'un s
 Pour lancer le site web :
 
 ```bash
+export PGUSER=`whoami` # Nom d'utilisateur pour accéder à la base de données
 npm run start
 ```
 

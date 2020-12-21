@@ -177,14 +177,14 @@ app.get('/projects/:id/stats', (req, res) => {
 		})));
 
 		allPromises.push(pool.query(
-			`SELECT COUNT(*) AS amount FROM project_${req.params.id.split("_").pop()}`
+			`SELECT COUNT(*) AS amount FROM pdm_project_${req.params.id.split("_").pop()}`
 		).then(results => ({
 			count: results.rows.length > 0 && results.rows[0].amount
 		})));
 	}
 
 	// Fetch user statistics from DB
-	allPromises.push(pool.query(`SELECT * FROM leaderboard WHERE project = $1 ORDER BY pos`, [req.params.id])
+	allPromises.push(pool.query(`SELECT * FROM pdm_leaderboard WHERE project = $1 ORDER BY pos`, [req.params.id])
 	.then(results => ({
 		nbContributors: results.rows.length,
 		leaderboard: osmUserAuthentified ? results.rows : null
@@ -195,7 +195,7 @@ app.get('/projects/:id/stats', (req, res) => {
 		SELECT k, COUNT(*) AS amount
 		FROM (
 			SELECT json_object_keys(tags) AS k
-			FROM project_${req.params.id.split("_").pop()}
+			FROM pdm_project_${req.params.id.split("_").pop()}
 		) a
 		GROUP BY k
 		ORDER BY COUNT(*) desc;`

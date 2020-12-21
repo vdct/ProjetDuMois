@@ -10,7 +10,7 @@ BEGIN
 	IF the_project != 'meta' THEN
 		-- Amount of contributions
 		SELECT amount, pos INTO nb_contributions, result_position
-		FROM leaderboard
+		FROM pdm_leaderboard
 		WHERE project = the_project AND userid = the_userid;
 
 		-- 1st, 2nd and 3rd position

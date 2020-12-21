@@ -40,8 +40,13 @@ app.set('views', __dirname+'/templates');
 // Index
 app.get('/', (req, res) => {
 	const p = filterProjects(projects);
-	const destId = p.current ? p.current.id : (p.next ? p.next.id : p.past.pop().id);
-	res.redirect(`/projects/${destId}`);
+	const destId = p.current ? p.current.id : (p.next ? p.next.id : (p.past.length > 0 ? p.past.pop().id : null));
+	if(destId) {
+		res.redirect(`/projects/${destId}`);
+	}
+	else {
+		res.redirect('/error/500');
+	}
 });
 
 // HTTP errors
@@ -60,7 +65,7 @@ app.get('/projects/:id', (req, res) => {
 	const all = filterProjects(projects);
 	const isActive = all.current && all.current.id === req.params.id;
 	const isNext = all.next && all.next.id === req.params.id;
-	const isRecentPast = all.past && all.past[all.past.length-1].id === req.params.id && new Date(p.end_date+"T23:59:59Z").getTime() >= Date.now() - 30*24*60*60*1000;
+	const isRecentPast = all.past && all.past.length > 0 && all.past[all.past.length-1].id === req.params.id && new Date(p.end_date+"T23:59:59Z").getTime() >= Date.now() - 30*24*60*60*1000;
 	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, isRecentPast, projects: all }, p));
 });
 

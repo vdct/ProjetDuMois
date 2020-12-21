@@ -80,7 +80,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#FF7043"; // Orange
-				const layer = `public.project_${p.id.split("_").pop()}_compare_tiles_filtered`;
+				const layer = `public.pdm_project_${p.id.split("_").pop()}_compare_tiles_filtered`;
 				sources[id] = {
 					type: "vector",
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
@@ -109,7 +109,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#2E7D32"; // Green
-				const layer = `public.project_${p.id.split("_").pop()}`;
+				const layer = `public.pdm_project_${p.id.split("_").pop()}`;
 				sources[id] = {
 					type: "vector",
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],

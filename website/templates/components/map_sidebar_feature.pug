@@ -198,7 +198,7 @@ script.
 		else {
 			for(let osmSourceId in osmSources) {
 				const sourceId = "osm_"+osmSourceId;
-				const features = map.querySourceFeatures(sourceId, { filter: ["==", ["get", "osm_id"], featureId], sourceLayer: `public.project_#{id.split("_").pop()}` });
+				const features = map.querySourceFeatures(sourceId, { filter: ["==", ["get", "osm_id"], featureId], sourceLayer: `public.pdm_project_#{id.split("_").pop()}` });
 				if(features.length >= 1) {
 					return features.pop();
 				}

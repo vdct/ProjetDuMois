@@ -173,7 +173,7 @@ ${pointsEntries.map(pe => `		WHEN the_project = '${pe[0]}' AND the_contrib = '${
 	END;
 END;
 $$ LANGUAGE plpgsql
-IMMUTABLE LEAKPROOF;
+IMMUTABLE;
 `;
 fs.writeFile(OUTPUT_SQL_POINTS, sqlPoints, err => {
 	if(err) { throw new Error(err); }

@@ -85,7 +85,7 @@ Les propriétés dans `info.json` sont les suivantes :
 Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.
 Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
 
-Dans le cas où imposm3 serait désactivé, il faudra produire des vues matérialisées pour chaque projet configurés, avec la structure suivante:
+Dans le cas où imposm3 serait désactivé, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_id}`, avec la structure suivante:
 
 ```sql
 osm_id BIGINT,
@@ -94,7 +94,7 @@ tags hstore
 geom GEOMETRY
 ```
 
-Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
+Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
 
 ### Sources de données
 

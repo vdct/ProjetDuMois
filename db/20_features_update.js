@@ -48,17 +48,17 @@ Object.entries(projects).forEach(e => {
 		project.database.imposm.types.forEach(type => {
 			yamlData.tables[`${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
 		});
-	}
 
-	preSQL.push(`DROP VIEW IF EXISTS pdm_project_${id.split("_").pop()} CASCADE`);
-	postSQL.push(
-		`CREATE OR REPLACE VIEW pdm_project_${id.split("_").pop()} AS `
-		+ project.database.imposm.types.map(type => {
-			const osmid = type === "point" ? "CONCAT('node/', osm_id) AS osm_id" : "CASE WHEN osm_id < 0 THEN CONCAT('relation/', -osm_id) ELSE CONCAT('way/', osm_id) END AS osm_id";
-			const geom = type === "point" ? "geom::GEOMETRY(Point, 3857)" : "ST_PointOnSurface(geom)::GEOMETRY(Point, 3857) AS geom";
-			return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, tags ?| ARRAY['note','fixme'] AS needs_check, ${geom} FROM pdm_project_${id.split("_").pop()}_${type}`
-		}).join(" UNION ALL ")
-	);
+		preSQL.push(`DROP VIEW IF EXISTS pdm_project_${id.split("_").pop()} CASCADE`);
+		postSQL.push(
+			`CREATE OR REPLACE VIEW pdm_project_${id.split("_").pop()} AS `
+			+ project.database.imposm.types.map(type => {
+				const osmid = type === "point" ? "CONCAT('node/', osm_id) AS osm_id" : "CASE WHEN osm_id < 0 THEN CONCAT('relation/', -osm_id) ELSE CONCAT('way/', osm_id) END AS osm_id";
+				const geom = type === "point" ? "geom::GEOMETRY(Point, 3857)" : "ST_PointOnSurface(geom)::GEOMETRY(Point, 3857) AS geom";
+				return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, tags ?| ARRAY['note','fixme'] AS needs_check, ${geom} FROM pdm_project_${id.split("_").pop()}_${type}`
+			}).join(" UNION ALL ")
+		);
+	}
 
 	// Comparison tables
 	if(project.database.compare) {
@@ -67,17 +67,17 @@ Object.entries(projects).forEach(e => {
 			project.database.compare.types.forEach(type => {
 				yamlData.tables[`${id.split("_").pop()}_compare_${type}`] = Object.assign({ type }, tableData, { mapping: project.database.compare.mapping });
 			});
-		}
 
-		preSQL.push(`DROP VIEW IF EXISTS pdm_project_${id.split("_").pop()}_compare CASCADE`);
-		postSQL.push(
-			`CREATE OR REPLACE VIEW pdm_project_${id.split("_").pop()}_compare AS `
-			+ project.database.compare.types.map(type => {
-				const osmid = type === "point" ? "CONCAT('node/', osm_id) AS osm_id" : "CASE WHEN osm_id < 0 THEN CONCAT('relation/', -osm_id) ELSE CONCAT('way/', osm_id) END AS osm_id";
-				const geom = type === "point" ? "geom::GEOMETRY(Point, 3857)" : "ST_Centroid(geom)::GEOMETRY(Point, 3857) AS geom";
-				return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, ${geom} FROM pdm_project_${id.split("_").pop()}_compare_${type}`
-			}).join(" UNION ALL ")
-		);
+			preSQL.push(`DROP VIEW IF EXISTS pdm_project_${id.split("_").pop()}_compare CASCADE`);
+			postSQL.push(
+				`CREATE OR REPLACE VIEW pdm_project_${id.split("_").pop()}_compare AS `
+				+ project.database.compare.types.map(type => {
+					const osmid = type === "point" ? "CONCAT('node/', osm_id) AS osm_id" : "CASE WHEN osm_id < 0 THEN CONCAT('relation/', -osm_id) ELSE CONCAT('way/', osm_id) END AS osm_id";
+					const geom = type === "point" ? "geom::GEOMETRY(Point, 3857)" : "ST_Centroid(geom)::GEOMETRY(Point, 3857) AS geom";
+					return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, ${geom} FROM pdm_project_${id.split("_").pop()}_compare_${type}`
+				}).join(" UNION ALL ")
+			);
+		}
 
 		preSQL.push(`DROP MATERIALIZED VIEW IF EXISTS pdm_project_${id.split("_").pop()}_compare_tiles`);
 		postSQL.push(
@@ -125,21 +125,22 @@ if [ "$mode" == "" ]; then
 	mode="update"
 fi
 
-echo "==== Get latest changes"
-osmupdate --keep-tempfiles --trust-tempfiles \\
-	-t="${CONFIG.WORK_DIR}/osmupdate/" \\
-	-v "${OSM_PBF_LATEST}" \\
-	"${OSC_FULL}"
-osmium apply-changes "${OSM_PBF_LATEST}" \\
-	"${OSC_FULL}" \\
-	-O -o "${OSM_PBF_LATEST_UNSTABLE}"
-osmium extract -p "${OSM_POLY}" -s simple "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
-rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
-${separator}
 `;
 
 if (IMPOSM_ENABLED){
-	script += `if [ "$mode" == "init" ]; then
+	script += `echo "==== Get latest changes"
+	osmupdate --keep-tempfiles --trust-tempfiles \\
+		-t="${CONFIG.WORK_DIR}/osmupdate/" \\
+		-v "${OSM_PBF_LATEST}" \\
+		"${OSC_FULL}"
+	osmium apply-changes "${OSM_PBF_LATEST}" \\
+		"${OSC_FULL}" \\
+		-O -o "${OSM_PBF_LATEST_UNSTABLE}"
+	osmium extract -p "${OSM_POLY}" -s simple "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
+	rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
+	${separator}
+	
+	if [ "$mode" == "init" ]; then
 		echo "==== Initial import with Imposm"
 		rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
 		mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
@@ -149,6 +150,7 @@ if (IMPOSM_ENABLED){
 			-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
 			-diff -diffdir "${IMPOSM_DIFF_DIR}"
 
+		echo "Pre SQL..."
 		${preSQLFull}
 
 		imposm import -write \\
@@ -157,6 +159,7 @@ if (IMPOSM_ENABLED){
 			-cachedir "${IMPOSM_CACHE_DIR}" \\
 			-dbschema-import public -diff
 
+		echo "Post SQL..."
 		${postSQLFull}
 	else
 		echo "==== Apply latest changes to database"
@@ -167,6 +170,7 @@ if (IMPOSM_ENABLED){
 			-connection "${PSQL_DB}?prefix=pdm_project_" \\
 			"${OSC_LOCAL}"
 
+		echo "Post Update SQL..."
 		${postUpdateSQLFull}
 		rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
 		mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
@@ -174,8 +178,13 @@ if (IMPOSM_ENABLED){
 `;
 }else{
 	script += `if [ "$mode" == "init" ]; then
+		echo "Pre SQL..."
+		${preSQLFull}
+
+		echo "Post SQL..."
 		${postSQLFull}
 	else
+	    echo "Post Update SQL..."
 		${postUpdateSQLFull}
 	fi
 `;

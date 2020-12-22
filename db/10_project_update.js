@@ -19,6 +19,7 @@ const OSM_PBF_NOW = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().
 const OSH_POLY = OSH_DOWNLOADED.replace("-internal.osh.pbf", ".poly");
 const OSH_USEFULL_IDS = CONFIG.WORK_DIR + '/usefull_ids.osh.pbf';
 const OSH_USEFULL = CONFIG.WORK_DIR + '/usefull.osh.pbf';
+const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE;
 
 const OSC2CSV = __dirname+'/osc2csv.xslt';
 const OSC_USEFULL = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
@@ -216,7 +217,7 @@ ${separator}` : '';
 
 
 // Full script
-const script = `#!/bin/bash
+var script = `#!/bin/bash
 
 # Script for updating projetdumois.fr current project
 # Generated automatically by npm run project:update
@@ -280,12 +281,16 @@ ${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLE
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
 ${PSQL} -f "${__dirname}/15_badges.sql"
 ${separator}
+`;
 
-echo "==== Write current state of OSM data as OSM.PBF"
-osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
-${separator}
+if (IMPOSM_ENABLED){
+	script += `echo "==== Write current state of OSM data as OSM.PBF"
+	osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
+	${separator}
+	`;
+}
 
-${counts}
+script += `${counts}
 ${noteCounts}
 rm -f "${OSH_USEFULL}"
 

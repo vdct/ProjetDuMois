@@ -90,11 +90,13 @@ Dans le cas où imposm3 serait désactivé, il faudra produire des vues matéria
 ```sql
 osm_id BIGINT,
 name VARCHAR(255)
-tags hstore
+tags json
 geom GEOMETRY
 ```
 
 Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
+
+Créer des indexes sur les colonnes osm_id, tags et geometry peut être utile suivant la population d'objets touchée par un projet donné.
 
 ### Sources de données
 

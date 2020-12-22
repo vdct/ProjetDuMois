@@ -231,6 +231,13 @@ ${separator}
 if [ -f "${OSH_UPDATED}" ]; then
 	echo "==== Reuse yesterday history file"
 	prev_osh="${OSH_UPDATED}"
+	if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
+		prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
+		echo "Timestamp: $prev_timestamp"
+	else
+		echo "No timestamp found"
+	fi
+	
 else
 	echo "==== Get cookies for authorized download of OSH PBF file"
 	python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py \\
@@ -244,15 +251,19 @@ else
 	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL.replace("-internal.osh.pbf", ".poly")}"
 	rm -f "${COOKIES}"
 	prev_osh="${OSH_DOWNLOADED}"
+	prev_timestamp=""
 fi
 ${separator}
 
 echo "==== Update OSH PBF file with replication files"
-osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" "${OSC_UPDATES}"
+osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" $prev_timestamp "${OSC_UPDATES}"
 osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}"
 osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}" -O -o "${OSH_UPDATED}"
-rm -f "${OSC_UPDATES}"
+rm -f "${OSC_UPDATES}" "${CONFIG.WORK_DIR}/osh_timestamp"
+curtime=$(date -d '3 hours ago' -Iseconds --utc)
+echo \${curtime/"+00:00"/"Z"} > ${CONFIG.WORK_DIR}/osh_timestamp
 ${separator}
+
 
 echo "==== Extract features from OSH PBF (1st pass)"
 osmium tags-filter "${OSH_UPDATED}" -R ${project.database.osmium_tag_filter} -O -o "${OSH_USEFULL_IDS}"

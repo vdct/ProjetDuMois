@@ -290,7 +290,6 @@ echo "==== Generate user contributions"
 ${PSQL} -f "${__dirname}/13_points.sql"
 ${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS \\$\\$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; \\$\\$ LANGUAGE plpgsql IMMUTABLE;"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
-${PSQL} -f "${__dirname}/15_badges.sql"
 ${separator}
 `;
 

@@ -255,7 +255,7 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 	pool.query('INSERT INTO pdm_user_names(userid, username) VALUES ($1, $2) ON CONFLICT (userid) DO UPDATE SET username = EXCLUDED.username', [req.params.userid, req.query.username])
 	.then(r1 => {
 		// Get badges before edit
-		pool.query('SELECT * FROM get_badges($1, $2)', [req.params.id, req.params.userid])
+		pool.query('SELECT * FROM pdm_get_badges($1, $2)', [req.params.id, req.params.userid])
 		.then(r2 => {
 			const badgesBefore = r2.rows;
 
@@ -263,7 +263,7 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 			pool.query('INSERT INTO pdm_user_contribs(project, userid, ts, contribution, verified, points) VALUES ($1, $2, current_timestamp, $3, false, get_points($1, $3))', [req.params.id, req.params.userid, req.query.type])
 			.then(r3 => {
 				// Get badges after contribution
-				pool.query('SELECT * FROM get_badges($1, $2)', [req.params.id, req.params.userid])
+				pool.query('SELECT * FROM pdm_get_badges($1, $2)', [req.params.id, req.params.userid])
 				.then(r4 => {
 					const badgesAfter = r4.rows;
 					const badgesForDisplay = badgesAfter.filter(b => {
@@ -323,8 +323,8 @@ app.get('/users/:name', (req, res) => {
 
 			// Fetch badges
 			const sql = Object.entries(projects)
-				.map(e => `SELECT '${e[0]}' AS project, * FROM get_badges('${e[0]}', $1)`)
-				.concat([`SELECT 'meta' AS project, * FROM get_badges('meta', $1)`])
+				.map(e => `SELECT '${e[0]}' AS project, * FROM pdm_get_badges('${e[0]}', $1)`)
+				.concat([`SELECT 'meta' AS project, * FROM pdm_get_badges('meta', $1)`])
 				.join(" UNION ALL ");
 
 			pool.query(sql, [ userid ])

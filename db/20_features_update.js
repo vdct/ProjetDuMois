@@ -129,9 +129,14 @@ fi
 
 if (IMPOSM_ENABLED){
 	script += `echo "==== Get latest changes"
+	prev_timestamp=""
+	if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
+	  prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
+	fi
+
 	osmupdate --keep-tempfiles --trust-tempfiles \\
 		-t="${CONFIG.WORK_DIR}/osmupdate/" \\
-		-v "${OSM_PBF_LATEST}" \\
+		-v "${OSM_PBF_LATEST}" $prev_timestamp \\
 		"${OSC_FULL}"
 	osmium apply-changes "${OSM_PBF_LATEST}" \\
 		"${OSC_FULL}" \\

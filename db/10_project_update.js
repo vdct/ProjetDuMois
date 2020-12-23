@@ -188,7 +188,7 @@ rm -rf "${CSV_COUNT}"
 days=(${getDays().map(d => `"${d}"`).join(" ")})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
-	nbday=$(osmium time-filter "${OSH_USEFULL}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1)
+	nbday=$(osmium time-filter "${OSH_USEFULL}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1 | paste -sd+ | bc)
 	if [ "$nbday" == "" ]; then
 		nbday="0"
 	fi
@@ -237,7 +237,7 @@ if [ -f "${OSH_UPDATED}" ]; then
 	else
 		echo "No timestamp found"
 	fi
-	
+
 else
 	echo "==== Get cookies for authorized download of OSH PBF file"
 	python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py \\

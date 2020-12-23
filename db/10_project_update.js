@@ -185,7 +185,24 @@ fs.writeFile(OUTPUT_SQL_POINTS, sqlPoints, err => {
 const counts = project.statistics.count ? `
 echo "==== Count features"
 rm -rf "${CSV_COUNT}"
-days=(${getDays().map(d => `"${d}"`).join(" ")})
+if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
+	cnt_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
+	cnt_timestamp=$(date -Idays --utc -d \$cnt_timestamp)
+	cur_timestamp=$(date -Idays --utc)
+	echo "Counting from \$cnt_timestamp"
+
+	days=$cnt_timestamp
+	until [[ \$cnt_timestamp > \$cur_timestamp ]]; do
+		cnt_timestamp=$(date -Idate --utc -d "\$cnt_timestamp + 1 day" )
+		days="\$days \$cnt_timestamp"
+	done
+	days=($days)
+else
+    echo "Counting from project start"
+	days=(${getDays().map(d => `"${d}"`).join(" ")})
+
+	${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project = '${project.id}'"
+fi
 for day in "\${days[@]}"; do
 	echo "Processing $day"
 	nbday=$(osmium time-filter "${OSH_USEFULL}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1 | paste -sd+ | bc)
@@ -196,9 +213,12 @@ for day in "\${days[@]}"; do
 	>> "${CSV_COUNT}"
 done
 
-# Insert CSV into database
-${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project = '${project.id}'"
-${PSQL} -c "\\COPY pdm_feature_counts FROM '${CSV_COUNT}' CSV"
+# Insert CSV into database with a temp table to take advantage of ON CONFLICT
+${PSQL} -c "CREATE TABLE IF NOT EXISTS pdm_feature_counts_tmp (LIKE pdm_feature_counts)"
+${PSQL} -c "TRUNCATE TABLE pdm_feature_counts_tmp"
+${PSQL} -c "\\COPY pdm_feature_counts_tmp FROM '${CSV_COUNT}' CSV"
+${PSQL} -c "INSERT INTO pdm_feature_counts SELECT * FROM pdm_feature_counts_tmp ON CONFLICT (project,ts) DO UPDATE SET amount=EXCLUDED.amount"
+${PSQL} -c "DROP TABLE pdm_feature_counts_tmp"
 rm -rf "${CSV_COUNT}"
 ${separator}` : '';
 

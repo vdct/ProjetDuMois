@@ -143,6 +143,17 @@ Des objets indirectement liés au projet mais pertinents pour la contribution pe
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
 
 
+### Décomptes et statistiques
+
+Les statistiques projet sont établies par le script `./db/09_project_update_tmp.sh`. Le script complète la table SQL pdm_feature_counts avec les jours manquant entre le timestamp OSH et le jour courant.
+
+Il est possible de forcer le recomptage de l'intégralité d'un projet en supprimant le fichier de timestamp OSH et en relançant le script
+
+```bash
+rm ${WORK_DIR}/osh_timestamp
+./db/09_project_update_tmp.sh
+```
+
 ## Base de données
 
 La base de données s'appuie sur PostgreSQL. Pour créer la base :

@@ -26,7 +26,9 @@ DROP TABLE IF EXISTS pdm_user_badges;
 CREATE TABLE pdm_feature_counts(
 	project VARCHAR NOT NULL,
 	ts TIMESTAMP NOT NULL,
-	amount INT NOT NULL
+	amount INT NOT NULL,
+	
+	UNIQUE(project,ts)
 );
 
 CREATE INDEX ON pdm_feature_counts(project);

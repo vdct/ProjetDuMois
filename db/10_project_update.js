@@ -187,8 +187,8 @@ echo "==== Count features"
 rm -rf "${CSV_COUNT}"
 if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
 	cnt_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
-	cnt_timestamp=$(date -Idays --utc -d \$cnt_timestamp)
-	cur_timestamp=$(date -Idays --utc)
+	cnt_timestamp=$(date -Idate --utc -d \$cnt_timestamp)
+	cur_timestamp=$(date -Idate --utc)
 	echo "Counting from \$cnt_timestamp"
 
 	days=$cnt_timestamp
@@ -279,9 +279,7 @@ echo "==== Update OSH PBF file with replication files"
 osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" $prev_timestamp "${OSC_UPDATES}"
 osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}"
 osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}" -O -o "${OSH_UPDATED}"
-rm -f "${OSC_UPDATES}" "${CONFIG.WORK_DIR}/osh_timestamp"
-curtime=$(date -d '3 hours ago' -Iseconds --utc)
-echo \${curtime/"+00:00"/"Z"} > ${CONFIG.WORK_DIR}/osh_timestamp
+rm -f "${OSC_UPDATES}"
 ${separator}
 
 
@@ -329,6 +327,9 @@ echo "==== Optimize database"
 ${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"
 ${separator}
 
+m -f "${CONFIG.WORK_DIR}/osh_timestamp"
+curtime=$(date -d '3 hours ago' -Iseconds --utc)
+echo \${curtime/"+00:00"/"Z"} > ${CONFIG.WORK_DIR}/osh_timestamp
 echo "Done"
 `;
 

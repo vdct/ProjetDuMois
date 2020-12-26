@@ -139,7 +139,7 @@ app.get('/projects/:id/stats', (req, res) => {
 			SELECT ts, open, closed
 			FROM pdm_note_counts
 			WHERE project = $1
-			ORDER BY ts
+			ORDER BY ts ASC
 		`, [req.params.id])
 		.then(results => ({
 			chartNotes: [
@@ -169,6 +169,7 @@ app.get('/projects/:id/stats', (req, res) => {
 			SELECT ts, amount
 			FROM pdm_feature_counts
 			WHERE project = $1
+			ORDER BY ts ASC
 		`, [req.params.id])
 		.then(results => ({
 			chart: [{

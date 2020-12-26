@@ -327,7 +327,7 @@ echo "==== Optimize database"
 ${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"
 ${separator}
 
-m -f "${CONFIG.WORK_DIR}/osh_timestamp"
+rm -f "${CONFIG.WORK_DIR}/osh_timestamp"
 curtime=$(date -d '3 hours ago' -Iseconds --utc)
 echo \${curtime/"+00:00"/"Z"} > ${CONFIG.WORK_DIR}/osh_timestamp
 echo "Done"

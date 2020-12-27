@@ -37,6 +37,7 @@ exports.getMapStyle = (p) => {
 	.then(res => res.json())
 	.then(style => {
 		const legend = [];
+		let vectorMinZoom = 50;
 		const sources = {
 			ign: {
 				type: "raster",
@@ -81,11 +82,13 @@ exports.getMapStyle = (p) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#FF7043"; // Orange
 				const layer = `public.pdm_project_${p.id.split("_").pop()}_compare_tiles_filtered`;
+				let minZoom = ds.hasOwnProperty("minZoom") && ds.minZoom > 0 ? ds.minZoom : 9
+				vectorMinZoom = Math.min(vectorMinZoom, minZoom);
 				sources[id] = {
 					type: "vector",
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
-					minzoom: 9,
-					maxzoom: 14
+					minzoom: minZoom,
+					maxzoom: ds.hasOwnProperty("maxZoom") && ds.maxZoom > 0 ? ds.maxZoom : 14
 				};
 
 				layers.push({
@@ -110,11 +113,13 @@ exports.getMapStyle = (p) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#2E7D32"; // Green
 				const layer = `public.pdm_project_${p.id.split("_").pop()}`;
+				let minZoom = ds.hasOwnProperty("minZoom") && ds.minZoom > 0 ? ds.minZoom : 7
+				vectorMinZoom = Math.min(vectorMinZoom, minZoom);
 				sources[id] = {
 					type: "vector",
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
-					minzoom: 7,
-					maxzoom: 14
+					minzoom: minZoom,
+					maxzoom: ds.hasOwnProperty("maxZoom") && ds.maxZoom > 0 ? ds.maxZoom : 14
 				};
 
 				layers.push({
@@ -132,15 +137,17 @@ exports.getMapStyle = (p) => {
 			p.datasources
 			.filter(ds => ds.source === "osmose")
 			.forEach(ds => {
-				const id = `osmose_${ds.item}_${ds.class || "all"}`;
+				const id = `${ds.source}_${ds.item}_${ds.class || "all"}`;
 				const params = { item: ds.item, class: ds.class, country: ds.country };
 				const color = ds.color || "#b71c1c"; // Red
+				let minZoom = ds.hasOwnProperty("minZoom") && ds.minZoom > 0 ? ds.minZoom : 7
+				vectorMinZoom = Math.min(vectorMinZoom, minZoom);
 
 				sources[id] = {
 					type: "vector",
 					tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
-					minzoom: 7,
-					maxzoom: 18
+					minzoom: minZoom,
+					maxzoom: ds.hasOwnProperty("maxZoom") && ds.maxZoom > 0 ? ds.maxZoom : 18
 				};
 
 				layers.push({
@@ -178,6 +185,7 @@ exports.getMapStyle = (p) => {
 
 		return {
 			mapstyle: style,
+			minZoom: vectorMinZoom,
 			legend,
 			pdmSources: Object.keys(sources)
 		};

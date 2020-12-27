@@ -84,7 +84,7 @@ script.
 
 	// Alert for zoom/search
 	const toggleZoomAlert = () => {
-		if(map.getZoom() >= 7) {
+		if(map.getZoom() >= !{minZoom}) {
 			for(let d of document.querySelectorAll(".show-low-zoom")) {
 				d.classList.add("d-none");
 			}

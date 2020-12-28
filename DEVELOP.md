@@ -111,6 +111,8 @@ Plusieurs sources de données sont mobilisables, et sont à faire apparaître da
 * `name` : nom à faire apparaître à l'utilisateur
 * `subtitles` : (optionel) objet clé > valeur pour remplacer les sous-titres des signalements Osmose (recherche par motif)
 * `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "done": "C'est fait", "false": "Rien ici" }`)
+* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible
 
 #### Notes OSM
 
@@ -129,6 +131,8 @@ Les objets actuellement présents dans OpenStreetMap peuvent être affichés pou
 * `source` : type de source, valeur obligatoire `osm`
 * `name` : nom à faire apparaître à l'utilisateur
 * `description` : texte descriptif de l'objet affiché
+* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database` de `info.json`.
 
@@ -139,6 +143,8 @@ Des objets indirectement liés au projet mais pertinents pour la contribution pe
 * `source` : type de source, valeur obligatoire `osm-compare`
 * `name` : nom à faire apparaître à l'utilisateur
 * `description` : texte descriptif de l'objet affiché
+* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
 

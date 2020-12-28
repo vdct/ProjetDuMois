@@ -165,7 +165,7 @@ exports.getMapStyle = (p) => {
 			p.datasources
 			.filter(ds => ds.source === "notes")
 			.forEach((ds, dsid) => {
-				const id = `notes_${dsid}`;
+				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#01579B"; // Blue
 				sources[id] = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
 

@@ -173,7 +173,7 @@ ${pointsEntries.map(pe => `		WHEN the_project = '${pe[0]}' AND the_contrib = '${
 	END;
 END;
 $$ LANGUAGE plpgsql
-IMMUTABLE LEAKPROOF;
+IMMUTABLE;
 `;
 fs.writeFile(OUTPUT_SQL_POINTS, sqlPoints, err => {
 	if(err) { throw new Error(err); }
@@ -317,7 +317,6 @@ echo "==== Generate user contributions"
 ${PSQL} -f "${__dirname}/13_points.sql"
 ${PSQL} -c "CREATE OR REPLACE FUNCTION ts_in_project(ts TIMESTAMP) RETURNS BOOLEAN AS \\$\\$ BEGIN RETURN ts BETWEEN '${project.start_date}' AND '${project.end_date}'; END; \\$\\$ LANGUAGE plpgsql IMMUTABLE;"
 ${PSQL} -f "${__dirname}/../projects/${project.id}/analysis.sql"
-${PSQL} -f "${__dirname}/15_badges.sql"
 ${separator}
 `;
 

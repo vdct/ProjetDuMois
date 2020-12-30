@@ -17,7 +17,7 @@ const OSH_DOWNLOADED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop
 const OSH_UPDATED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
 const OSM_PBF_NOW = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
 const OSH_POLY = OSH_DOWNLOADED.replace("-internal.osh.pbf", ".poly");
-const OSH_USEFULL_IDS = CONFIG.WORK_DIR + '/usefull_ids.osh.pbf';
+const OSH_FILTERED = CONFIG.WORK_DIR + '/filtered.osh.pbf';
 const OSH_USEFULL = CONFIG.WORK_DIR + '/usefull.osh.pbf';
 const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE;
 
@@ -205,7 +205,7 @@ else
 fi
 for day in "\${days[@]}"; do
 	echo "Processing $day"
-	nbday=$(osmium time-filter "${OSH_USEFULL}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("/").pop()} | cut -d$'\\t' -f 1 | paste -sd+ | bc)
+	nbday=$(osmium time-filter "${OSH_USEFULL}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("&").pop().split("/").pop()} | cut -d$'\\t' -f 1 | paste -sd+ | bc)
 	if [ "$nbday" == "" ]; then
 		nbday="0"
 	fi
@@ -281,14 +281,23 @@ osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED.replac
 osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}" -O -o "${OSH_UPDATED}"
 rm -f "${OSC_UPDATES}"
 ${separator}
+`;
 
+let oshCurrent = OSH_UPDATED;
+let oshInput = OSH_FILTERED.replace("filtered", "input");
+let tagFilterParts = project.database.osmium_tag_filter.split("&");
+tagFilterParts.forEach(tagFilter => {
+	script += `echo "==== Extract features from OSH PBF (${tagFilter})"
+	cp ${oshCurrent} ${oshInput}
+	osmium tags-filter "${oshInput}" -R ${tagFilter} -O -o "${OSH_FILTERED}"
+	rm -f ${oshInput}
+	${separator}
+	`;
+	oshCurrent = OSH_FILTERED;
+});
 
-echo "==== Extract features from OSH PBF (1st pass)"
-osmium tags-filter "${OSH_UPDATED}" -R ${project.database.osmium_tag_filter} -O -o "${OSH_USEFULL_IDS}"
-${separator}
-
-echo "==== Extract features based on their IDs (2nd pass)"
-osmium getid --id-osm-file "${OSH_USEFULL_IDS}" --with-history "${OSH_UPDATED}" -O -o "${OSH_USEFULL}"
+script += `echo "==== Extract features based on their IDs"
+osmium getid --id-osm-file "${OSH_FILTERED}" --with-history "${OSH_UPDATED}" -O -o "${OSH_USEFULL}"
 ${separator}
 
 echo "==== Transform changes into CSV file"

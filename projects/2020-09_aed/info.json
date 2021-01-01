@@ -52,6 +52,12 @@
 			"source": "osm-compare",
 			"name": "Lieu pouvant disposer d'un DAE",
 			"description": "Ce lieu est susceptible de disposer d'un défibrillateur. Vous pouvez vérifier sur place la localisation de l'appareil et l'ajouter à OSM."
+		},
+		{
+			"source": "background",
+			"tiles": [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
+			"name": "IGN BD Ortho",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
 		}
 	],
 	"statistics": {

@@ -13,17 +13,14 @@ const CONFIG = require('../config.json');
 const { foldProjects, queryParams, getMapStyle, getBadgesDetails, getOsmToUrlMappings } = require('./utils');
 const { Pool } = require('pg');
 
-
 /*
  * Connect to database
  */
-
 const pool = new Pool({
   host: CONFIG.DB_HOST,
   database: CONFIG.DB_NAME,
   port: CONFIG.DB_PORT,
 });
-
 
 /*
  * Init API

@@ -39,19 +39,8 @@ exports.getMapStyle = (p) => {
 	.then(style => {
 		const legend = [];
 		let vectorMinZoom = 50;
-		const sources = {
-			ign: {
-				type: "raster",
-				tiles: [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
-				maxzoom: 19,
-				minzoom: 2,
-				tileSize: 256,
-				attribution: `<a href="https://openstreetmap.fr/bdortho" target="_blank">&copy; BDOrtho IGN</a>`
-			}
-		};
-		const layers = [
-			{ id: "bg_aerial", source: "ign", type: "raster", layout: { visibility: "none" } }
-		];
+		let sources = {};
+		let layers = [];
 
 		if(p) {
 			const circlePaint = {
@@ -75,6 +64,29 @@ exports.getMapStyle = (p) => {
 					19, 7
 				]
 			};
+
+			// Backgrounds
+			p.datasources
+			.filter(ds => "background" === ds.source)
+			.forEach((ds, dsid) => {
+				const id = `${ds.source}_${dsid}`;
+
+				sources[id] = Object.assign({
+					minZoom: 2,
+					maxZoom: 19,
+					tileSize: 256,
+					type: "raster"
+				}, ds);
+
+				layers.push({
+					id: id,
+					source: id,
+					type: "raster",
+					layout: { visibility: "none" }
+				});
+
+				legend.push({ media: "raster", color:null, label: ds.name, layerId: id });
+			});
 
 			// OSM Compare
 			p.datasources
@@ -104,7 +116,7 @@ exports.getMapStyle = (p) => {
 					}
 				});
 
-				legend.push({ color, label: ds.name, layerId: id });
+				legend.push({ media: "vector", color, label: ds.name, layerId: id });
 			});
 
 			// OSM
@@ -131,7 +143,7 @@ exports.getMapStyle = (p) => {
 					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 				});
 
-				legend.push({ color, label: ds.name, layerId: id });
+				legend.push({ media: "vector", color, label: ds.name, layerId: id });
 			});
 
 			// Osmose
@@ -159,7 +171,7 @@ exports.getMapStyle = (p) => {
 					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 				});
 
-				legend.push({ color, label: ds.name, layerId: id });
+				legend.push({ media: "vector", color, label: ds.name, layerId: id });
 			});
 
 			// Notes
@@ -177,7 +189,7 @@ exports.getMapStyle = (p) => {
 					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 				});
 
-				legend.push({ color, label: ds.name, layerId: id });
+				legend.push({ media: "vector", color, label: ds.name, layerId: id });
 			});
 		}
 
@@ -187,7 +199,7 @@ exports.getMapStyle = (p) => {
 		return {
 			mapstyle: style,
 			minZoom: vectorMinZoom,
-			legend,
+			legend: legend.reverse(),
 			pdmSources: Object.keys(sources)
 		};
 	});

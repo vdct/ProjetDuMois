@@ -153,6 +153,20 @@ Des objets indirectement liés au projet mais pertinents pour la contribution pe
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
 
+#### Fonds raster
+
+Des couches raster peuvent être ajoutées en fond de carte pour faciliter la contribution ou donner plus de contexte; Les propriétés suivantes doivent être définies:
+
+* `source` : type de source, valeur obligatoire `background`
+* `name` : nom à faire apparaître à l'utilisateur
+* `tiles` : Tableau d'URL TMS
+* `attribution` : Attribution à faire apparaitre sur la carte
+* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible (défaut 2)
+* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible (défaut 19)
+* `tileSize` : Taille d'une arrête de tuile en pixels (défaut 256)
+
+Ces sources doivent être déclarées dans l'ordre inverse d'apparition. La couche inférieure doit être donnée en premier.
+
 
 ### Décomptes et statistiques
 

@@ -1,7 +1,7 @@
 const CONFIG = require('../config.json');
 const fetch = require('node-fetch');
 
-// Get current+past projects
+// Get current+past projects (deprecated)
 exports.filterProjects = (projects) => {
 	const prjs = { past: [], current: null, next: null };
 	Object.values(projects).forEach(project => {
@@ -11,6 +11,29 @@ exports.filterProjects = (projects) => {
 		}
 		else if(Date.now() <= new Date(project.start_date).getTime()) {
 			prjs.next = project;
+		}
+		else if(new Date(project.end_date+"T23:59:59Z").getTime() < Date.now()) {
+			prjs.past.push({
+				id: project.id,
+				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
+				title: project.title,
+				month: project.month
+			});
+		}
+	});
+	return prjs;
+};
+
+// Get current+past projects 
+exports.foldProjects = (projects) => {
+	const prjs = { past: [], current: [], next: [] };
+	Object.values(projects).forEach(project => {
+		// Check dates
+		if(new Date(project.start_date).getTime() <= Date.now() && Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime()) {
+			prjs.current.push(project);
+		}
+		else if(Date.now() <= new Date(project.start_date).getTime()) {
+			prjs.next.push(project);
 		}
 		else if(new Date(project.end_date+"T23:59:59Z").getTime() < Date.now()) {
 			prjs.past.push({

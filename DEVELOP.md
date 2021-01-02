@@ -22,7 +22,6 @@ git submodule update --init
 npm install
 ```
 
-
 ## Configuration générale
 
 La configuration générale de l'outil est à renseigner dans `config.json`. Un modèle est proposé dans le fichier `config.example.json`. Les paramètres sont les suivants :
@@ -59,7 +58,7 @@ Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-ré
 
 * `info.json` : métadonnées du projet
 * `howto.md` : descriptif des tâches à réaliser au format Markdown (utiliser les niveaux de titres >= 3)
-* `analysis.sql` : script SQL qui interprète la table des changements sur les objets OSM pertinents
+* `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_changes, attribuant des classes de contribution à certains changements donnant droit à des points
 
 Les propriétés dans `info.json` sont les suivantes :
 
@@ -77,8 +76,12 @@ Les propriétés dans `info.json` sont les suivantes :
 * `statistics.count` : activer le comptage des objets dans OSM
 * `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
 * `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
-* `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `analysis.sql`)
+* `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
 * `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+
+### Temporalité des projets
+
+Il est possible de définir des projets se déroulant aux mêmes dates. Le script `project:update` ne rafraichira que les projets en cours.
 
 ### Se passer d'imposm3
 
@@ -160,6 +163,27 @@ Il est possible de forcer le recomptage de l'intégralité d'un projet en suppri
 ```bash
 rm ${WORK_DIR}/osh_timestamp
 ./db/09_project_update_tmp.sh
+```
+
+#### Points et contributions
+
+Certaines contribution peuvent donner lieu à l'attribution de points aux contributeurs responsables.  
+La configuration des projets établit le lien entre des classes de contribution et les points associés. Il faut donc qualifier certains changement avec les bonnes classes.  
+La plateforme attribue les classes communes suivantes :
+* `add`: Les changements concernant des objets version=1
+* `edit` : Les changements concernant des objets version>1
+
+Il est possible d'attribuer des classes propres à chaque projet en créant un fichier `contribs.sql` à côté de `info.json`.  
+Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_changes`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
+
+Les montant de points attribués sont configurés dans `info.json` :
+
+```json
+{
+    "statistics": {
+		"points": { "add": 3, "project1": 1 }
+    }
+}
 ```
 
 ## Base de données

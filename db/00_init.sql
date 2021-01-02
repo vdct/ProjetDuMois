@@ -1,12 +1,42 @@
 -- User names
 CREATE TABLE pdm_user_names(
-	userid BIGINT PRIMARY KEY,
-	username VARCHAR NOT NULL
+	project VARCHAR NOT NULL,
+	userid BIGINT NOT NULL,
+	username VARCHAR NOT NULL,
+	CONSTRAINT pdm_user_names_unique PRIMARY KEY(project, userid)
 );
 
-CREATE INDEX ON pdm_user_names(userid);
+-- Projects
+CREATE TABLE pdm_projects(
+	project VARCHAR NOT NULL,
+	start_date TIMESTAMP NOT NULL,
+	end_date TIMESTAMP NULL
+);
+
+CREATE TABLE pdm_projects_points (
+	project VARCHAR NOT NULL,
+	contrib VARCHAR NOT NULL,
+	points integer not null
+);
 
 -- User contributions through all projects
+CREATE TABLE pdm_changes(
+	project VARCHAR NOT NULL,
+	action VARCHAR NOT NULL,
+	osmid VARCHAR NOT NULL,
+	version INT NOT NULL,
+	ts TIMESTAMP NOT NULL,
+	username VARCHAR,
+	userid BIGINT,
+	tags JSONB,
+	contrib VARCHAR DEFAULT NULL
+);
+
+CREATE INDEX ON pdm_changes(project);
+CREATE INDEX ON pdm_changes(action);
+CREATE INDEX ON pdm_changes(osmid);
+CREATE INDEX ON pdm_changes(version);
+
 CREATE TABLE pdm_user_contribs(
 	project VARCHAR NOT NULL,
 	userid BIGINT NOT NULL,

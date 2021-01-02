@@ -191,12 +191,12 @@ if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
 	cur_timestamp=$(date -Idate --utc)
 	echo "Counting from \$cnt_timestamp"
 
-	days=$cnt_timestamp
-	until [[ \$cnt_timestamp > \$cur_timestamp ]]; do
-		cnt_timestamp=$(date -Idate --utc -d "\$cnt_timestamp + 1 day" )
+	days=""
+	until [[ \$cnt_timestamp>=\$cur_timestamp ]]; do
 		days="\$days \$cnt_timestamp"
+		cnt_timestamp=$(date -Idate --utc -d "\$cnt_timestamp + 1 day" )
 	done
-	days=($days)
+	days=($\{days##*( )\})
 else
     echo "Counting from project start"
 	days=(${getDays().map(d => `"${d}"`).join(" ")})

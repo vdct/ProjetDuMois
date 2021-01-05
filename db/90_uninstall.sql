@@ -20,5 +20,9 @@ DROP VIEW IF EXISTS pdm_leaderboard;
 -- OSM compare feature exclusions
 DROP TABLE IF EXISTS pdm_compare_exclusions;
 
--- Projects
+-- Changes
 DROP TABLE IF EXISTS pdm_changes;
+
+-- Projects
+DROP TABLE IF EXISTS pdm_projects;
+DROP TABLE IF EXISTS pdm_projects_points;

@@ -13,7 +13,7 @@ const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop
 const OSM_PBF_LATEST_UNSTABLE = OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf");
 const OSM_PBF_LATEST_UNSTABLE_FILTERED = OSM_PBF_LATEST.replace(".osm.pbf", ".new-local.osm.pbf");
 const OSM_POLY = OSM_PBF_LATEST.replace("-internal.osm.pbf", ".poly");
-const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE;
+const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE || true;
 const IMPOSM_YML = CONFIG.WORK_DIR + '/imposm.yml';
 const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
@@ -102,7 +102,7 @@ if (IMPOSM_ENABLED){
 }
 
 // View for multi-type layers
-const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t");
+const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t\t");
 const sqlToScript = sqlin => sqlin.map(vs => (`${vs};`)).join("\n\t");
 const preSQLFull = preSQL.length > 0 ? sqlToFull(preSQL) : "";
 const postSQLFull = postSQL.length > 0 ? sqlToFull(postSQL) : "";
@@ -124,74 +124,76 @@ mode="$1"
 if [ "$mode" == "" ]; then
 	mode="update"
 fi
-
 `;
 
 if (IMPOSM_ENABLED){
-	script += `echo "==== Get latest changes"
-	prev_timestamp=""
-	if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
-	  prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
-	fi
+	script += `
+echo "==== Get latest changes"
+prev_timestamp=""
+if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
+	prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
+fi
 
-	osmupdate --keep-tempfiles --trust-tempfiles \\
-		-t="${CONFIG.WORK_DIR}/osmupdate/" \\
-		-v "${OSM_PBF_LATEST}" $prev_timestamp \\
-		"${OSC_FULL}"
-	osmium apply-changes "${OSM_PBF_LATEST}" \\
-		"${OSC_FULL}" \\
-		-O -o "${OSM_PBF_LATEST_UNSTABLE}"
-	osmium extract -p "${OSM_POLY}" -s simple "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
-	rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
-	${separator}
-	
-	if [ "$mode" == "init" ]; then
-		echo "==== Initial import with Imposm"
-		rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
-		mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
-		mkdir -p "${IMPOSM_CACHE_DIR}"
-		imposm import -mapping "${IMPOSM_YML}" \\
-			-read "${OSM_PBF_LATEST}" \\
-			-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
-			-diff -diffdir "${IMPOSM_DIFF_DIR}"
+osmupdate --keep-tempfiles --trust-tempfiles \\
+	-t="${CONFIG.WORK_DIR}/osmupdate/" \\
+	-v "${OSM_PBF_LATEST}" $prev_timestamp \\
+	"${OSC_FULL}"
+osmium apply-changes "${OSM_PBF_LATEST}" \\
+	"${OSC_FULL}" \\
+	-O -o "${OSM_PBF_LATEST_UNSTABLE}"
+osmium extract -p "${OSM_POLY}" -s simple "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
+rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
+${separator}
 
-		echo "Pre SQL..."
-		${preSQLFull}
+if [ "$mode" == "init" ]; then
+	echo "==== Initial import with Imposm"
+	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
+	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
+	mkdir -p "${IMPOSM_CACHE_DIR}"
+	imposm import -mapping "${IMPOSM_YML}" \\
+		-read "${OSM_PBF_LATEST}" \\
+		-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
+		-diff -diffdir "${IMPOSM_DIFF_DIR}"
 
-		imposm import -write \\
-			-connection "${PSQL_DB}?prefix=pdm_project_" \\
-			-mapping "${IMPOSM_YML}" \\
-			-cachedir "${IMPOSM_CACHE_DIR}" \\
-			-dbschema-import public -diff
+	echo "Pre SQL..."
+	${preSQLFull}
 
-		echo "Post SQL..."
-		${postSQLFull}
-	else
-		echo "==== Apply latest changes to database"
-		osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
-		imposm diff -mapping "${IMPOSM_YML}" \\
-			-cachedir "${IMPOSM_CACHE_DIR}" \\
-			-dbschema-production public \\
-			-connection "${PSQL_DB}?prefix=pdm_project_" \\
-			"${OSC_LOCAL}"
+	imposm import -write \\
+		-connection "${PSQL_DB}?prefix=pdm_project_" \\
+		-mapping "${IMPOSM_YML}" \\
+		-cachedir "${IMPOSM_CACHE_DIR}" \\
+		-dbschema-import public -diff
 
-		echo "Post Update SQL..."
-		${postUpdateSQLFull}
-		rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
-		mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
-	fi
+	echo "Post SQL..."
+	${postSQLFull}
+else
+	echo "==== Apply latest changes to database"
+	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
+	imposm diff -mapping "${IMPOSM_YML}" \\
+		-cachedir "${IMPOSM_CACHE_DIR}" \\
+		-dbschema-production public \\
+		-connection "${PSQL_DB}?prefix=pdm_project_" \\
+		"${OSC_LOCAL}"
+
+	echo "Post Update SQL..."
+	${postUpdateSQLFull}
+	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
+	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
+fi
 `;
-}else{
-	script += `if [ "$mode" == "init" ]; then
-		echo "Pre SQL..."
-		${preSQLFull}
+}
+else {
+	script += `
+if [ "$mode" == "init" ]; then
+	echo "Pre SQL..."
+	${preSQLFull}
 
-		echo "Post SQL..."
-		${postSQLFull}
-	else
-	    echo "Post Update SQL..."
-		${postUpdateSQLFull}
-	fi
+	echo "Post SQL..."
+	${postSQLFull}
+else
+	echo "Post Update SQL..."
+	${postUpdateSQLFull}
+fi
 `;
 }
 script += `${separator}

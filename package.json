@@ -37,7 +37,7 @@
     "node-fetch": "^2.6.1",
     "osm-auth": "^1.0.2",
     "osm-request": "^1.2.10",
-    "pg": "^8.3.0",
+    "pg": "^8.5.1",
     "pic4carto": "^2.1.12",
     "pug": "^3.0.0",
     "swiped-events": "^1.1.4",

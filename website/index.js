@@ -12,6 +12,7 @@ const projects = require('./projects');
 const CONFIG = require('../config.json');
 const { filterProjects, queryParams, getMapStyle, getBadgesDetails } = require('./utils');
 const { Pool } = require('pg');
+const { I18n } = require('i18n');
 
 
 /*
@@ -26,6 +27,19 @@ const pool = new Pool({
 
 
 /*
+ * Internationalization
+ */
+
+const i18n = new I18n({
+	locales: ['fr', 'en'],
+	directory: path.join(__dirname, 'locales'),
+	autoReload: true,
+	defaultLocale: 'fr',
+	retryInDefaultLocale: true
+});
+
+
+/*
  * Init API
  */
 
@@ -34,6 +48,14 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.options('*', cors());
 app.use(compression());
+app.use(i18n.init);
+app.use(function(req, res, next) {
+	res.locals.__ = res.__ = function() {
+		return i18n.__.apply(req, arguments);
+	};
+	next();
+});
+
 app.set('view engine', 'pug');
 app.set('views', __dirname+'/templates');
 

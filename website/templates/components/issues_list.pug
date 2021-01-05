@@ -71,7 +71,7 @@ script.
 		else {
 			smallDom.appendChild(document.createTextNode("#{__("Anonyme")}"));
 		}
-		smallDom.appendChild(document.createTextNode(` - ${new Date(issue.properties.comments[0].date.split(" ")[0]).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}`));
+		smallDom.appendChild(document.createTextNode(` - ${new Date(issue.properties.comments[0].date.split(" ")[0]).toLocaleString(navigator.language, { day: 'numeric', month: 'long', year: 'numeric' })}`));
 		issueUserDom.appendChild(smallDom);
 		if(!issue.properties.comments[0].user) { issueUserDom.setAttribute("data-filter", "anonymous"); }
 		issueDom.appendChild(issueUserDom);
@@ -109,7 +109,7 @@ script.
 			const notesStatuses = { "opened": "#{__("Ouvert")}", "closed": "#{__("Fermé")}", "reopened": "#{__("Réouvert")}", "commented": null };
 			commentsDom.innerHTML = issue.properties.comments.slice(1).map((cmt, i) => `<div class="border-top pdm-note-comment pt-2 mt-2">
 				<div class="text-muted" style="font-size: 0.9rem">
-					${notesStatuses[cmt.action] ? notesStatuses[cmt.action]+" par " : ""}${cmt.user || "une personne anonyme"} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+					${notesStatuses[cmt.action] ? notesStatuses[cmt.action]+" par " : ""}${cmt.user || "une personne anonyme"} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString(navigator.language, { day: 'numeric', month: 'long', year: 'numeric' })}
 				</div>
 				${cmt.html}
 			</div>`).join("");

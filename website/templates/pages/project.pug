@@ -30,7 +30,7 @@ block content
 					h1.font-italic= __("Prochainement : %s", title.toLowerCase())
 				else
 					h1.font-italic.mb-0= title
-					p.pdm-project-date.text-capitalize.mb-0.mb-md-2= new Date(month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+					p.pdm-project-date.text-capitalize.mb-0.mb-md-2= new Date(month).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })
 
 			div.btn-over-wide.d-flex.justify-content-center.align-items-center
 				a.pdm-wide-link.map(href=`/projects/${id}/map`)
@@ -68,7 +68,7 @@ block content
 				i.fa.fa-question-circle.mr-2(style="font-size: 2.1rem")
 				| #{__("Comment participer")}
 			if isNext
-				p= __("Ce projet du mois commencera le %s, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.", new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" }))
+				p= __("Ce projet du mois commencera le %s, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.", new Date(start_date).toLocaleString(getLocale(), { day: "numeric", month: "long" }))
 			else if !isActive
 				p= __("Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.")
 
@@ -95,7 +95,7 @@ block content
 				| #{__("Statistiques")}
 
 			if isNext
-				p= __("Les statistiques d'avancement seront affichées lors du lancement du projet du mois le %s.", new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" }))
+				p= __("Les statistiques d'avancement seront affichées lors du lancement du projet du mois le %s.", new Date(start_date).toLocaleString(getLocale(), { day: "numeric", month: "long" }))
 			else
 				include ../components/stats.pug
 
@@ -124,7 +124,7 @@ block content
 								div.media-body.align-self-center
 									a.text-decoration-none(href=`/projects/${pastProj.id}`)
 										| #{pastProj.title}
-										span.text-muted.d-block= new Date(pastProj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+										span.text-muted.d-block= new Date(pastProj.month).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })
 
 
 block prepend footer

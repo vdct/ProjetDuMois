@@ -53,7 +53,7 @@ block content
 				h4(style="font-size: 1.4rem")
 					| #{badges[badgeProject].project.name}
 					if badges[badgeProject].project.date
-						small.text-muted &nbsp;(#{new Date(badges[badgeProject].project.date).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })})
+						small.text-muted &nbsp;(#{new Date(badges[badgeProject].project.date).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })})
 
 				div.row
 					each badge in badges[badgeProject].badges
@@ -94,7 +94,7 @@ block content
 
 			// Small stats
 			document.getElementById("stats-changeset").innerHTML = details.changesets && details.changesets.count ? details.changesets.count : "0";
-			document.getElementById("stats-account").innerHTML = new Date(details.account_created).toLocaleString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+			document.getElementById("stats-account").innerHTML = new Date(details.account_created).toLocaleString(navigator.language, { day: 'numeric', month: 'long', year: 'numeric' });
 		})
 		.catch(e => {
 			console.error(e);

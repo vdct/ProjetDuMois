@@ -354,6 +354,7 @@ app.get('/users/:name', (req, res) => {
 
 // Images
 app.use('/images', express.static(__dirname+'/images'));
+app.use('/website/images', express.static(__dirname+'/images'));
 
 // Static content
 fs.readdirSync(path.join(__dirname, 'static')).forEach(file => {

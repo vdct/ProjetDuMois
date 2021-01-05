@@ -1,7 +1,7 @@
 # About
 The dashboard __[ProjetDuMois.fr](https://projetdumois.fr)__ (project of the month) aims to urge on the [OpenStreetMap](https://openstreetmap.org) community of contributors during limited-in-time periods of time. Projects of the months are a focus of the community over a specific topic, e.g. public toilets, police offices... the dashboard gives a clear view of the community's progress and brings gamification. The map boosts contribution as a very simple contribution tool, as a note manager and as a incentive to check specific places.
 
-![Projet du mois](https://github.com/vdct/ProjetDuMois/raw/master/website/images/logo_mini.png)
+![Projet du mois](/website/images/logo_mini.png)
 
 # Help improve this tool
 
@@ -10,7 +10,7 @@ The tool is free (as in free beer and as much as in free speech) and developed b
 * [Submitting software code](DEVELOP.md) for new features or bug fixes
 
 This project embraces the [digital principles for development](https://digitalprinciples.org/).
-![Projet du mois](https://github.com/vdct/ProjetDuMois/raw/master/website/images/pdd-en.png)
+![Logo of digital principles for development](/website/images/pdd-en.png)
 
 # The team
 ProjetDuMois.fr is made possible by its _super team_ of volunteers:
@@ -44,7 +44,7 @@ ProjetDuMois.fr is distributed in the hope that it will be useful, but WITHOUT A
 Le tableau de bord __[ProjetDuMois.fr](https://projetdumois.fr)__ a pour objectif de motiver la communauté de contributeurs [OpenStreetMap](https://openstreetmap.fr) en France lors de ses [projets du mois](https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month). Les projets du mois sont un élan donné pour améliorer une thématique dans OpenStreetMap, par exemple les bornes de véhicules électriques, les toilettes publiques, les gendarmeries ... Le tableau de bord élaboré ici permet une vue d'ensemble des prouesses de la communauté et donne un côté ludique à la participatio
 La carte simplifie la contribution avec un outil d'édition, un outil de gestion des notes OSM et des indications de lieux où contribuer sur le terrain.
 
-![Projet du mois](https://github.com/vdct/ProjetDuMois/raw/master/website/images/logo_mini.png)
+![Projet du mois](/website/images/logo_mini.png)
 
 
 ## Améliorer cet outil
@@ -55,7 +55,7 @@ L'outil est libre et réalisé par une équipe de bénévoles. Vous pouvez nous 
 * [En proposant du code](DEVELOP.md) pour de nouvelles fonctionnalités ou des correctifs de bugs
 
 Ce projet adhère aux [principes pour le développement numérique](https://digitalprinciples.org/).
-![Projet du mois](https://github.com/vdct/ProjetDuMois/raw/master/website/images/pdd.png)
+![Logo des principes pour le développement numérique](/website/images/pdd.png)
 
 
 ## L'équipe

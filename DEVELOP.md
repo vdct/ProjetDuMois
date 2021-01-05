@@ -34,7 +34,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `DB_NAME` : nom de la base PostgreSQL (exemple `pdm`)
 * `DB_HOST` : nom d'hôte de la base PostgreSQL (exemple `localhost`)
 * `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)*
-* `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens)
+* `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
 * `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 * `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
 * `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
@@ -167,13 +167,13 @@ rm ${WORK_DIR}/osh_timestamp
 
 #### Points et contributions
 
-Certaines contribution peuvent donner lieu à l'attribution de points aux contributeurs responsables.  
-La configuration des projets établit le lien entre des classes de contribution et les points associés. Il faut donc qualifier certains changement avec les bonnes classes.  
+Certaines contribution peuvent donner lieu à l'attribution de points aux contributeurs responsables.
+La configuration des projets établit le lien entre des classes de contribution et les points associés. Il faut donc qualifier certains changement avec les bonnes classes.
 La plateforme attribue les classes communes suivantes :
 * `add`: Les changements concernant des objets version=1
 * `edit` : Les changements concernant des objets version>1
 
-Il est possible d'attribuer des classes propres à chaque projet en créant un fichier `contribs.sql` à côté de `info.json`.  
+Il est possible d'attribuer des classes propres à chaque projet en créant un fichier `contribs.sql` à côté de `info.json`.
 Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_changes`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
 
 Les montant de points attribués sont configurés dans `info.json` :
@@ -193,9 +193,6 @@ La base de données s'appuie sur PostgreSQL. Pour créer la base :
 ```bash
 psql -c "CREATE DATABASE pdm"
 psql -d pdm -f db/00_init.sql
-
-npm run features:update
-./db/21_features_update_tmp.sh init
 ```
 
 Le script suivant est à lancer quotidiennement pour récupérer les statistiques de contribution (notes, objets ajoutés, badges obtenus) :
@@ -203,6 +200,13 @@ Le script suivant est à lancer quotidiennement pour récupérer les statistique
 ```bash
 npm run project:update
 ./db/09_project_update_tmp.sh
+```
+
+Le script suivant est à lancer à la première initialisation de la base de données pour créer la liste des objets venant d'OpenStreetMap :
+
+```bash
+npm run features:update
+./db/21_features_update_tmp.sh init
 ```
 
 Le script suivant est à lancer chaque heure pour mettre à jour les objets venant d'OpenStreetMap à afficher sur la carte :

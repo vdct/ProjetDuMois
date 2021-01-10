@@ -1,10 +1,10 @@
 -- Update user names
 INSERT INTO pdm_user_names
-SELECT DISTINCT ON (userid) project, userid, username
+SELECT DISTINCT ON (userid) userid, username
 FROM pdm_changes
 WHERE userid IS NOT NULL
 ORDER BY userid, ts DESC
-ON CONFLICT (project, userid)
+ON CONFLICT (userid)
 DO UPDATE SET username = EXCLUDED.username;
 
 -- Establishing user contributions in every running project

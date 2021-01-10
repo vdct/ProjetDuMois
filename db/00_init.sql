@@ -1,9 +1,8 @@
 -- User names
 CREATE TABLE pdm_user_names(
-	project VARCHAR NOT NULL,
 	userid BIGINT NOT NULL,
 	username VARCHAR NOT NULL,
-	CONSTRAINT pdm_user_names_unique PRIMARY KEY(project, userid)
+	CONSTRAINT pdm_user_names_pk PRIMARY KEY(userid)
 );
 
 -- Projects

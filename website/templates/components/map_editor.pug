@@ -23,6 +23,14 @@ form#pdm-editor-form
 							option(value="")
 							each kv in field.values
 								option(value=(kv.v || JSON.stringify(kv.tags)))= kv.l
+					else if field.type === "2states"
+						div
+							div.form-check.form-check-inline
+								input.form-check-input(type="radio" name=field.tag value="yes" id=`pdm-editor_${field.tag}_yes` required=(!field.optional || false))
+								label.form-check-label(for=`pdm-editor_${field.tag}_yes`) Oui
+							div.form-check.form-check-inline
+								input.form-check-input(type="radio" name=field.tag value="" id=`pdm-editor_${field.tag}_unknown` checked required=(!field.optional || false))
+								label.form-check-label(for=`pdm-editor_${field.tag}_unknown`) Ne sais pas
 					else if field.type === "3states"
 						div
 							div.form-check.form-check-inline

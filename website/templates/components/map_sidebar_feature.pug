@@ -106,6 +106,9 @@ script.
 						if(field.type === "select" && field.values.find(v => v.v === tags[field.tag])) {
 							valueText = field.values.find(v => v.v === tags[field.tag]).l;
 						}
+						else if(field.type === "2states" && tags[field.tag] === "yes") {
+							valueText = "Oui";
+						}
 						else if(field.type === "3states" && ["yes", "no"].includes(tags[field.tag])) {
 							valueText = tags[field.tag] === "yes" ? "Oui" : "Non";
 						}

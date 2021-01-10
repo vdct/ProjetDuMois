@@ -10,7 +10,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
-const { filterProjects, queryParams, getMapStyle, getBadgesDetails } = require('./utils');
+const { foldProjects, queryParams, getMapStyle, getBadgesDetails } = require('./utils');
 const { Pool } = require('pg');
 
 
@@ -39,8 +39,8 @@ app.set('views', __dirname+'/templates');
 
 // Index
 app.get('/', (req, res) => {
-	const p = filterProjects(projects);
-	const destId = p.current ? p.current.id : (p.next ? p.next.id : (p.past.length > 0 ? p.past.pop().id : null));
+	const p = foldProjects(projects);
+	const destId = p.current.length > 0 ? p.current.pop().id : (p.next.length > 0 ? p.next.pop().id : (p.past.length > 0 ? p.past.pop().id : null));
 	if(destId) {
 		res.redirect(`/projects/${destId}`);
 	}
@@ -62,11 +62,12 @@ app.get('/projects/:id', (req, res) => {
 	}
 
 	const p = projects[req.params.id];
-	const all = filterProjects(projects);
-	const isActive = all.current && all.current.id === req.params.id;
-	const isNext = all.next && all.next.id === req.params.id;
-	const isRecentPast = all.past && all.past.length > 0 && all.past[all.past.length-1].id === req.params.id && new Date(p.end_date+"T23:59:59Z").getTime() >= Date.now() - 30*24*60*60*1000;
-	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, isRecentPast, projects: all }, p));
+	const all = foldProjects(projects);
+	const toDisplay = all.past.reverse().concat(all.current.filter(p => p.id !== req.params.id));
+	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id) !== undefined;
+	const isNext = all.next && all.next.find(p => p.id === req.params.id) !== undefined;
+	const isRecentPast = all.past && all.past.length > 0 && all.past.find (p => p.id === req.params.id && new Date(p.end_date+"T23:59:59Z").getTime() >= Date.now() - 30*24*60*60*1000) !== undefined;
+	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, isRecentPast, projects: all, projectsToDisplay: toDisplay}, p));
 });
 
 // Project map editor
@@ -76,8 +77,8 @@ app.get('/projects/:id/map', async (req, res) => {
 	}
 
 	const p = projects[req.params.id];
-	const all = filterProjects(projects);
-	const isActive = all.current && all.current.id === req.params.id;
+	const all = foldProjects(projects);
+	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id);
 	const mapstyle = await getMapStyle(p);
 	res.render('pages/map', Object.assign({ CONFIG, isActive }, p, mapstyle));
 });
@@ -89,8 +90,8 @@ app.get('/projects/:id/issues', (req, res) => {
 	}
 
 	const p = projects[req.params.id];
-	const all = filterProjects(projects);
-	const isActive = all.current && all.current.id === req.params.id;
+	const all = foldProjects(projects);
+	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id);
 	res.render('pages/issues', Object.assign({ CONFIG, isActive }, p));
 });
 
@@ -237,8 +238,8 @@ app.get('/projects/:id/stats', (req, res) => {
 // User contributions
 app.post('/projects/:id/contribute/:userid', (req, res) => {
 	// Check project is active
-	const p = filterProjects(projects);
-	if(!req.params.id || !projects[req.params.id] || !p.current || p.current.id !== req.params.id) {
+	const p = foldProjects(projects);
+	if(!req.params.id || !projects[req.params.id] || p.current.length < 1 || p.current.find (p => p.id === req.params.id) === undefined) {
 		return res.redirect('/error/400');
 	}
 

@@ -40,10 +40,24 @@ app.set('views', __dirname+'/templates');
 // Index
 app.get('/', (req, res) => {
 	const p = foldProjects(projects);
-	const destId = p.current.length > 0 ? p.current.pop().id : (p.next.length > 0 ? p.next.pop().id : (p.past.length > 0 ? p.past.pop().id : null));
-	if(destId) {
-		res.redirect(`/projects/${destId}`);
+
+	// One currently active project
+	if(p.current && p.current.length === 1) {
+		res.redirect(`/projects/${p.current.pop().id}`);
 	}
+	// Multiple currently active projects
+	else if(p.current && p.current.length > 1) {
+		res.render('pages/multi_projects', Object.assign({ CONFIG, currentProjects: p.current, otherProjects: p.past.reverse() }));
+	}
+	// One next project
+	else if(p.next && p.next.length > 0) {
+		res.redirect(`/projects/${p.next.pop().id}`);
+	}
+	// One last project
+	else if(p.past && p.past.length > 0) {
+		res.redirect(`/projects/${p.past.pop().id}`);
+	}
+	// No projects at all
 	else {
 		res.redirect('/error/500');
 	}

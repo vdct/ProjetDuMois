@@ -78,7 +78,7 @@ app.get('/projects/:id/map', async (req, res) => {
 
 	const p = projects[req.params.id];
 	const all = foldProjects(projects);
-	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id);
+	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id) !== undefined;
 	const mapstyle = await getMapStyle(p);
 	res.render('pages/map', Object.assign({ CONFIG, isActive }, p, mapstyle));
 });
@@ -91,7 +91,7 @@ app.get('/projects/:id/issues', (req, res) => {
 
 	const p = projects[req.params.id];
 	const all = foldProjects(projects);
-	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id);
+	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id) !== undefined;
 	res.render('pages/issues', Object.assign({ CONFIG, isActive }, p));
 });
 

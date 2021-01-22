@@ -419,7 +419,7 @@ app.get('/lib/:modname/:file', (req, res) => {
 	const fileName = `${req.params.modname}/${authorized[req.params.modname][req.params.file]}`;
 	res.sendFile(fileName, options, (err) => {
 		if (err) {
-			res.status(err.status).end();
+			res.status(err.status ? err.status : 500).end();
 		}
 	});
 });

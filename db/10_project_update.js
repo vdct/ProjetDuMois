@@ -14,13 +14,16 @@ const {Pool, Client} = require('pg')
 // Constants
 let projectsFold = foldProjects(projects);
 
-const OSH_DOWNLOADED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop();
+const OSH_POLY = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace("-internal.osh.pbf", ".poly");
 const OSH_UPDATED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
+const OSH_UPDATED_NEW = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.new.osh.pbf");
 const OSM_PBF_NOW = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
-const OSH_POLY = OSH_DOWNLOADED.replace("-internal.osh.pbf", ".poly");
 const OSH_FILTERED = CONFIG.WORK_DIR + '/filtered.osh.pbf';
 const OSH_USEFULL = CONFIG.WORK_DIR + '/usefull.osh.pbf';
-const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE || true;
+const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE;
+if (IMPOSM_ENABLED == null){
+	IMPOSM_ENABLED = true;
+}
 
 const OSC2CSV = __dirname+'/osc2csv.xslt';
 const OSC_USEFULL = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
@@ -213,43 +216,48 @@ else
 		-o "${COOKIES}"
 
 	echo "== Download OSH PBF file"
-	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL}"
+	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" -O "${OSH_UPDATED}" "${CONFIG.OSH_PBF_URL}"
 	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL.replace("-internal.osh.pbf", ".poly")}"
 	rm -f "${COOKIES}"
-	prev_osh="${OSH_DOWNLOADED}"
+	prev_osh="${OSH_UPDATED}"
 	prev_timestamp=""
 fi
 ${separator}
 
 echo "== Update OSH PBF file with replication files"
 osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" $prev_timestamp "${OSC_UPDATES}"
-osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}"
-osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED.replace(".osh.pbf", ".new.osh.pbf")}" -O -o "${OSH_UPDATED}"
+osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED_NEW}"
+osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED_NEW}" -O -o "${OSH_UPDATED}"
 rm -f "${OSC_UPDATES}"
+rm -f "${OSH_UPDATED_NEW}"
 ${separator}
 `;
 
 projectsFold.current.forEach(project => {
-	script += `
-echo "== Begin process for project ${project.id}"`;
+	let oshInput = OSH_UPDATED;
+	const oshProject = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}`);
+	const oshFiltered = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}.filtered`);
+	const oshUsefull = OSH_USEFULL.replace("usefull", `${project.id.split("_").pop()}.usefull`);
 
-	let oshCurrent = OSH_UPDATED;
-	let oshInput = OSH_FILTERED.replace("filtered", "input");
-	let oshFiltered = OSH_FILTERED.replace("filtered", `filtered_${project.id.split("_").pop()}`);
-	let oshUsefull = OSH_USEFULL.replace("usefull", `usefull_${project.id.split("_").pop()}`);
+	script += `
+echo "== Begin process for project ${project.id}"
+if [ -f "${oshFiltered}" ]; then
+	echo "Remove existing filtered file"
+	rm -f "${oshFiltered}"
+fi`;
 
 	let tagFilterParts = project.database.osmium_tag_filter.split("&");
 	tagFilterParts.forEach(tagFilter => {
 		script += `
 echo "   => Extract features from OSH PBF (${tagFilter})"
-cp ${oshCurrent} ${oshInput}
-osmium tags-filter "${oshInput}" -R ${tagFilter} -O -o "${oshFiltered}"
-rm -f ${oshInput}`;
-		oshCurrent = oshFiltered;
+
+osmium tags-filter "${oshInput}" -R ${tagFilter} -O -o "${oshProject}"
+mv "${oshProject}" "${oshFiltered}"`;
+		oshInput = oshFiltered;
 	});
 
 	script += `
-echo "   => Extract features based on their IDs"
+echo "   => Produce usefull file"
 osmium getid --id-osm-file "${oshFiltered}" --with-history "${OSH_UPDATED}" -O -o "${oshUsefull}"
 
 echo "   => Transform changes into CSV file"
@@ -265,7 +273,7 @@ if [ -f "${__dirname}/../projects/${project.id}/contribs.sql" ]; then
 	${PSQL} -f "${__dirname}/../projects/${project.id}/contribs.sql"
 fi
 
-rm -f "${CSV_CHANGES}" "${oshFiltered}"
+rm -f "${CSV_CHANGES}"
 ${separator}
 `;
 });
@@ -292,7 +300,11 @@ projectsFold.current.forEach(project => {
 	script += `
 echo "== Statistics for project ${project.id}"`;
 
-	let oshUsefull = OSH_USEFULL.replace("usefull", `usefull_${project.id.split("_").pop()}`);
+	let oshUsefull = OSH_USEFULL.replace("usefull", `${project.id.split("_").pop()}.usefull`);
+	let osmStats = OSH_USEFULL.replace("usefull.osh.pbf", `${project.id.split("_").pop()}.stats.osm.pbf`);
+	let osmStatsFiltered = OSH_USEFULL.replace("usefull.osh.pbf", `${project.id.split("_").pop()}.filtered.stats.osm.pbf`);
+	let tagFilterParts = project.database.osmium_tag_filter.split("&");
+	let tagFilterLastPart = tagFilterParts.pop();
 
 	// Dénombrements
 	if (project.statistics.count){
@@ -317,12 +329,23 @@ done
 days=($\{days##*( )\})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
-	nbday=$(osmium time-filter "${oshUsefull}" \${day}T00:00:00Z -o - -f osm.pbf | osmium tags-count - -F osm.pbf ${project.database.osmium_tag_filter.split("&").pop().split("/").pop()} | cut -d$'\\t' -f 1 | paste -sd+ | bc)
+	osmium time-filter "${oshUsefull}" \${day}T00:00:00Z -O -o ${osmStats} -f osm.pbf
+	`;
+	tagFilterParts.forEach(tagFilter => {
+		script += `
+		osmium tags-filter "${osmStats}" -R ${tagFilter} --no-progress -O -o "${osmStatsFiltered}"
+		mv "${osmStatsFiltered}" "${osmStats}"
+		`;
+	});
+	
+	script += `nbday=$(osmium tags-count "${osmStats}" --no-progress -F osm.pbf ${tagFilterLastPart.split("/").pop()} | cut -d$'\\t' -f 1 | paste -sd+ | bc)
 	if [ "$nbday" == "" ]; then
 		nbday="0"
 	fi
 	echo "${project.id},$day,$nbday" >> "${CSV_COUNT}"
-done`;
+done
+rm -f "${osmStats}"
+`;
 	}
 
 	// Notes count (optional)

@@ -28,14 +28,19 @@ CREATE TABLE pdm_changes(
 	username VARCHAR,
 	userid BIGINT,
 	tags JSONB,
-	contrib VARCHAR DEFAULT NULL
+	contrib VARCHAR DEFAULT NULL,
+
+	CONSTRAINT pdm_changes_pk PRIMARY KEY(project,osmid,version)
 );
 
 CREATE INDEX ON pdm_changes(project);
 CREATE INDEX ON pdm_changes(action);
 CREATE INDEX ON pdm_changes(osmid);
 CREATE INDEX ON pdm_changes(version);
+CREATE INDEX ON pdm_changes(ts);
 
+-- Users contributions
+-- No osmid, then no primary key on this table (several contribs can occur at the same ts)
 CREATE TABLE pdm_user_contribs(
 	project VARCHAR NOT NULL,
 	userid BIGINT NOT NULL,
@@ -57,7 +62,7 @@ CREATE TABLE pdm_feature_counts(
 	ts TIMESTAMP NOT NULL,
 	amount INT NOT NULL,
 	
-	UNIQUE(project,ts)
+	CONSTRAINT pdm_feature_counts_pk PRIMARY KEY(project,ts)
 );
 
 CREATE INDEX ON pdm_feature_counts(project);

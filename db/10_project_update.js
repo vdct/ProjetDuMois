@@ -28,7 +28,6 @@ if (IMPOSM_ENABLED == null){
 const OSC2CSV = __dirname+'/osc2csv.xslt';
 const OSC_USEFULL = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
 const OSC_UPDATES = CONFIG.WORK_DIR + '/changes.osc.gz';
-const OSC_UPDATES_LOCAL = CONFIG.WORK_DIR + '/changes.local.osc.gz';
 
 const CSV_COUNT = CONFIG.WORK_DIR + '/count.csv';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
@@ -233,20 +232,42 @@ rm -f "${OSH_UPDATED_NEW}"
 ${separator}
 `;
 
+if (IMPOSM_ENABLED){
+	script += `
+echo "== Write current state of OSM data as OSM.PBF"
+osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
+${separator}
+`;
+}
+
+script += `
+rm -rf "${CSV_COUNT}"`;
+
 projectsFold.current.forEach(project => {
 	let oshInput = OSH_UPDATED;
 	const oshProject = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}`);
 	const oshFiltered = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}.filtered`);
 	const oshUsefull = OSH_USEFULL.replace("usefull", `${project.id.split("_").pop()}.usefull`);
 
+	let tagFilterParts = project.database.osmium_tag_filter.split("&");
+
 	script += `
+cur_timestamp=$(date -Idate --utc)
+cnt_timestamp=""
+prj_timestamp=$(date -Idate --utc -d ${project.start_date})
+if [ -n \$prev_timestamp ]; then
+	cnt_timestamp=$(date -Idate --utc -d \$prev_timestamp)
+fi
+if [[ -z \$cnt_timestamp || \$prj_timestamp>=\$cnt_timestamp ]]; then
+	cnt_timestamp=$prj_timestamp
+fi
+
 echo "== Begin process for project ${project.id}"
 if [ -f "${oshFiltered}" ]; then
 	echo "Remove existing filtered file"
 	rm -f "${oshFiltered}"
 fi`;
 
-	let tagFilterParts = project.database.osmium_tag_filter.split("&");
 	tagFilterParts.forEach(tagFilter => {
 		script += `
 echo "   => Extract features from OSH PBF (${tagFilter})"
@@ -261,13 +282,22 @@ echo "   => Produce usefull file"
 osmium getid --id-osm-file "${oshFiltered}" --with-history "${OSH_UPDATED}" -O -o "${oshUsefull}"
 
 echo "   => Transform changes into CSV file"
-osmium cat "${oshUsefull}" -O -o "${OSC_USEFULL}"
+rm -f "${CSV_CHANGES}"
+osmium time-filter "${oshUsefull}" \${cnt_timestamp}T00:00:00Z \${cur_timestamp}T00:00:00Z -f osh.pbf -o - | osmium cat - -F osh.pbf -O -o "${OSC_USEFULL}"
 xsltproc "${OSC2CSV}" "${OSC_USEFULL}" | sed "s/^/${project.id},/" > "${CSV_CHANGES}"
 rm -f "${OSC_USEFULL}"
 
-echo "   => Init changes table in database"
-${PSQL} -c "DELETE FROM pdm_changes WHERE project='${project.id}';"
-${PSQL} -c "\\COPY pdm_changes (project, action, osmid, version, ts, username, userid, tags) FROM '${CSV_CHANGES}' CSV"
+echo "   => Init changes table in database between \${cnt_timestamp} and \${cur_timestamp}"
+${PSQL} -c "DELETE FROM pdm_changes WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
+
+${PSQL} -c "CREATE TABLE IF NOT EXISTS pdm_changes_tmp (LIKE pdm_changes)"
+${PSQL} -c "TRUNCATE TABLE pdm_changes_tmp"
+${PSQL} -c "\\COPY pdm_changes_tmp (project, action, osmid, version, ts, username, userid, tags) FROM '${CSV_CHANGES}' CSV"
+${PSQL} -c "UPDATE pdm_changes_tmp SET contrib='add' WHERE contrib IS NULL AND version=1"
+${PSQL} -c "UPDATE pdm_changes_tmp SET contrib='edit' WHERE contrib IS NULL AND version>1"
+${PSQL} -c "INSERT INTO pdm_changes SELECT * FROM pdm_changes_tmp ON CONFLICT (project,osmid,version) DO UPDATE SET tags=EXCLUDED.tags, ts=EXCLUDED.ts, username=EXCLUDED.username, action=EXCLUDED.action"
+${PSQL} -c "DROP TABLE pdm_changes_tmp"
+
 if [ -f "${__dirname}/../projects/${project.id}/contribs.sql" ]; then
 	echo "Including project custom contributions"
 	${PSQL} -f "${__dirname}/../projects/${project.id}/contribs.sql"
@@ -276,61 +306,31 @@ fi
 rm -f "${CSV_CHANGES}"
 ${separator}
 `;
-});
 
-script += `
-echo "== Generate user contributions"
-${PSQL} -f "${__dirname}/11_changes_contribs.sql"
-${PSQL} -f "${__dirname}/12_projects_contribs.sql"
-${separator}
-`;
-
-if (IMPOSM_ENABLED){
-	script += `
-echo "== Write current state of OSM data as OSM.PBF"
-osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
-${separator}
-`;
-}
-
-script += `
-rm -rf "${CSV_COUNT}"`;
-
-projectsFold.current.forEach(project => {
 	script += `
 echo "== Statistics for project ${project.id}"`;
-
-	let oshUsefull = OSH_USEFULL.replace("usefull", `${project.id.split("_").pop()}.usefull`);
 	let osmStats = OSH_USEFULL.replace("usefull.osh.pbf", `${project.id.split("_").pop()}.stats.osm.pbf`);
 	let osmStatsFiltered = OSH_USEFULL.replace("usefull.osh.pbf", `${project.id.split("_").pop()}.filtered.stats.osm.pbf`);
-	let tagFilterParts = project.database.osmium_tag_filter.split("&");
-	let tagFilterLastPart = tagFilterParts.pop();
 
 	// Dénombrements
 	if (project.statistics.count){
 		script += `
 echo "   => Count features"
-days=""
-cur_timestamp=$(date -Idate --utc)
-if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
-	cnt_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
-	cnt_timestamp=$(date -Idate --utc -d \$cnt_timestamp)
-else
-	cnt_timestamp=$(date -Idate --utc -d ${project.start_date})
+${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
 
-	${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project = '${project.id}'"
-fi
 echo "Counting from \$cnt_timestamp"
-
-until [[ \$cnt_timestamp>=\$cur_timestamp ]]; do
-	days="\$days \$cnt_timestamp"
-	cnt_timestamp=$(date -Idate --utc -d "\$cnt_timestamp + 1 day" )
+days=""
+local_timestamp=$cnt_timestamp
+until [[ \$local_timestamp>=\$cur_timestamp ]]; do
+	days="\$days \$local_timestamp"
+	local_timestamp=$(date -Idate --utc -d "\$local_timestamp + 1 day" )
 done
 days=($\{days##*( )\})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
 	osmium time-filter "${oshUsefull}" \${day}T00:00:00Z -O -o ${osmStats} -f osm.pbf
 	`;
+	let tagFilterLastPart = tagFilterParts.pop();
 	tagFilterParts.forEach(tagFilter => {
 		script += `
 		osmium tags-filter "${osmStats}" -R ${tagFilter} --no-progress -O -o "${osmStatsFiltered}"
@@ -348,12 +348,21 @@ rm -f "${osmStats}"
 `;
 	}
 
+	script += `
+	rm -f "${oshUsefull}"
+	${separator}
+
+	echo "== Generate user contributions between \${cnt_timestamp} and \${cur_timestamp}"
+	${PSQL} -v project_id="'${project.id}'" -v start_date="'\${cnt_timestamp}T00:00:00Z'" -v end_date="'\${cur_timestamp}T00:00:00Z'" -f "${__dirname}/12_projects_contribs.sql"
+	${separator}
+	`;
+
 	// Notes count (optional)
 	let notesSources = processNotes (project);
 	if (notesSources.length > 0){
 		script += `
 echo "   => Notes statistics"
-${PSQL} -c "DELETE FROM pdm_note_counts WHERE project = '${project.id}'"
+${PSQL} -c "DELETE FROM pdm_note_counts WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
 ${PSQL} -c "\\COPY pdm_note_counts FROM '${CSV_NOTES}' CSV"
 ${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS}' CSV"
 ${PSQL} -c "CREATE TABLE pdm_user_names_notes(userid BIGINT, username VARCHAR)"
@@ -362,15 +371,10 @@ ${PSQL} -c "INSERT INTO pdm_user_names SELECT userid, username FROM pdm_user_nam
 rm -f "${CSV_NOTES}" "${CSV_NOTES_CONTRIBS}" "${CSV_NOTES_USERS}"`;
 	}
 
-	script += `
-rm -f "${oshUsefull}"
-${separator}
-`;
 });
 
 script += `
 if [[ -f "${CSV_COUNT}" ]] && [[ $(wc -l "${CSV_COUNT}")>0 ]]; then
-	# Insert CSV into database with a temp table to take advantage of ON CONFLICT
 	${PSQL} -c "CREATE TABLE IF NOT EXISTS pdm_feature_counts_tmp (LIKE pdm_feature_counts)"
 	${PSQL} -c "TRUNCATE TABLE pdm_feature_counts_tmp"
 	${PSQL} -c "\\COPY pdm_feature_counts_tmp FROM '${CSV_COUNT}' CSV"

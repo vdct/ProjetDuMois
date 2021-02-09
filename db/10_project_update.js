@@ -328,7 +328,7 @@ done
 days=($\{days##*( )\})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
-	osmium time-filter "${oshUsefull}" \${day}T00:00:00Z -O -o ${osmStats} -f osm.pbf
+	osmium time-filter "${oshUsefull}" \${day}T23:59:59Z -O -o ${osmStats} -f osm.pbf
 	`;
 	let tagFilterLastPart = tagFilterParts.pop();
 	tagFilterParts.forEach(tagFilter => {

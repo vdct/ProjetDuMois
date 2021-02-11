@@ -192,6 +192,7 @@ script.
 	// Second step : once located, ask for details
 	function onNewFeatureLocated(coordinates) {
 		currentEditorData.coordinates = coordinates;
+		currentEditorData.usedZoom = map.getZoom();
 		editorMoveButton.classList.add("d-none");
 		editorSubmitButton.innerHTML = `<i class="fa fa-plus mr-2"></i> Créer`;
 		loadForm();
@@ -238,6 +239,7 @@ script.
 	// Change coordinates
 	function onEditedFeatureMoved(coordinates) {
 		currentEditorData.coordinates = coordinates;
+		currentEditorData.usedZoom = map.getZoom();
 		window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { panel: "editor", open: true } }));
 		setTimeout(() => showMarker(coordinates), 500);
 	}
@@ -272,7 +274,11 @@ script.
 			multiselectTags = Object.assign(multiselectTags, JSON.parse(e[1]));
 		});
 
-		const tagsToApply = Object.assign({}, fixedTags, formData, multiselectTags);
+		const tagsToApply = Object.assign(
+			{},
+			fixedTags, formData, multiselectTags,
+			currentEditorData.usedZoom < 16 ? { fixme: "Position approximative" } : {}
+		);
 
 		if(osmApi && currentEditorData && Object.keys(tagsToApply).length > 0) {
 			// Show wait message
@@ -281,7 +287,7 @@ script.
 			editorWaitDom.classList.remove("d-none");
 			editorDoneDom.classList.add("d-none");
 
-			// Handle as new OSM feature
+			// Handle as new/existing OSM feature
 			if(window.osm_user && window.osm_user.id && window.osm_user.auth) {
 				// Look for changeset (either reuse existing or create new one)
 				let changesetId = localStorage.getItem("changeset_#{id}");
@@ -418,6 +424,7 @@ script.
 	// Second step : once located, ask for details
 	function onNewNoteLocated(coordinates) {
 		currentEditorData.coordinates = coordinates;
+		currentEditorData.usedZoom = map.getZoom();
 		editorNoteDom.reset();
 		editorNoteDom.addEventListener("submit", onNoteFormSubmit);
 		editorNoteDom.classList.remove("d-none");

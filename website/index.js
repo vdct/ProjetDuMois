@@ -10,7 +10,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
-const { foldProjects, queryParams, getMapStyle, getBadgesDetails } = require('./utils');
+const { foldProjects, queryParams, getMapStyle, getBadgesDetails, getOsmToUrlMappings } = require('./utils');
 const { Pool } = require('pg');
 
 
@@ -94,7 +94,7 @@ app.get('/projects/:id/map', async (req, res) => {
 	const all = foldProjects(projects);
 	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id) !== undefined;
 	const mapstyle = await getMapStyle(p);
-	res.render('pages/map', Object.assign({ CONFIG, isActive }, p, mapstyle));
+	res.render('pages/map', Object.assign({ CONFIG, isActive, tagToUrl: getOsmToUrlMappings() }, p, mapstyle));
 });
 
 // Project notes list

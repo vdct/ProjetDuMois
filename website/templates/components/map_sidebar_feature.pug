@@ -2,6 +2,7 @@ script.
 	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
 	const osmCompareSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm-compare"))};
 	const editors = !{JSON.stringify(editors)};
+	const tagToUrl = !{JSON.stringify(tagToUrl)};
 
 include edit_button.pug
 
@@ -74,12 +75,60 @@ script.
 			label.appendChild(document.createTextNode(rawTagsLabel || "Attributs"));
 			div.appendChild(label);
 
-			const textarea = document.createElement("textarea");
-			textarea.classList.add("form-control");
-			textarea.setAttribute("rows", Object.keys(tags).length);
-			textarea.setAttribute("readonly", null);
-			textarea.appendChild(document.createTextNode(Object.entries(tags).map(e => e.join("=")).join("\n")));
-			div.appendChild(textarea);
+			const tagsContainer = document.createElement("table");
+			tagsContainer.classList.add("table", "table-sm", "table-striped", "table-bordered", "m-0");
+			tagsContainer.style.fontSize = "1.0rem";
+			tagsContainer.appendChild(document.createElement("tbody"));
+			Object.entries(tags).forEach(te => {
+				const row = document.createElement("tr");
+				const td1 = document.createElement("td");
+				const td2 = document.createElement("td");
+
+				const l1 = document.createElement("a");
+				l1.href = "https://wiki.openstreetmap.org/wiki/Key:"+te[0];
+				l1.target = "_blank";
+				l1.appendChild(document.createTextNode(te[0]));
+				td1.appendChild(l1);
+
+				if(tagToUrl[te[0]]) {
+					if(typeof tagToUrl[te[0]] === "string") {
+						const l2 = document.createElement("a");
+						l2.href = tagToUrl[te[0]].replace(/\$1/g, te[1]);
+						l2.target = "_blank";
+						l2.appendChild(document.createTextNode(te[1]));
+						td2.appendChild(l2);
+					}
+					else if(Array.isArray(tagToUrl[te[0]])) {
+						td2.appendChild(document.createTextNode(te[1]));
+						const sup = document.createElement("sup");
+						sup.appendChild(document.createTextNode("["));
+						tagToUrl[te[0]].forEach((tv, i) => {
+							if(i > 0) {
+								sup.appendChild(document.createTextNode(","));
+							}
+							const l2 = document.createElement("a");
+							l2.href = tv.replace(/\$1/g, te[1]);
+							l2.target = "_blank";
+							l2.appendChild(document.createTextNode(i+1));
+							sup.appendChild(l2);
+						});
+						sup.appendChild(document.createTextNode("]"));
+						td2.appendChild(sup);
+					}
+				}
+				else {
+					td2.appendChild(document.createTextNode(te[1]));
+				}
+
+				row.appendChild(td1);
+				row.appendChild(td2);
+				tagsContainer.firstChild.appendChild(row);
+			});
+
+			const tagsContainerCtn = document.createElement("div");
+			tagsContainerCtn.classList.add("table-responsive");
+			tagsContainerCtn.appendChild(tagsContainer);
+			div.appendChild(tagsContainerCtn);
 
 			container.appendChild(div);
 		}

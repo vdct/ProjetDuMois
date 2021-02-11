@@ -432,6 +432,12 @@ app.use((req, res) => {
 });
 
 // Start
-app.listen(port, () => {
-	console.log('API started on port: ' + port);
+pool.query('SELECT version()')
+.then(() => {
+	app.listen(port, () => {
+		console.log('API started on port: ' + port);
+	});
+})
+.catch(e => {
+	console.error("Can't connect to database :", e.message);
 });

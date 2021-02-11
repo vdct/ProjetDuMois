@@ -255,7 +255,7 @@ projectsFold.current.forEach(project => {
 cur_timestamp=$(date -Idate --utc)
 cnt_timestamp=""
 prj_timestamp=$(date -Idate --utc -d ${project.start_date})
-if [ -n \$prev_timestamp ]; then
+if [ -n "\$prev_timestamp" ]; then
 	cnt_timestamp=$(date -Idate --utc -d \$prev_timestamp)
 fi
 if [[ -z \$cnt_timestamp || \$prj_timestamp>=\$cnt_timestamp ]]; then
@@ -337,7 +337,7 @@ for day in "\${days[@]}"; do
 		mv "${osmStatsFiltered}" "${osmStats}"
 		`;
 	});
-	
+
 	script += `nbday=$(osmium tags-count "${osmStats}" --no-progress -F osm.pbf ${tagFilterLastPart.split("/").pop()} | cut -d$'\\t' -f 1 | paste -sd+ | bc)
 	if [ "$nbday" == "" ]; then
 		nbday="0"

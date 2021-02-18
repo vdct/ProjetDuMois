@@ -14,16 +14,30 @@ div.btn-group.w-100.mb-2.mt-2(role="group")
 //- Legend entries
 div.map-legend.mb-2.pb-2(style="border-bottom: 1px solid #bbb")
 	each lg in legend
-		label.switch(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
-			if lg.media=="vector"
+		if lg.media=="vector"
+			label.switch(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
 				div.pdm-color-patch(style=`border-color: ${lg.color}`)
-			else
+					
+				div.switch-text= lg.label
+				div.switch-box
+					input(type="checkbox")
+					span.slider.round
+
+//- Editor button
+if editors.pdm
+	div#legend-edit-button.mb-2
+
+//- Background legend
+div.map-background.mt-2.pb-2.pt-2(style="border-top: 1px solid #bbb;")
+	each lg in legend
+		if lg.media!="vector"
+			label.switch(id=`pdm-legend-${lg.layerId}` title="Afficher/masquer la couche")
 				div.pdm-raster-patch
-				
-			div.switch-text= lg.label
-			div.switch-box
-				input(type="checkbox")
-				span.slider.round
+					
+				div.switch-text= lg.label
+				div.switch-box
+					input(type="checkbox")
+					span.slider.round
 
 //- Make legend symbol clickable to enable/disable layer
 -
@@ -45,12 +59,6 @@ div.map-legend.mb-2.pb-2(style="border-bottom: 1px solid #bbb")
 		.join("\n");
 
 script !{legendClickEvents}
-
-
-//- Editor button
-if editors.pdm
-	div#legend-edit-button.mb-2
-
 
 //- KML Export button
 a#pdm-export-kml.btn.btn-block.btn-outline-secondary(role="button" title="Télécharger un fichier KML pour contribuer avec une application de smartphone")

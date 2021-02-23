@@ -18,8 +18,8 @@ div.row
 					thead.sticky-top.thead-light
 						tr
 							th(scope="col") #
-							th(scope="col")= __("Pseudo")
-							th(scope="col")= __("Points")
+							th(scope="col") __("Pseudo")
+							th(scope="col").text-right.pr-2 __("Points")
 					tbody#stats-leaderboard
 
 	//- Charts
@@ -40,6 +40,8 @@ div.row
 
 script.
 	function showStatistics() {
+		const numberFormat = new Intl.NumberFormat();
+
 		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
 		.then(res => res.json())
 		.then(res => {
@@ -74,10 +76,10 @@ script.
 				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - new Date("#{start_date}T00:00:00Z").getTime()) / (1000*3600*24)), "#{__("jours de contributions")}");
 			}
 
-			if(res.added) { addBlock(res.added, "#{title.toLowerCase()} ajoutés"); }
-			if(res.count) { addBlock(res.count, "#{title.toLowerCase()} au total dans OSM"); }
-			if(res.tasksSolved !== undefined) { addBlock(res.tasksSolved, "#{statistics.osmose_tasks}"); }
-			addBlock(res.nbContributors, "#{__("personnes ayant contribué")}");
+			if(res.added) { addBlock(numberFormat.format(res.added), "#{title.toLowerCase()} ajoutés"); }
+			if(res.count) { addBlock(numberFormat.format(res.count), "#{title.toLowerCase()} au total dans OSM"); }
+			if(res.tasksSolved !== undefined) { addBlock(numberFormat.format(res.tasksSolved), "#{statistics.osmose_tasks}"); }
+			addBlock(numberFormat.format(res.nbContributors), "#{__("personnes ayant contribué")}");
 
 			// Leaderboard
 			if(res.leaderboard) {
@@ -110,8 +112,8 @@ script.
 					tr.appendChild(td2);
 
 					const td3 = document.createElement("td");
-					td3.appendChild(document.createTextNode(lb.amount));
-					td3.classList.add("align-middle");
+					td3.appendChild(document.createTextNode(numberFormat.format(lb.amount)));
+					td3.classList.add("align-middle", "text-right", "pr-2");
 					tr.appendChild(td3);
 
 					// Add to podium
@@ -185,11 +187,16 @@ script.
 				document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
 			}
 
-			const yAxeLinear = { ticks: { precision: 0 } };
+			const yAxeLinear = {
+				ticks: {
+					callback: (value, index, values) => numberFormat.format(Number(value.toString())),
+					precision: 0
+				}
+			};
 			const yAxeLogarithmic = {
 				type: 'logarithmic',
 				ticks: {
-					callback: (value, index, values) => Number(value.toString())
+					callback: (value, index, values) => numberFormat.format(Number(value.toString()))
 				},
 				afterBuildTicks: (chartObj) => {
 					const last = chartObj.ticks.pop() || 0;
@@ -204,7 +211,7 @@ script.
 
 			// Notes count + chart
 			if(res.chartNotes) {
-				addBlock(res.openedNotes, `notes ouvertes (${res.pctClosedNotes}% résolues)`);
+				addBlock(numberFormat.format(res.openedNotes), `notes ouvertes (${res.pctClosedNotes}% résolues)`);
 
 				const myChart = new Chart(document.getElementById("stats-chart-notes").getContext("2d"), {
 					type: "line",
@@ -268,7 +275,8 @@ script.
 					scales: {
 						xAxes: [{
 							ticks: { callback: (value, index, values) => value.length > 15 ? value.slice(0, 12)+"..." : value }
-						}]
+						}],
+						yAxes: [ yAxeLinear ]
 					}
 				}
 			});

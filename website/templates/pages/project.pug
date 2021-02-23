@@ -114,24 +114,24 @@ block content
 							| #{datalink.title}
 							small &nbsp;(via #{datalink.via})
 
-			p= __("Retrouvez les précédents projets du mois, leurs outils, statistiques et données.")
+			p= __("Retrouvez d'autres projets du mois, leurs outils, statistiques et données.")
 				div.row.align-items-center
-					each pastProj in projects.past.reverse()
+					each proj in projectsToDisplay
 						div.col-md-6.col-lg-4.h-100
 							div.media.mb-3
-								a.align-self-center.mr-3(href=`/projects/${pastProj.id}`)
-									img(src=pastProj.icon alt="" style="max-width: 100px")
+								a.align-self-center.mr-3(href=`/projects/${proj.id}`)
+									img(src=proj.icon alt="" style="max-width: 100px")
 								div.media-body.align-self-center
-									a.text-decoration-none(href=`/projects/${pastProj.id}`)
-										| #{pastProj.title}
-										span.text-muted.d-block= new Date(pastProj.month).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })
+									a.text-decoration-none(href=`/projects/${proj.id}`)
+										| #{proj.title}
+										span.text-muted.d-block= new Date(proj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 
 
 block prepend footer
 	a#about
 	div.container.text-left
 		div.row
-			div.blog-post.col-md-8
+			div.blog-post.col-md-8.blog-post-readme
 				include:markdown-it ../../../README.md
 			aside.col-md-4.blog-sidebar
 				div.p-4.mb-3.rounded

@@ -42,6 +42,7 @@
     "pic4carto": "^2.1.12",
     "pug": "^3.0.0",
     "swiped-events": "^1.1.4",
+    "tag2link": "^2020.10.18",
     "wordcloud": "^1.1.1"
   },
   "devDependencies": {

@@ -154,6 +154,22 @@ Objects indirectly related to the project but relevant to the contribution may a
 
 This source can only appear once, and corresponds to the objects searched for in the `database.compare` options of `info.json`.
 
+#### Background imagery
+
+Raster tile imagery can be added in background to make contribution easier or give context. You have to define following properties:
+
+* `source` : type of source, should be set to `background`
+* `icon` : symbol to display in legend (between `aerial`, `thematic`, `other`, defaults to `other`)
+* `name` : name shown to users
+* `tiles` : list of TMS URL
+* `attribution` : attribution to display on map
+* `minZoom` : minimum zoom level for making this layer visible (defaults to 2)
+* `maxZoom` : maximum zoom level for making this layer visible (defaults to 19)
+* `tileSize` : width and length of a tile in pixels (defaults to 256)
+
+These sources should be declared in reverse order of display. The lower layer should be declared first.
+
+
 ### Feature counts and statistics
 
 Project statistics are made by `./db/09_project_update_tmp.sh` script. This script fills `pdm_feature_counts` SQL table with missing daily data according to last OSH file timestamp and current day.

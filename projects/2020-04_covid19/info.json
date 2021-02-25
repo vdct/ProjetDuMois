@@ -20,6 +20,13 @@
 			"source": "osm",
 			"name": "Lieu avec horaires de confinement",
 			"description": "Ce lieu a ses horaires durant le confinement renseignées dans OSM."
+		},
+		{
+			"source": "background",
+			"tiles": [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
+			"name": "Vue aérienne",
+			"icon": "aerial",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
 		}
 	],
 	"statistics": {

@@ -14,17 +14,14 @@ const { foldProjects, queryParams, getMapStyle, getBadgesDetails, getOsmToUrlMap
 const { Pool } = require('pg');
 const { I18n } = require('i18n');
 
-
 /*
  * Connect to database
  */
-
 const pool = new Pool({
   host: CONFIG.DB_HOST,
   database: CONFIG.DB_NAME,
   port: CONFIG.DB_PORT,
 });
-
 
 /*
  * Internationalization

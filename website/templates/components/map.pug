@@ -104,36 +104,6 @@ script.
 	toggleZoomAlert();
 	map.on("zoom", toggleZoomAlert);
 
-	// Button for switching between aerial imagery and map tiles
-	class TilesControl {
-		onAdd(map) {
-			this._map = map;
-			this._container = document.createElement('div');
-			this._container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
-			const btn = document.createElement("button");
-			btn.type = "button";
-			btn.title = "#{__("Afficher / masquer l'imagerie satellite")}";
-			btn.classList.add("pdm-btn-layers");
-			btn.innerHTML = `<i class="fa fa-layer-group" style="font-size: 18px"></i>`;
-
-			btn.addEventListener("click", e => {
-				if(!btn.classList.contains("pdm-btn-enabled")) {
-					map.setLayoutProperty("bg_aerial", "visibility", "visible");
-					btn.classList.add("pdm-btn-enabled");
-				}
-				else {
-					map.setLayoutProperty("bg_aerial", "visibility", "none");
-					btn.classList.remove("pdm-btn-enabled");
-				}
-			});
-
-			this._container.appendChild(btn);
-			return this._container;
-		}
-	}
-
-	map.addControl(new TilesControl(), "top-right");
-
 	// Display notes layers if any
 	const notesSources = !{JSON.stringify(datasources.filter(ds => ds.source === "notes"))};
 	const geojsonBounds = !{JSON.stringify(CONFIG.GEOJSON_BOUNDS)};

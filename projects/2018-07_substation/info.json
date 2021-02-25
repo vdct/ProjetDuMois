@@ -28,6 +28,13 @@
 			"source": "osm",
 			"name": "Poste dans OSM",
 			"description": "Ce poste électrique existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		},
+		{
+			"source": "background",
+			"tiles": [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
+			"name": "Vue aérienne",
+			"icon": "aerial",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
 		}
 	],
 	"statistics": {

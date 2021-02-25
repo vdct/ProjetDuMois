@@ -322,10 +322,6 @@ a.navbar-brand:hover {
 	text-decoration: none !important;
 }
 
-.pdm-btn-layers.pdm-btn-enabled {
-	color: #28a745;
-}
-
 .map-legend > div {
 	display: flex;
 	align-items: center;
@@ -335,6 +331,28 @@ a.navbar-brand:hover {
 }
 
 .map-legend .pdm-color-patch {
+	margin-right: 5px;
+}
+
+.map-background-container {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	left: 0;
+	background-color: #fff;
+}
+
+.map-background > div {
+	display: flex;
+	align-items: center;
+	line-height: 1.5rem;
+	cursor: pointer;
+	align-items: center;
+}
+
+.map-background .pdm-raster-patch {
+	width: 22px;
+	max-height: 22px;
 	margin-right: 5px;
 }
 
@@ -363,8 +381,6 @@ a.navbar-brand:hover {
 	width: 32px;
 	height: 32px;
 }
-
-
 
 /*
  * Map sidebar

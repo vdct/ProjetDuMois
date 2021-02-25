@@ -14,37 +14,52 @@ div.btn-group.w-100.mb-2.mt-2(role="group")
 //- Legend entries
 div.map-legend.mb-2.pb-2(style="border-bottom: 1px solid #bbb")
 	each lg in legend
-		label.switch(id=`pdm-legend-${lg.layerId}` title=__("Afficher/masquer la couche"))
-			div.pdm-color-patch(style=`border-color: ${lg.color}`)
-			div.switch-text= lg.label
-			div.switch-box
-				input(type="checkbox")
-				span.slider.round
+		if lg.media == "vector"
+			label.switch(id=`pdm-legend-${lg.layerId}` title=__("Afficher/masquer la couche"))
+				div.pdm-color-patch(style=`border-color: ${lg.color}`)
 
-//- Make legend symbol clickable to enable/disable layer
--
-	const legendClickEvents = legend
-		.map(lg => lg.layerId)
-		.map((id,i) => `
-			const domLegend${i} = document.getElementById('pdm-legend-${id}').querySelector("input");
-			domLegend${i}.checked = true;
-			domLegend${i}.addEventListener("change", e => {
-				if(domLegend${i}.checked) {
-					map.setFilter('${id}', null);
-				}
-				else {
-					map.setFilter('${id}', ['boolean', false]);
-				}
-			});`)
-		.join("\n");
-
-script !{legendClickEvents}
-
+				div.switch-text= lg.label
+				div.switch-box
+					input(type="checkbox")
+					span.slider.round
 
 //- Editor button
 if editors.pdm
 	div#legend-edit-button.mb-2
 
+//- Background legend
+div.map-background-container.px-3
+	div.map-background.mt-2.py-2(style="border-top: 1px solid #bbb;")
+		each lg in legend
+			if lg.media != "vector"
+				label.switch(id=`pdm-legend-${lg.layerId}` title=__("Afficher/masquer la couche"))
+					img.pdm-raster-patch(src=`/images/imagery/${lg.icon || "other"}.svg`)
+
+					div.switch-text= lg.label
+					div.switch-box
+						input(type="checkbox")
+						span.slider.round
+
+//- Make legend symbol clickable to enable/disable layer
+-
+	const legendClickEvents = legend
+		.map((lg,i) => {
+			let makeVisible = lg.media == "raster" ? `map.setLayoutProperty("${lg.layerId}", "visibility", "visible");` : `map.setFilter('${lg.layerId}', null);`;
+			let makeInvisible = lg.media == "raster" ? `map.setLayoutProperty("${lg.layerId}", "visibility", "none");` : `map.setFilter('${lg.layerId}', ['boolean', false]);`;
+			return `
+				const domLegend${i} = document.getElementById('pdm-legend-${lg.layerId}').querySelector("input");
+				domLegend${i}.checked = ${lg.media == "raster" ? "false" : "true"};
+				domLegend${i}.addEventListener("change", e => {
+					if(domLegend${i}.checked) {
+						${makeVisible}
+					}else {
+						${makeInvisible}
+					}
+				});`
+		})
+		.join("\n");
+
+script !{legendClickEvents}
 
 //- KML Export button
 a#pdm-export-kml.btn.btn-block.btn-outline-secondary(role="button" title=__("Télécharger un fichier KML pour contribuer avec une application de smartphone"))

@@ -134,7 +134,7 @@ if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
 	prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
 fi
 
-osmupdate --keep-tempfiles --trust-tempfiles \\
+osmupdate --keep-tempfiles --trust-tempfiles --hour \\
 	-t="${CONFIG.WORK_DIR}/osmupdate/" \\
 	-v "${OSM_PBF_LATEST}" $prev_timestamp \\
 	"${OSC_FULL}"

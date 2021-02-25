@@ -829,3 +829,14 @@ input:checked + .slider:before {
 		box-shadow: #777 0px 10px 10px;
 	}
 }
+
+@keyframes flickerAnimation {
+	0%   { opacity:1; }
+	50%  { opacity:0.4; }
+	100% { opacity:1; }
+}
+
+.pdm-issue-skeleton {
+	background-color: #eee;
+	animation: flickerAnimation 1s infinite;
+}

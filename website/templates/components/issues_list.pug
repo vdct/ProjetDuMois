@@ -1,6 +1,4 @@
 div#issues-list.row.no-gutters.no-sidebar
-	div.col-12.mt-5.text-center
-		span.spinner-border.text-primary(role="status" style="width: 3rem; height: 3rem;")
 
 script.
 	const issuesListDom = document.getElementById("issues-list");
@@ -11,6 +9,20 @@ include edit_button.pug
 
 script.
 	const customFilters = new Set();
+
+	// Display skeletons during initial loading
+	function addSkeleton(delay) {
+		const sk1 = document.createElement("div");
+		sk1.classList.add("pdm-issue-container", "col-12", "col-md-6", "col-lg-4", "col-xl-3");
+		const sk2 = document.createElement("div");
+		sk2.classList.add("card", "mx-1", "my-2", "pdm-issue", "shadow-sm", "pdm-issue-skeleton");
+		sk2.style.height = (150 + Math.round(Math.random()*150))+'px';
+		if(delay) { sk2.style.animationDelay = delay+'s'; }
+		sk1.appendChild(sk2);
+		issuesListDom.appendChild(sk1);
+	}
+
+	for(let i=0; i < 20; i++) { addSkeleton((i % 3)/3); }
 
 	// Manage pseudo-responsive layout according to page width
 	function fillPage(issues) {

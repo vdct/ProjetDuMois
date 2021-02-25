@@ -76,7 +76,7 @@ script.
 	}
 
 	// Geolocate
-	const geoloc = new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true } });
+	const geoloc = new mapboxgl.GeolocateControl({ trackUserLocation: true, positionOptions: { enableHighAccuracy: true } });
 	map.addControl(geoloc);
 	if(!hashParams.has("map")) {
 		map.on("load", () => geoloc.trigger());

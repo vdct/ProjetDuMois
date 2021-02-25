@@ -18,8 +18,8 @@ div.row
 					thead.sticky-top.thead-light
 						tr
 							th(scope="col") #
-							th(scope="col") __("Pseudo")
-							th(scope="col").text-right.pr-2 __("Points")
+							th(scope="col")= __("Pseudo")
+							th(scope="col").text-right.pr-2= __("Points")
 					tbody#stats-leaderboard
 
 	//- Charts
@@ -211,7 +211,7 @@ script.
 
 			// Notes count + chart
 			if(res.chartNotes) {
-				addBlock(numberFormat.format(res.openedNotes), `notes ouvertes (${res.pctClosedNotes}% résolues)`);
+				addBlock(numberFormat.format(res.openedNotes), `notes ouvertes (${res.pctClosedNotes || 0}% résolues)`);
 
 				const myChart = new Chart(document.getElementById("stats-chart-notes").getContext("2d"), {
 					type: "line",

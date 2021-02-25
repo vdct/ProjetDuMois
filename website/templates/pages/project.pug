@@ -4,18 +4,18 @@ extends ../layout.pug
 block navbar
 	if !isActive && !isNext
 		a(href="/#summary")
-			i.fa.fa-calendar-day(title="En ce moment")
-			span En ce moment
+			i.fa.fa-calendar-day(title=__("En ce moment"))
+			span= __("En ce moment")
 	else
 		a(href="#contribute")
-			i.fa.fa-question-circle(title="Participer")
-			span Comment participer
+			i.fa.fa-question-circle(title=__("Participer"))
+			span= __("Comment participer")
 	a(href="#statistics")
-		i.fa.fa-chart-bar(title="Statistiques")
-		span Statistiques
+		i.fa.fa-chart-bar(title=__("Statistiques"))
+		span= __("Statistiques")
 	a(href="#data")
-		i.fa.fa-file-download(title="Données")
-		span Données
+		i.fa.fa-file-download(title=__("Données"))
+		span= __("Données")
 
 
 block content
@@ -25,18 +25,18 @@ block content
 			img.position-absolute.pdm-project-badge(src=icon alt="" width="100")
 			div.col-8.px-0
 				if isActive
-					h1.font-italic= `En ce moment : ${title.toLowerCase()}`
+					h1.font-italic= __("En ce moment : %s", title.toLowerCase())
 				else if isNext
-					h1.font-italic= `Prochainement : ${title.toLowerCase()}`
+					h1.font-italic= __("Prochainement : %s", title.toLowerCase())
 				else
 					h1.font-italic.mb-0= title
-					p.pdm-project-date.text-capitalize.mb-0.mb-md-2= new Date(month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+					p.pdm-project-date.text-capitalize.mb-0.mb-md-2= new Date(month).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })
 
 			div.btn-over-wide.d-flex.justify-content-center.align-items-center
 				a.pdm-wide-link.map(href=`/projects/${id}/map`)
 				a.btn.btn-primary.btn-lg(style="color: white")
 					i.fa.fa-pen.mr-2
-					| Contribuer
+					| #{__("Contribuer")}
 
 			p.lead.mb-0.mt-md-2= summary
 
@@ -45,20 +45,20 @@ block content
 			div.blog-post.container
 				h2.blog-post-title.mb-2
 					i.fa.fa-birthday-cake.mr-2(style="font-size: 2.1rem")
-					| Un grand merci à tous !
-				p Merci à toutes les contributrices et tous les contributeurs d'avoir fait de ce projet un succès. Sans vous tous, OpenStreetMap ne serait rien !
+					| #{__("Un grand merci à tous !")}
+				p= __("Merci à toutes les contributrices et tous les contributeurs d'avoir fait de ce projet un succès. Sans vous tous, OpenStreetMap ne serait rien !")
 
 				include ../components/wordcloud.pug
 				div#word-cloud.w-100.m-0(style="height: 250px")
 				script.
 					const wordsTmp = [];
-					for(let i=0; i < 100; i++) { wordsTmp.push(["Merci", Math.floor(Math.random()*30)]); }
-					wordsTmp.unshift(["Merci !", 50]);
+					for(let i=0; i < 100; i++) { wordsTmp.push(["#{__("Merci")}", Math.floor(Math.random()*30)]); }
+					wordsTmp.unshift(["#{__("Merci !")}", 50]);
 					createWordCloud(document.getElementById("word-cloud"), wordsTmp);
 
 				a.btn.btn-primary.btn-lg.my-2(href="#statistics")
 					i.fa.fa-chart-bar.mr-2
-					| Voir les statistiques
+					| #{__("Voir les statistiques")}
 
 	a#contribute
 	div.container-fluid.py-5
@@ -66,25 +66,25 @@ block content
 		div.container.blog-post
 			h2.blog-post-title.mb-2
 				i.fa.fa-question-circle.mr-2(style="font-size: 2.1rem")
-				| Comment participer
+				| #{__("Comment participer")}
 			if isNext
-				p Ce projet du mois commencera le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.
+				p= __("Ce projet du mois commencera le %s, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.", new Date(start_date).toLocaleString(getLocale(), { day: "numeric", month: "long" }))
 			else if !isActive
-				p Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.
+				p= __("Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.")
 
 			div.mt-3!= howto
 			div.text-center
 				a.btn.btn-primary.btn-lg.m-1(style="color: white" href=`/projects/${id}/map`)
 					i.fa.fa-pen.mr-2
-					| Contribuer
+					| #{__("Contribuer")}
 				if links.osmwiki
 					a.btn.btn-secondary.btn-lg.m-1(href=links.osmwiki target="_blank" role="button")
 						i.fa.fa-book.mr-2
-						| Documentation complète
+						| #{__("Documentation complète")}
 				if links.osmblog
 					a.btn.btn-secondary.btn-lg.m-1(href=links.osmblog target="_blank" role="button")
 						i.fa.fa-rss.mr-2
-						| Article de blog
+						| #{__("Article de blog")}
 
 	//- Statistics
 	a#statistics
@@ -92,10 +92,10 @@ block content
 		div.blog-post.container
 			h2.blog-post-title.mb-3
 				i.fa.fa-chart-bar.mr-2(style="font-size: 2.1rem")
-				| Statistiques
+				| #{__("Statistiques")}
 
 			if isNext
-				p Les statistiques d'avancement seront affichées lors du lancement du projet du mois le #{new Date(start_date).toLocaleString('fr-FR', { day: "numeric", month: "long" })}.
+				p= __("Les statistiques d'avancement seront affichées lors du lancement du projet du mois le %s.", new Date(start_date).toLocaleString(getLocale(), { day: "numeric", month: "long" }))
 			else
 				include ../components/stats.pug
 
@@ -105,16 +105,16 @@ block content
 		div.container.blog-post
 			h2.blog-post-title
 				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
-				| Données
+				| #{__("Données")}
 			if !isNext
-				p L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :
+				p= __("L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :")
 				ul
 					each datalink in opendata
 						li: a(href=datalink.url)
 							| #{datalink.title}
 							small &nbsp;(via #{datalink.via})
 
-			p Retrouvez d'autres projets du mois, leurs outils, statistiques et données.
+			p= __("Retrouvez d'autres projets du mois, leurs outils, statistiques et données.")
 				div.row.align-items-center
 					each proj in projectsToDisplay
 						div.col-md-6.col-lg-4.h-100
@@ -135,8 +135,8 @@ block prepend footer
 				include:markdown-it ../../../README.md
 			aside.col-md-4.blog-sidebar
 				div.p-4.mb-3.rounded
-					h4.font-italic En savoir plus
+					h4.font-italic= __("En savoir plus")
 					ul.list-unstyled.mb-0
-						li: a(href=CONFIG.REPOSITORY_URL rel="noopener") Code source du projet
-						li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener") Projets précédents
+						li: a(href=CONFIG.REPOSITORY_URL rel="noopener")= __("Code source du projet")
+						li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener")= __("Projets précédents")
 						li: a(href="https://openstreetmap.fr" rel="noopener") OpenStreetMap France

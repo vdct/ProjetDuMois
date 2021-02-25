@@ -3,8 +3,8 @@ extends ../layout.pug
 
 block navbar
 	a(href="#others")
-		i.fa.fa-file-download(title="Autres projets")
-		span Autres projets
+		i.fa.fa-file-download(title=__("Autres projets"))
+		span= __("Autres projets")
 
 
 block content
@@ -13,7 +13,7 @@ block content
 		div#summary.jumbotron.py-2.px-3.pb-3.p-md-5.mb-3.text-white.rounded.bg-dark.position-relative
 			img.position-absolute.pdm-project-badge(src=icon alt="" width="100")
 			div.col-8.px-0.pb-1
-				h1.font-italic= `En ce moment : ${currentProjects.length} projets en cours`
+				h1.font-italic= __("En ce moment : %s projets en cours", currentProjects.length)
 
 			div.row
 				each proj in currentProjects
@@ -30,9 +30,9 @@ block content
 		div.container.blog-post
 			h2.blog-post-title
 				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
-				| Autres projets
+				| #{__("Autres projets")}
 
-			p Retrouvez d'autres projets du mois, leurs outils, statistiques et données.
+			p= __("Retrouvez d'autres projets du mois, leurs outils, statistiques et données.")
 				div.row.align-items-center
 					each proj in otherProjects
 						div.col-md-6.col-lg-4.h-100
@@ -42,7 +42,7 @@ block content
 								div.media-body.align-self-center
 									a.text-decoration-none(href=`/projects/${proj.id}`)
 										| #{proj.title}
-										span.text-muted.d-block= new Date(proj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+										span.text-muted.d-block= new Date(proj.month).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })
 
 
 block prepend footer
@@ -53,8 +53,8 @@ block prepend footer
 				include:markdown-it ../../../README.md
 			aside.col-md-4.blog-sidebar
 				div.p-4.mb-3.rounded
-					h4.font-italic En savoir plus
+					h4.font-italic= __("En savoir plus")
 					ul.list-unstyled.mb-0
-						li: a(href=CONFIG.REPOSITORY_URL rel="noopener") Code source du projet
-						li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener") Projets précédents
-						li: a(href="https://openstreetmap.fr" rel="noopener") OpenStreetMap France
+						li: a(href=CONFIG.REPOSITORY_URL rel="noopener")= __("Code source du projet")
+						li: a(href="https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month#Projets_pass.C3.A9s" rel="noopener")= __("Projets précédents")
+						li: a(href="https://openstreetmap.fr" rel="noopener")= __("OpenStreetMap France")

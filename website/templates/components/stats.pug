@@ -6,9 +6,9 @@ div.row.mb-4#stats-blocks
 div.row
 	//- Leaderboard
 	div.col-12.mb-4
-		h3 Podium
+		h3= __("Podium")
 		p#stats-leaderboard-noauth.text-center
-			| Inscrivez-vous ou connectez-vous pour voir le podium
+			| #{__("Inscrivez-vous ou connectez-vous pour voir le podium")}
 			br.mb-2
 			+user_connect
 		div#stats-leaderboard-container.d-none.row.align-items-center
@@ -18,23 +18,23 @@ div.row
 					thead.sticky-top.thead-light
 						tr
 							th(scope="col") #
-							th(scope="col") Pseudo
-							th(scope="col").text-right.pr-2 Points
+							th(scope="col") __("Pseudo")
+							th(scope="col").text-right.pr-2 __("Points")
 					tbody#stats-leaderboard
 
 	//- Charts
 	div.col-lg-6.mb-2#stats-chart-container
-		h3 Avancement
+		h3= __("Avancement")
 		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart.w-100(height="300")
 
 	div.col-lg-6.mb-2#stats-chart-notes-container
-		h3 Notes
+		h3= __("Notes")
 		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart-notes.w-100(height="300")
 
 	div.col-lg-6.mb-2#stats-chart-keys-container
-		h3 Clés fréquentes
+		h3= __("Clés fréquentes")
 		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart-keys.w-100(height="300")
 
@@ -70,16 +70,16 @@ script.
 
 			// Blocks for small stats
 			if(new Date("#{end_date}T23:59:59Z").getTime() >= Date.now()) {
-				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - Date.now()) / (1000*3600*24)), "jours restants");
+				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - Date.now()) / (1000*3600*24)), "#{__("jours restants")}");
 			}
 			else {
-				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - new Date("#{start_date}T00:00:00Z").getTime()) / (1000*3600*24)), "jours de contributions");
+				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - new Date("#{start_date}T00:00:00Z").getTime()) / (1000*3600*24)), "#{__("jours de contributions")}");
 			}
 
 			if(res.added) { addBlock(numberFormat.format(res.added), "#{title.toLowerCase()} ajoutés"); }
 			if(res.count) { addBlock(numberFormat.format(res.count), "#{title.toLowerCase()} au total dans OSM"); }
 			if(res.tasksSolved !== undefined) { addBlock(numberFormat.format(res.tasksSolved), "#{statistics.osmose_tasks}"); }
-			addBlock(numberFormat.format(res.nbContributors), "personnes ayant contribué");
+			addBlock(numberFormat.format(res.nbContributors), "#{__("personnes ayant contribué")}");
 
 			// Leaderboard
 			if(res.leaderboard) {

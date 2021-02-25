@@ -1,20 +1,20 @@
 div#map.map-main
 
-div.alert.alert-warning.map-alert.font-weight-bold.show-low-zoom Zoomez ou lancez une recherche pour commencer
+div.alert.alert-warning.map-alert.font-weight-bold.show-low-zoom= __("Zoomez ou lancez une recherche pour commencer")
 
 div#map-alert-loading.alert.alert-info.map-alert.font-weight-bold.d-none
 	div.spinner-border.text-primary.align-middle.mr-2(role="status" style="width: 48px; height: 48px")
-	| Chargement en cours
+	| #{__("Chargement en cours")}
 
 div#edit-feature-location.alert.alert-primary.map-alert.d-none
-	| Placer à la position exacte
+	| {__("Placer à la position exacte")}
 	div.btn-group.btn-block.mt-1
 		button.btn.btn-success.w-50(role="button")
 			i.fa.fa-check.mr-2
-			| Valider
+			| #{__("Valider")}
 		button.btn.btn-warning.w-50(role="button")
 			i.fa.fa-ban.mr-2
-			| Annuler
+			| #{__("Annuler")}
 
 
 //- This runs on client
@@ -112,7 +112,7 @@ script.
 			this._container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
 			const btn = document.createElement("button");
 			btn.type = "button";
-			btn.title = "Afficher / masquer l'imagerie satellite";
+			btn.title = "#{__("Afficher / masquer l'imagerie satellite")}";
 			btn.classList.add("pdm-btn-layers");
 			btn.innerHTML = `<i class="fa fa-layer-group" style="font-size: 18px"></i>`;
 

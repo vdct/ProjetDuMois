@@ -110,11 +110,9 @@
 	"Attributs": "Attributs",
 	"Attributs à renseigner": "Attributs à renseigner",
 	"C'est fait": "C'est fait",
-	"Rien ici": "Rien ici",
 	"Intégrer cet objet": "Intégrer cet objet",
 	"Vous devez être connecté pour marquer la note comme résolue.": "Vous devez être connecté pour marquer la note comme résolue.",
 	"Participer à la discussion sur cette note": "Participer à la discussion sur cette note",
-	"✘ Rien ici": "✘ Rien ici",
 	"Zoomez ou lancez une recherche pour commencer": "Zoomez ou lancez une recherche pour commencer",
 	"Chargement en cours": "Chargement en cours",
 	"Déplacer la carte pour positionner l'objet à créer": "Déplacer la carte pour positionner l'objet à créer",
@@ -132,5 +130,6 @@
 	"Autres projets": "Autres projets",
 	"En ce moment : %s projets en cours": "En ce moment : %s projets en cours",
 	"OpenStreetMap France": "OpenStreetMap France",
-	"Placer à la position exacte": "Placer à la position exacte"
+	"Placer à la position exacte": "Placer à la position exacte",
+	"Rien ici / déjà fait": "Nothing here / Already done"
 }

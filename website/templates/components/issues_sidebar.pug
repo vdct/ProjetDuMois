@@ -19,17 +19,20 @@ div.pdm-sidebar#pdm-issues-sidebar.pdm-hidden.pdm-sidebar
 					| #{__("Liste")}
 
 			form#filters.mt-3
-				p.mb-1= __("Afficher uniquement les signalements")
-				div.form-group.form-check.m-0
+				p.mb-1= __("Filtres")
+				div.form-group.form-check.form-check-inline.m-0.mr-1
 					input#filterReadyMerge.form-check-input(type="checkbox" name="ready")
 					label.form-check-label(for="filterReadyMerge")
-						span.badge.badge-pill.badge-success= __("Prêt à intégrer")
-				div.form-group.form-check.m-0
+						span.badge.badge-pill.badge-outline-success= __("Prêt à intégrer")
+				div.form-group.form-check.form-check-inline.m-0.mr-1
 					input#filterPicture.form-check-input(type="checkbox" name="picture")
-					label.form-check-label(for="filterPicture")= __("Avec photo")
-				div.form-group.form-check.m-0
+					label.form-check-label(for="filterPicture")
+						span.badge.badge-pill.badge-outline-success= __("Avec photo")
+				br
+				div.form-group.form-check.form-check-inline.m-0.mr-1
 					input#filterAnonymous.form-check-input(type="checkbox" name="anonymous")
-					label.form-check-label(for="filterAnonymous")= __("Anonymes")
+					label.form-check-label(for="filterAnonymous")
+						span.badge.badge-pill.badge-outline-primary= __("Anonymes")
 
 script.
 	const issuesSidebarDom = document.getElementById("pdm-issues-sidebar");
@@ -55,25 +58,35 @@ script.
 
 	// Add custom filters
 	function addCustomFilters(filters) {
-		filters.forEach(flt => {
-			const fltDom = document.createElement("div");
-			fltDom.classList.add("form-group", "form-check", "m-0");
+		const addToDom = (flts, color) => {
+			flts.forEach((flt, i) => {
+				const fltNoPrefix = flt.startsWith("user/") ? flt.substring(5) : flt;
+				const fltDom = document.createElement("div");
+				fltDom.classList.add("form-group", "form-check", "form-check-inline", "m-0", "mr-1");
 
-			const fltInput = document.createElement("input");
-			fltInput.id = "filter_"+flt;
-			fltInput.classList.add("form-check-input");
-			fltInput.type = "checkbox";
-			fltInput.name = flt;
-			fltDom.appendChild(fltInput);
+				const fltInput = document.createElement("input");
+				fltInput.id = "filter_"+flt;
+				fltInput.classList.add("form-check-input");
+				fltInput.type = "checkbox";
+				fltInput.name = flt;
+				fltDom.appendChild(fltInput);
 
-			const fltLabel = document.createElement("label");
-			fltLabel.classList.add("form-check-label");
-			fltLabel.setAttribute("for", fltInput.id);
-			fltLabel.innerHTML = `<span class="badge badge-pill badge-secondary">${flt}</span>`;
-			fltDom.appendChild(fltLabel);
+				const fltLabel = document.createElement("label");
+				fltLabel.classList.add("form-check-label");
+				fltLabel.setAttribute("for", fltInput.id);
+				fltLabel.innerHTML = `<span class="badge badge-pill badge-outline-${color}">${fltNoPrefix}</span>`;
+				fltDom.appendChild(fltLabel);
 
-			issuesFilters.appendChild(fltDom);
-		});
+				issuesFilters.appendChild(fltDom);
+			});
+		};
+
+		addToDom(filters.filter(f => !f.startsWith("user/")), "secondary");
+		issuesFilters.appendChild(document.createElement("br"));
+		const anonFilter = document.getElementById("filterAnonymous").parentNode;
+		anonFilter.parentNode.removeChild(anonFilter);
+		issuesFilters.appendChild(anonFilter);
+		addToDom(filters.filter(f => f.startsWith("user/")).sort(), "primary");
 	}
 
 	// Swipe menu

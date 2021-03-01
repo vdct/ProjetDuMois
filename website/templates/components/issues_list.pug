@@ -9,6 +9,7 @@ include edit_button.pug
 
 script.
 	const customFilters = new Set();
+	const issuesPerUser = {};
 
 	// Display skeletons during initial loading
 	function addSkeleton(delay) {
@@ -29,6 +30,18 @@ script.
 		issuesListDom.innerHTML = `<div class="col-12 mt-3 text-center"><img src="/images/empty.svg" alt="" style="height: 128px" /><p style="font-size: 2rem;">#{__("Aucun signalement pour l'instant !")}</p></div>`;
 
 		if(issues.length > 0) {
+			// Count issues per user
+			issues.forEach(issue => {
+				if(issue.properties.comments[0].user) {
+					if(issuesPerUser[issue.properties.comments[0].user]) {
+						issuesPerUser[issue.properties.comments[0].user]++;
+					}
+					else {
+						issuesPerUser[issue.properties.comments[0].user] = 1;
+					}
+				}
+			});
+
 			// Fill columns with issues
 			issues.forEach((issue, i) => {
 				issuesListDom.insertBefore(getIssueDom(issue, i), issuesListDom.lastChild);
@@ -85,7 +98,11 @@ script.
 		}
 		smallDom.appendChild(document.createTextNode(` - ${new Date(issue.properties.comments[0].date.split(" ")[0]).toLocaleString(navigator.language, { day: 'numeric', month: 'long', year: 'numeric' })}`));
 		issueUserDom.appendChild(smallDom);
-		if(!issue.properties.comments[0].user) { issueUserDom.setAttribute("data-filter", "anonymous"); }
+		const userFilter = issue.properties.comments[0].user ? "user/"+issue.properties.comments[0].user : "anonymous";
+		issueUserDom.setAttribute("data-filter", userFilter);
+		if(issue.properties.comments[0].user && issuesPerUser[issue.properties.comments[0].user] > 1) {
+			customFilters.add(userFilter);
+		}
 		issueDom.appendChild(issueUserDom);
 
 		// Image
@@ -192,7 +209,7 @@ script.
 
 	// Handle user filters
 	window.addEventListener("pdm_filter_issues", e => {
-		const filterBadgeCss = Object.keys(e.detail.filters).map(b => "[data-filter="+b+"]");
+		const filterBadgeCss = Object.keys(e.detail.filters).map(b => "[data-filter='"+b+"']");
 
 		let hasAtLeastOneResult = false;
 		for(let card of issuesListDom.querySelectorAll("div.pdm-issue-container")) {

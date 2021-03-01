@@ -840,3 +840,45 @@ input:checked + .slider:before {
 	background-color: #eee;
 	animation: flickerAnimation 1s infinite;
 }
+
+/* Issues filters */
+
+#filters input[type="checkbox"] {
+	display: none;
+}
+
+.badge-outline-success {
+	border: 1px solid #28a745;
+	color: #28a745;
+}
+
+.badge-outline-secondary {
+	border: 1px solid #6c757d;
+	color: #6c757d;
+}
+
+.badge-outline-primary {
+	border: 1px solid #007bff;
+	color: #007bff;
+}
+
+#filters input[type="checkbox"] + label span.badge {
+	cursor: pointer;
+}
+
+#filters input[type="checkbox"]:checked + label span.badge {
+	border: none;
+	color: white;
+}
+
+#filters input[type="checkbox"]:checked + label span.badge.badge-outline-success {
+	background-color: #28a745;
+}
+
+#filters input[type="checkbox"]:checked + label span.badge.badge-outline-secondary {
+	background-color: #6c757d;
+}
+
+#filters input[type="checkbox"]:checked + label span.badge.badge-outline-primary {
+	background-color: #007bff;
+}

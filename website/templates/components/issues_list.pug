@@ -41,8 +41,8 @@ script.
 	}
 
 	function findHashtagsInNote(issue) {
-		const regex = /\s(\#[a-zA-Z0-9]+)/g;
-		return [...issue.properties.comments[0].html.matchAll(regex)].map(m => m[1].toLowerCase());
+		const regex = /\s(\#[\w\d_-]+)/g;
+		return [...issue.properties.comments[0].text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').matchAll(regex)].map(m => m[1].toLowerCase());
 	}
 
 	// Create DOM for a single issue

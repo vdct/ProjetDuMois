@@ -2,6 +2,15 @@ const CONFIG = require('../config.json');
 const fetch = require('node-fetch');
 const tag2link = require('tag2link');
 
+function flatten(array) {
+	if(array.length == 0)
+		return array;
+	else if(Array.isArray(array[0]))
+		return flatten(array[0]).concat(flatten(array.slice(1)));
+	else
+		return [array[0]].concat(flatten(array.slice(1)));
+}
+
 // Get current+past projects
 exports.foldProjects = (projects) => {
 	const prjs = { past: [], current: [], next: [] };
@@ -34,7 +43,7 @@ exports.queryParams = (obj) => {
 
 // Map style JSON
 exports.getMapStyle = (p) => {
-	return fetch("https://tile-vect.openstreetmap.fr/styles/liberty/style.json")
+	return fetch(CONFIG.MAPBOX_STYLE)
 	.then(res => res.json())
 	.then(style => {
 		const legend = [];
@@ -205,6 +214,66 @@ exports.getMapStyle = (p) => {
 	});
 };
 
+// Map style JSON for statistics
+exports.getMapStatsStyle = (p, maxPerLevel) => {
+	return fetch(CONFIG.MAPBOX_STYLE)
+	.then(res => res.json())
+	.then(style => {
+		let sources = {};
+		let layers = [];
+		const legend = {
+			"4": { color: "#2196F3", minSize: 3, minValue: 1, maxSize: 30, maxValue: maxPerLevel["4"] },
+			"6": { color: "#4A148C", minSize: 3, minValue: 1, maxSize: 35, maxValue: maxPerLevel["6"] },
+			"8": { color: "#004D40", minSize: 3, minValue: 1, maxSize: 40, maxValue: maxPerLevel["8"] }
+		};
+
+		if(p && p.statistics && p.statistics.count) {
+			sources.boundary = {
+				type: "vector",
+				tiles: [ `${CONFIG.PDM_TILES_URL}/public.pdm_boundary_tiles/{z}/{x}/{y}.mvt` ],
+				maxzoom: 14
+			};
+
+			const condOpacity = ["interpolate", ["linear"], ["zoom"],
+				4.9, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 4]], 1, 0 ],
+				5, 0,
+				5.1, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 6]], 1, 0 ],
+				7.9, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 6]], 1, 0 ],
+				8, 0,
+				8.1, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 8]], 1, 0 ]
+			];
+
+			layers.push({
+				id: "boundary",
+				source: "boundary",
+				type: "circle",
+				"source-layer": "public.pdm_boundary_tiles",
+				layout: {
+					"circle-sort-key": ["-", ["get", "nb"]]
+				},
+				paint: {
+					"circle-stroke-color": "white",
+					"circle-stroke-width": 2,
+					"circle-stroke-opacity": condOpacity,
+					"circle-color": ["match", ["get", "admin_level"], 4, legend["4"].color, 6, legend["6"].color, legend["8"].color],
+					"circle-opacity": condOpacity,
+					"circle-radius": ["match", ["get", "admin_level"],
+						4, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["4"].minValue, legend["4"].minSize, legend["4"].maxValue, legend["4"].maxSize],
+						6, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["6"].minValue, legend["6"].minSize, legend["6"].maxValue, legend["6"].maxSize],
+						8, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["8"].minValue, legend["8"].minSize, legend["8"].maxValue, legend["8"].maxSize],
+						0
+					]
+				}
+			});
+		}
+
+		style.sources = Object.assign(style.sources, sources);
+		style.layers = style.layers.concat(layers);
+
+		return { legend, style };
+	});
+};
+
 // Get badges description
 exports.getBadgesDetails = (projects, badgesRows) => {
 	const badges = { "meta": { project: { name: "Général", image: "/images/favicon.svg" }, badges: [] } };
@@ -251,4 +320,16 @@ exports.getOsmToUrlMappings = () => {
 	});
 
 	return res;
+};
+
+// List of dates since project start until today
+exports.getProjectDays = (project) => {
+	const days = [];
+	const start = new Date(project.start_date);
+	let end = new Date(project.end_date);
+	if(end > new Date()) { end = new Date(); }
+	for(var arr=[],dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)){
+		days.push(new Date(dt).toISOString().split("T")[0]);
+	}
+	return days;
 };

@@ -25,7 +25,22 @@ const UNINSTALL_SCRIPT = __dirname+'/91_project_uninstall_tmp.sql';
 
 // Generate Imposm YAML config file
 const yamlData = {
-	tables: {},
+	tables: {
+		'boundary': {
+			type: 'polygon',
+			mapping: { boundary: ['administrative'] },
+			filters: {
+				require: { 'admin_level': ['4','6','8'] }
+			},
+			columns: [
+				{ name: 'osm_id', type: 'id' },
+				{ name: 'name', key: 'name', type: 'string' },
+				{ name: 'admin_level', key: 'admin_level', type: 'integer' },
+				{ name: 'tags', type: 'hstore_tags' },
+				{ name: 'geom', type: 'geometry' }
+			]
+		}
+	},
 	tags: { load_all: true }
 };
 const preSQL = []; // Suppression des ressources projets
@@ -46,7 +61,7 @@ Object.entries(projects).forEach(e => {
 
 	if (IMPOSM_ENABLED) {
 		project.database.imposm.types.forEach(type => {
-			yamlData.tables[`${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
+			yamlData.tables[`project_${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
 		});
 
 		preSQL.push(`DROP VIEW IF EXISTS pdm_project_${id.split("_").pop()} CASCADE`);
@@ -65,7 +80,7 @@ Object.entries(projects).forEach(e => {
 		// Table definition
 		if (IMPOSM_ENABLED){
 			project.database.compare.types.forEach(type => {
-				yamlData.tables[`${id.split("_").pop()}_compare_${type}`] = Object.assign({ type }, tableData, { mapping: project.database.compare.mapping });
+				yamlData.tables[`project_${id.split("_").pop()}_compare_${type}`] = Object.assign({ type }, tableData, { mapping: project.database.compare.mapping });
 			});
 
 			preSQL.push(`DROP VIEW IF EXISTS pdm_project_${id.split("_").pop()}_compare CASCADE`);
@@ -159,20 +174,21 @@ if [ "$mode" == "init" ]; then
 	${preSQLFull}
 
 	imposm import -write \\
-		-connection "${PSQL_DB}?prefix=pdm_project_" \\
+		-connection "${PSQL_DB}?prefix=pdm_" \\
 		-mapping "${IMPOSM_YML}" \\
 		-cachedir "${IMPOSM_CACHE_DIR}" \\
 		-dbschema-import public -diff
 
 	echo "Post SQL..."
 	${postSQLFull}
+	psql "${PSQL_DB}" -f "${__dirname}/22_features_post_init.sql"
 else
 	echo "==== Apply latest changes to database"
 	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
 	imposm diff -mapping "${IMPOSM_YML}" \\
 		-cachedir "${IMPOSM_CACHE_DIR}" \\
 		-dbschema-production public \\
-		-connection "${PSQL_DB}?prefix=pdm_project_" \\
+		-connection "${PSQL_DB}?prefix=pdm_" \\
 		"${OSC_LOCAL}"
 
 	echo "Post Update SQL..."

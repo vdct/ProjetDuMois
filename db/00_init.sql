@@ -61,7 +61,7 @@ CREATE TABLE pdm_feature_counts(
 	project VARCHAR NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	amount INT NOT NULL,
-	
+
 	CONSTRAINT pdm_feature_counts_pk PRIMARY KEY(project,ts)
 );
 
@@ -254,3 +254,60 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql
 IMMUTABLE LEAKPROOF ROWS 100;
+
+-- Statistics per project and administrative boundary
+CREATE TABLE pdm_feature_counts_per_boundary(
+	project VARCHAR NOT NULL,
+	boundary BIGINT NOT NULL,
+	day DATE NOT NULL,
+	amount INT NOT NULL,
+
+	CONSTRAINT pdm_feature_counts_per_boundary_pk PRIMARY KEY(project, boundary, day)
+);
+
+CREATE INDEX pdm_feature_counts_per_boundary_project_idx ON pdm_feature_counts_per_boundary(project);
+
+-- Count edits per administrative boundary
+CREATE OR REPLACE FUNCTION pdm_add_changes_per_boundary(project_id VARCHAR, start_ts TIMESTAMP, end_ts TIMESTAMP) RETURNS VOID AS $$
+DECLARE
+	curr_day DATE;
+BEGIN
+	curr_day := start_ts::DATE;
+
+	-- Cleanup before counting
+	DELETE FROM pdm_feature_counts_per_boundary
+	WHERE project = project_id AND day BETWEEN start_ts::DATE AND end_ts;
+
+	-- List of edits in each boundary
+	EXECUTE format('
+		CREATE TABLE pdm_boundary_edits_tmp AS
+		SELECT b.osm_id, b.name, f.day AS edit_day
+		FROM (
+			SELECT DISTINCT ON (c.osmid) c.osmid, c.ts::date AS day, c.action, p.geom
+			FROM pdm_changes c
+			JOIN %I p ON c.osmid = p.osm_id
+			WHERE c.project = %L AND c.ts BETWEEN %L AND %L
+			ORDER BY c.osmid, c.version DESC
+		) f
+		JOIN pdm_boundary b ON f.geom && b.geom AND ST_Intersects(f.geom, b.geom)
+	', 'pdm_project_' || substring(project_id, 9), project_id, start_ts, end_ts);
+	CREATE INDEX pdm_boundary_edits_tmp_edit_day_idx ON pdm_boundary_edits_tmp(edit_day);
+
+	-- Count added features each day
+	WHILE curr_day <= end_ts LOOP
+		INSERT INTO pdm_feature_counts_per_boundary(project, boundary, day, amount)
+		SELECT project_id, osm_id, curr_day, amount
+		FROM (
+			SELECT osm_id, COUNT(*) AS amount
+			FROM pdm_boundary_edits_tmp
+			WHERE edit_day <= curr_day
+			GROUP BY osm_id
+		) a;
+		curr_day := curr_day + '1 day'::interval;
+	END LOOP;
+
+	DROP TABLE pdm_boundary_edits_tmp;
+	REINDEX TABLE pdm_feature_counts_per_boundary;
+END;
+$$ LANGUAGE plpgsql
+LEAKPROOF;

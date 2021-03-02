@@ -3,7 +3,7 @@
 ## Dependencies
 
 * NodeJS >= 9
-* Curl, Awk, Grep, Sed, xsltproc
+* Bash tools : curl, awk, grep, sed, xsltproc, bc
 * PostgreSQL >= 10
 * Python 3
 * [Osmium](https://osmcode.org/osmium-tool/)
@@ -43,6 +43,7 @@ The general configuration of the tool is to be filled in `config.json`. There is
 * `NOMINATIM_URL`: instance of Nominatim to use (example `https://nominatim.openstreetmap.org`)
 * `MAPILLARY_URL`: Mapillary instance to use (example `https://www.mapillary.com`)
 * `REPOSITORY_URL`: URL of the software repository (example `https://github.com/vdct/ProjetDuMois`)
+* `MAPBOX_STYLE` : URL to [Mapbox GL compatible style](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (example `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 * `PDM_TILES_URL`: URL to access the *pg_tileserv* service, which provides the layers in your database
 * `GEOJSON_BOUNDS`: object of `Geometry` type (polygon or multipolygon) in GeoJSON delimiting the area to search for OSM notes.
 
@@ -92,13 +93,24 @@ You should make sure that it is correctly hourly-updated for this application ne
 In case Imposm3 is disabled, you have also to make available materialized views named `pdm_project_${project_id}`, with following structure:
 
 ```sql
-osm_id BIGINT,
+osm_id BIGINT
 name VARCHAR(255)
 tags json
 geom GEOMETRY
 ```
 
 Optionally, if compare mode is enabled in a given project, another view `pdm_project_${project_id}_compare` containing data to which features should be compared is necessary. It has the same structure as described above.
+
+In complement of these tables, you need a `pdm_boundary` table with administrative boundaries for your area ([administrative levels](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 4, 6 and 8) with following structure:
+
+```sql
+id INT
+osm_id BIGINT
+name VARCHAR
+admin_level INT
+tags HSTORE
+geom GEOMETRY(Geometry, 3857)
+```
 
 Create indexes on `osm_id`, `tags` and `geometry` columns might be useful depending of your database content.
 

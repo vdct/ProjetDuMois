@@ -1,7 +1,7 @@
 const CONFIG = require('../config.json');
 const fs = require('fs');
 const projects = require('../website/projects');
-const { foldProjects } = require('../website/utils');
+const { foldProjects, getProjectDays } = require('../website/utils');
 const fetch = require('node-fetch');
 const booleanContains = require('@turf/boolean-contains').default;
 const {Pool, Client} = require('pg')
@@ -39,23 +39,13 @@ const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql "postgres://@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
 
+const runForAll = process.argv.slice(2).pop() === "all";
+
 const pgPool = new Pool({
 	host: CONFIG.DB_HOST,
 	database: CONFIG.DB_NAME,
 	port: CONFIG.DB_PORT
 });
-
-// List of dates since project start until today
-function getProjectDays(project) {
-	const days = [];
-	const start = new Date(project.start_date);
-	let end = new Date(project.end_date);
-	if(end > new Date()) { end = new Date(); }
-	for(var arr=[],dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)){
-		days.push(new Date(dt).toISOString().split("T")[0]);
-	}
-	return days;
-}
 
 // Notes statistics
 function processNotes (project){
@@ -243,7 +233,8 @@ ${separator}
 script += `
 rm -rf "${CSV_COUNT}"`;
 
-projectsFold.current.forEach(project => {
+const projectsToProcess = runForAll ? Object.values(projects) : projectsFold.current;
+projectsToProcess.forEach(project => {
 	let oshInput = OSH_UPDATED;
 	const oshProject = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}`);
 	const oshFiltered = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}.filtered`);
@@ -252,10 +243,10 @@ projectsFold.current.forEach(project => {
 	let tagFilterParts = project.database.osmium_tag_filter.split("&");
 
 	script += `
-cur_timestamp=$(date -Idate --utc)
-cnt_timestamp=""
+cur_timestamp=$(date -Idate --utc ${new Date(project.end_date+"T23:59:59Z").getTime() < Date.now() ? `-d ${project.end_date}` : ""})
+cnt_timestamp=${new Date(project.end_date+"T23:59:59Z").getTime() < Date.now() ? `$(date -Idate --utc -d ${project.start_date})` : `""`}
 prj_timestamp=$(date -Idate --utc -d ${project.start_date})
-if [ -n "\$prev_timestamp" ]; then
+if [[ -z \$cnt_timestamp && -n "\$prev_timestamp" ]]; then
 	cnt_timestamp=$(date -Idate --utc -d \$prev_timestamp)
 fi
 if [[ -z \$cnt_timestamp || \$prj_timestamp>=\$cnt_timestamp ]]; then
@@ -321,7 +312,7 @@ ${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project='${project.id}' AND ts 
 echo "Counting from \$cnt_timestamp"
 days=""
 local_timestamp=$cnt_timestamp
-until [[ \$local_timestamp>=\$cur_timestamp ]]; do
+until [[ ! "\$local_timestamp" < "\$cur_timestamp" ]]; do
 	days="\$days \$local_timestamp"
 	local_timestamp=$(date -Idate --utc -d "\$local_timestamp + 1 day" )
 done
@@ -384,6 +375,9 @@ fi
 rm -f "${CSV_COUNT}"
 
 echo "== Optimize database"
+if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
+	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_tiles"
+fi
 ${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"
 ${separator}
 

@@ -23,3 +23,6 @@ SELECT * FROM projectChanges;
 
 -- Reindex for performance
 REINDEX TABLE pdm_user_contribs;
+
+-- Add statistics about nb of features in every admin boundary
+SELECT pdm_add_changes_per_boundary(:project_id, :start_date, :end_date);

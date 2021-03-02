@@ -1,5 +1,8 @@
 extends ../layout.pug
 
+block head
+	//- Map specific libraries
+	script(src="/lib/mapbox-gl/mapbox-gl.js")
 
 block navbar
 	if !isActive && !isNext

@@ -3,7 +3,7 @@
 ## Dépendances
 
 * NodeJS >= 9
-* Curl, Awk, Grep, Sed, xsltproc
+* Outils Bash : curl, awk, grep, sed, xsltproc, bc
 * PostgreSQL >= 10
 * Python 3
 * [Osmium](https://osmcode.org/osmium-tool/)
@@ -43,6 +43,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
 * `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
 * `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
+* `MAPBOX_STYLE` : URL d'un [style compatible avec Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 * `PDM_TILES_URL` : URL d'accès au service *pg_tileserv*, qui met à disposition les couches dans votre base de données
 * `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
 
@@ -99,6 +100,17 @@ geom GEOMETRY
 ```
 
 Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
+
+Au-delà de ces tables, il est nécessaire d'avoir une table `pdm_boundary` contenant le découpage administratif de la zone ([niveaux administratifs](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 4, 6 et 8) et ayant cette structure :
+
+```sql
+id INT
+osm_id BIGINT
+name VARCHAR
+admin_level INT
+tags HSTORE
+geom GEOMETRY(Geometry, 3857)
+```
 
 Créer des indexes sur les colonnes osm_id, tags et geometry peut être utile suivant la population d'objets touchée par un projet donné.
 

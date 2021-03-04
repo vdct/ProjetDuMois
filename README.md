@@ -18,7 +18,7 @@ This project embraces the [digital principles for development](https://digitalpr
 Therefore, our website is developed for __humans__.
 While doing a proposal, please use [our personas](https://github.com/vdct/ProjetDuMois/issues/66) (only in french, sorry).
 
-<img width="10%" src="https://user-images.githubusercontent.com/11553211/109944405-7c964300-7cd6-11eb-8789-4856d2d02ead.png">
+![team icon](https://user-images.githubusercontent.com/11553211/109944405-7c964300-7cd6-11eb-8789-4856d2d02ead.png)
 
 # The team
 ProjetDuMois.fr is made possible by its _super team_ of volunteers:
@@ -29,7 +29,7 @@ ProjetDuMois.fr is made possible by its _super team_ of volunteers:
 * Jocelyn Jaubert and the technical team of [OpenStreetMap France](https://openstreetmap.fr) that host the service
 * And all the people giving a hand over the project!
 
-<img width="10%" src="https://user-images.githubusercontent.com/11553211/109953931-ffbc9680-7ce0-11eb-9f2c-a966c922ea15.png">
+![Twitter icon](https://user-images.githubusercontent.com/11553211/109953931-ffbc9680-7ce0-11eb-9f2c-a966c922ea15.png)
 
 [Find us on Twitter](https://twitter.com/projetdumois) (we speak French and English)
 
@@ -70,7 +70,7 @@ Ce projet adhère aux [principes pour le développement numérique](https://digi
 Notre site est donc développé pour des __humains__.
 Si vous faites une suggestion, n'hésitez pas à utiliser [nos personas](https://github.com/vdct/ProjetDuMois/issues/66).
 
-<img width="10%" src="https://user-images.githubusercontent.com/11553211/109943646-b31f8e00-7cd5-11eb-9f22-bebdb647ecac.png">
+![Equipe](https://user-images.githubusercontent.com/11553211/109943646-b31f8e00-7cd5-11eb-9f22-bebdb647ecac.png)
 
 ## L'équipe
 
@@ -82,7 +82,7 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 * Jocelyn Jaubert et l'équipe technique d'[OpenStreetMap France](https://openstreetmap.fr) qui assurent l'hébergement
 * Et toutes les personnes qui gravitent autour du projet !
 
-<img width="10%" src="https://user-images.githubusercontent.com/11553211/109953931-ffbc9680-7ce0-11eb-9f2c-a966c922ea15.png">
+![Twitter icon](https://user-images.githubusercontent.com/11553211/109953931-ffbc9680-7ce0-11eb-9f2c-a966c922ea15.png)
 
 [Retrouvez-nous sur Twitter](https://twitter.com/projetdumois) !
 

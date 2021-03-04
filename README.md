@@ -12,16 +12,23 @@ The tool is free (as in free beer and as much as in free speech) and developed b
 This project embraces the [digital principles for development](https://digitalprinciples.org/).
 ![Logo of digital principles for development](/website/images/pdd-en.png)
 
+Therefore, our website is developed for __humans__.
+While doing a proposal, please use [our personas](https://github.com/vdct/ProjetDuMois/issues/66) (only in french, sorry).
+
+<img width="10%" src="https://user-images.githubusercontent.com/11553211/109944405-7c964300-7cd6-11eb-8789-4856d2d02ead.png">
+
 # The team
 ProjetDuMois.fr is made possible by its _super team_ of volunteers:
 
 * Adrien Pavie
 * Florian Lainez
-* Yves Pratter
+* François Lacombe
 * Jocelyn Jaubert and the technical team of [OpenStreetMap France](https://openstreetmap.fr) that host the service
 * And all the people giving a hand over the project!
 
-[Find us also on Twitter](https://twitter.com/projetdumois) (we speak French and English)
+<img width="10%" src="https://user-images.githubusercontent.com/11553211/109953931-ffbc9680-7ce0-11eb-9f2c-a966c922ea15.png">
+
+[Find us on Twitter](https://twitter.com/projetdumois) (we speak French and English)
 
 ## Licence
 
@@ -57,6 +64,10 @@ L'outil est libre et réalisé par une équipe de bénévoles. Vous pouvez nous 
 Ce projet adhère aux [principes pour le développement numérique](https://digitalprinciples.org/).
 ![Logo des principes pour le développement numérique](/website/images/pdd.png)
 
+Notre site est donc développé pour des __humains__.
+Si vous faites une suggestion, n'hésitez pas à utiliser [nos personas](https://github.com/vdct/ProjetDuMois/issues/66).
+
+<img width="10%" src="https://user-images.githubusercontent.com/11553211/109943646-b31f8e00-7cd5-11eb-9f22-bebdb647ecac.png">
 
 ## L'équipe
 
@@ -64,11 +75,13 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 
 * Adrien Pavie
 * Florian Lainez
-* Yves Pratter
+* François Lacombe
 * Jocelyn Jaubert et l'équipe technique d'[OpenStreetMap France](https://openstreetmap.fr) qui assurent l'hébergement
 * Et toutes les personnes qui gravitent autour du projet !
 
-[Retrouvez-nous également sur Twitter](https://twitter.com/projetdumois) !
+<img width="10%" src="https://user-images.githubusercontent.com/11553211/109953931-ffbc9680-7ce0-11eb-9f2c-a966c922ea15.png">
+
+[Retrouvez-nous sur Twitter](https://twitter.com/projetdumois) !
 
 
 ## Licence

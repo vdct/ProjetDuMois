@@ -10,6 +10,7 @@ The tool is free (as in free beer and as much as in free speech) and developed b
 * [Submitting software code](DEVELOP.md) for new features or bug fixes
 
 This project embraces the [digital principles for development](https://digitalprinciples.org/).
+
 ![Logo of digital principles for development](/website/images/pdd-en.png)
 
 Therefore, our website is developed for __humans__.

@@ -1,3 +1,5 @@
+![projet-du-mois-banniere-twitter](https://user-images.githubusercontent.com/11553211/109954309-7a85b180-7ce1-11eb-8026-38e6e1526b2f.png)
+
 # About
 The dashboard __[ProjetDuMois.fr](https://projetdumois.fr)__ (project of the month) aims to urge on the [OpenStreetMap](https://openstreetmap.org) community of contributors during limited-in-time periods of time. Projects of the months are a focus of the community over a specific topic, e.g. public toilets, police offices... the dashboard gives a clear view of the community's progress and brings gamification. The map boosts contribution as a very simple contribution tool, as a note manager and as a incentive to check specific places.
 

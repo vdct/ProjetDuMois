@@ -265,3 +265,44 @@ The Pug templates are in the `templates` sub-folder. It is organized according t
 * In `common`, generic elements to all pages (`<head>`, header, footer)
 * In `components`, the main components that populate the pages (map, statistics block...)
 * In `pages`, each page of the site (home, map, project page...)
+
+
+## Docker
+
+ProjetDuMois.fr can run using Docker.
+
+### Build
+
+```bash
+docker build -t projetdumois/projetdumois:latest ./
+```
+
+### Run
+
+Before running, you need a proper `config.json` file and at least one project configuration (see documentation above). Project and config file should appear in a folder that will be named `CONF_DIR` below. Some parameters in `config.json` will have a specific value due to Docker environment:
+
+* `WORK_DIR` should be set to `/data`
+* `DB_HOST` might be set as seen from container, for example your host could have an IP address like `172.17.0.1`. Check `ip addr show docker0` to see what is your host IP as seen from container
+
+You also need a working directory where data could be stored for processing (needs more or less disk space according to which country you run, for example count ~50 GB for France), it will named `DATA_DIR` below.
+
+To initialize and run your website, launch following commands:
+
+```bash
+export CONF_DIR=$(pwd)    # Change path according to your setup
+export DATA_DIR=/tmp/pdm  # Change path according to your setup
+
+# Init your PostgreSQL database (according to your setup)
+psql -c "CREATE DATABASE pdm"
+psql -d pdm -f db/00_init.sql
+
+# Start data import
+export PGUSER=yourdbuser  # Change according to your database setup
+docker run -v $CONF_DIR:/conf -v $DATA_DIR:/data -e PGUSER projetdumois/projetdumois bash -c "npm run project:update all && /pdm/db/09_project_update_tmp.sh"
+docker run -v $CONF_DIR:/conf -v $DATA_DIR:/data -e PGUSER projetdumois/projetdumois bash -c "npm run features:update && /pdm/db/21_features_update_tmp.sh init"
+
+# Run website
+docker run -v $CONF_DIR:/conf -v $DATA_DIR:/data -e PGUSER -p 3000:3000 projetdumois/projetdumois bash -c "npm run start"
+```
+
+Website is available at http://localhost:3000/

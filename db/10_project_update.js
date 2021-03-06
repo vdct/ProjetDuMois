@@ -389,5 +389,5 @@ echo "Done"
 
 fs.writeFile(OUTPUT_SCRIPT, script, { mode: 0o766 }, err => {
 	if(err) { throw new Error(err); }
-	console.log("Written Bash script");
+	console.log("Written Bash script into", OUTPUT_SCRIPT);
 });

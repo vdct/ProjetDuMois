@@ -110,9 +110,13 @@ name VARCHAR
 admin_level INT
 tags HSTORE
 geom GEOMETRY(Geometry, 3857)
+centre GEOMETRY(Point, 3857)
 ```
+`centre` column is understood as a point included in the boundary shape (you can use [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html))
 
-Create indexes on `osm_id`, `tags` and `geometry` columns might be useful depending of your database content.
+Create indexes on `osm_id`, `tags`, `geom` and `centre` columns might be useful depending of your database content.
+
+PdM will autonomously derivate a `pdm_boundary_subdivide` table with usage of [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) function as to improve features intersection with admin boundaries.
 
 ### Data sources
 

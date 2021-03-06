@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { queryParams } = require('./utils');
+const { queryParams, getProjectDays } = require('./utils');
 const marked = require('marked');
 const PROJECTS_PATH = __dirname + '/../projects';
 
@@ -26,6 +26,7 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 		project.idParams = queryParams(Object.assign({}, project.editors.all, project.editors.iD));
 		project.josmParams = queryParams(Object.assign({ changeset_comment: project.editors.all.comment, changeset_hashtags: project.editors.all.hashtags }, project.editors.JOSM));
 		project.icon = `/images/badges/${projectDir.split("_").pop()}.svg`;
+		project.days = getProjectDays(project);
 
 		projects[project.id] = project;
 	}

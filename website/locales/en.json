@@ -132,5 +132,10 @@
 	"OpenStreetMap France": "OpenStreetMap France",
 	"Placer à la position exacte": "Move to exact location",
 	"Rien ici / déjà fait": "Nothing here / Already done",
-	"Filtres": "Filters"
+	"Filtres": "Filters",
+	"Contributions par zone": "Contributions per area",
+	"Région": "Region",
+	"Département": "County",
+	"Commune": "City",
+	"Contributions": "Contributions"
 }

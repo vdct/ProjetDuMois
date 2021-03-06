@@ -10,7 +10,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
-const { foldProjects, queryParams, getMapStyle, getBadgesDetails, getOsmToUrlMappings } = require('./utils');
+const { foldProjects, queryParams, getMapStyle, getMapStatsStyle, getBadgesDetails, getOsmToUrlMappings } = require('./utils');
 const { Pool } = require('pg');
 const { I18n } = require('i18n');
 
@@ -221,6 +221,16 @@ app.get('/projects/:id/stats', (req, res) => {
 		).then(results => ({
 			count: results.rows.length > 0 && results.rows[0].amount
 		})));
+
+		allPromises.push(pool.query(
+			`SELECT admin_level, max(nb) AS amount FROM pdm_boundary_tiles WHERE project = $1 GROUP BY admin_level`,
+			[ req.params.id ]
+		).then(results => {
+			const maxLevel = {};
+			results.rows.forEach(r => maxLevel[r.admin_level] = r.amount);
+			return getMapStatsStyle(p, maxLevel);
+		})
+		.then(mapStyle => ({ mapStyle })));
 	}
 
 	// Fetch user statistics from DB

@@ -43,7 +43,10 @@ const yamlData = {
 	},
 	tags: { load_all: true }
 };
-const preSQL = []; // Suppression des ressources projets
+
+const preSQL = [
+	"DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_tiles CASCADE"
+]; // Suppression des ressources projets
 const postSQL = []; // Creation des ressources projets
 const postUpdateSQL = [];
 
@@ -156,7 +159,7 @@ osmupdate --keep-tempfiles --trust-tempfiles --hour \\
 osmium apply-changes "${OSM_PBF_LATEST}" \\
 	"${OSC_FULL}" \\
 	-O -o "${OSM_PBF_LATEST_UNSTABLE}"
-osmium extract -p "${OSM_POLY}" -s simple "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
+osmium extract -p "${OSM_POLY}" -s smart -S types=boundary,multipolygon "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
 rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
 ${separator}
 

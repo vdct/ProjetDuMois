@@ -110,9 +110,13 @@ name VARCHAR
 admin_level INT
 tags HSTORE
 geom GEOMETRY(Geometry, 3857)
+centre GEOMETRY(Point, 3857)
 ```
+La colonne `centre` est comprise comme étant un point compris dans le périmètre de la limite (vous pouvez utiliser [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html)).
 
-Créer des indexes sur les colonnes osm_id, tags et geometry peut être utile suivant la population d'objets touchée par un projet donné.
+Créer des indexes sur les colonnes `osm_id`, `tags`, `geom` et `centre` peut être utile suivant la population d'objets touchée par un projet donné.
+
+PdM va automatiquement créer une table `pdm_boundary_subdivide` en utilisant [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) pour faciliter le calcul d'intersection entre les objets du projet et le zonage administratif.
 
 ### Sources de données
 

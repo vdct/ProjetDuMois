@@ -13,7 +13,7 @@ const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop
 const OSM_PBF_LATEST_UNSTABLE = OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf");
 const OSM_PBF_LATEST_UNSTABLE_FILTERED = OSM_PBF_LATEST.replace(".osm.pbf", ".new-local.osm.pbf");
 const OSM_POLY = OSM_PBF_LATEST.replace("-internal.osm.pbf", ".poly");
-const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE || true;
+const IMPOSM_ENABLED = CONFIG.hasOwnProperty("DB_USE_IMPOSM_UPDATE") ? CONFIG.DB_USE_IMPOSM_UPDATE : true;
 const IMPOSM_YML = CONFIG.WORK_DIR + '/imposm.yml';
 const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
@@ -45,24 +45,26 @@ const yamlData = {
 };
 
 const preSQL = [
-	"DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_tiles CASCADE"
+	"DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_tiles CASCADE",
+	"DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_subdivide CASCADE"
 ]; // Suppression des ressources projets
 const postSQL = []; // Creation des ressources projets
 const postUpdateSQL = [];
 
 Object.entries(projects).forEach(e => {
 	const [ id, project ] = e;
-	const tableData = {
-		mapping: project.database.imposm.mapping,
-		columns: [
-			{ name: 'osm_id', type: 'id' },
-			{ name: 'name', key: 'name', type: 'string' },
-			{ name: 'tags', type: 'hstore_tags' },
-			{ name: 'geom', type: 'geometry' }
-		]
-	};
-
+	
 	if (IMPOSM_ENABLED) {
+		const tableData = {
+			mapping: project.database.imposm.mapping,
+			columns: [
+				{ name: 'osm_id', type: 'id' },
+				{ name: 'name', key: 'name', type: 'string' },
+				{ name: 'tags', type: 'hstore_tags' },
+				{ name: 'geom', type: 'geometry' }
+			]
+		};
+
 		project.database.imposm.types.forEach(type => {
 			yamlData.tables[`project_${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
 		});
@@ -209,6 +211,7 @@ if [ "$mode" == "init" ]; then
 
 	echo "Post SQL..."
 	${postSQLFull}
+	psql "${PSQL_DB}" -f "${__dirname}/22_features_post_init.sql"
 else
 	echo "Post Update SQL..."
 	${postUpdateSQLFull}

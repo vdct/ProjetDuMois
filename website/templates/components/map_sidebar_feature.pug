@@ -138,10 +138,10 @@ script.
 			let editorTags = [];
 
 			for(let field of editors.pdm.fields) {
-				if(field.tag && !field.tag.startsWith("_")) { editorTags.push(field.tag); }
-				else if(field.tags) { editorTags = editorTags.concat(Object.keys(field.tags)); }
-
 				if(field.type !== "hidden") {
+					if(field.tag && !field.tag.startsWith("_")) { editorTags.push(field.tag); }
+					else if(field.tags) { editorTags = editorTags.concat(Object.keys(field.tags)); }
+
 					if(tags[field.tag]) {
 						const p = document.createElement("p");
 						p.classList.add("mb-1");

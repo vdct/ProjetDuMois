@@ -323,14 +323,8 @@ script.
 				mapStats.addControl(fsctrl);
 			}
 
-			const findFeature = features => {
-				const z = mapStats.getZoom();
-				const admLevel = z <= 5 ? "4" : (z <= 8 ? "6" : "8");
-				return features.find(ft => ft.properties.admin_level == admLevel && ft.properties.project === "#{id}");
-			};
-
 			mapStats.on("click", "boundary", e => {
-				const f = findFeature(e.features);
+				const f = e.features.pop();
 
 				if(f) {
 					mapStats.getCanvas().style.cursor = 'pointer';
@@ -352,8 +346,8 @@ script.
 						type: "line",
 						data: {
 							datasets: [{
-								label: "#{__("Contributions")}",
-								data: projectDays.map(d => ({ t: d, y: fStats[d] || 0 })),
+								label: "#{__("Nombre total")}",
+								data: projectDays.map(d => ({ t: d, y: fStats[d] || 0 })).filter((d,i) => d.y != 0 || i < projectDays.length - 1),
 								fill: false,
 								borderColor: "#388E3C",
 								lineTension: 0
@@ -361,7 +355,6 @@ script.
 						},
 						options: {
 							responsive: true,
-							legend: { display: false },
 							scales: {
 								xAxes: [{
 									type: 'time',
@@ -388,7 +381,7 @@ script.
 
 			mapStats.on("mousemove", "boundary", e => {
 				if(isMobile) { return; }
-				const f = findFeature(e.features);
+				const f = e.features.pop();
 
 				if(f) {
 					mapStats.getCanvas().style.cursor = 'pointer';

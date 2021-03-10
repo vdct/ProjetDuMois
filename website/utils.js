@@ -230,24 +230,24 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 		if(p && p.statistics && p.statistics.count) {
 			sources.boundary = {
 				type: "vector",
-				tiles: [ `${CONFIG.PDM_TILES_URL}/public.pdm_boundary_tiles/{z}/{x}/{y}.mvt` ],
+				tiles: [ `${CONFIG.PDM_TILES_URL}/public.pdm_boundary_project_tiles/{z}/{x}/{y}.mvt?project_id=${p.id}` ],
 				maxzoom: 14
 			};
 
 			const condOpacity = ["interpolate", ["linear"], ["zoom"],
-				4.9, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 4]], 1, 0 ],
+				4.9, ["case", ["==", ["get", "admin_level"], 4], 1, 0 ],
 				5, 0,
-				5.1, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 6]], 1, 0 ],
-				7.9, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 6]], 1, 0 ],
+				5.1, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],
+				7.9, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],
 				8, 0,
-				8.1, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 8]], 1, 0 ]
+				8.1, ["case", ["==", ["get", "admin_level"], 8], 1, 0 ]
 			];
 
 			layers.push({
 				id: "boundary",
 				source: "boundary",
 				type: "circle",
-				"source-layer": "public.pdm_boundary_tiles",
+				"source-layer": "public.pdm_boundary_project_tiles",
 				layout: {
 					"circle-sort-key": ["-", ["get", "nb"]]
 				},

@@ -37,6 +37,7 @@ const CSV_NOTES_USERS = CONFIG.WORK_DIR + '/usernames_notes.csv';
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql "postgres://@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
+const HAS_BOUNDARY = `${PSQL} -c "SELECT * FROM pdm_boundary LIMIT 1" > /dev/null 2>&1 `;
 
 const runForAll = process.argv.slice(2).pop() === "all";
 
@@ -283,6 +284,10 @@ ${PSQL} -c "TRUNCATE TABLE pdm_changes_tmp"
 ${PSQL} -c "\\COPY pdm_changes_tmp (project, action, osmid, version, ts, username, userid, tags) FROM '${CSV_CHANGES}' CSV"
 
 ${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/13_changes_populate.sql"
+if ${HAS_BOUNDARY}; then
+	${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/13_changes_boundary.sql"
+fi
+${PSQL} -c "DROP TABLE pdm_changes_tmp"
 
 if [ -f "${__dirname}/../projects/${project.id}/contribs.sql" ]; then
 	echo "Including project custom contributions"
@@ -301,7 +306,9 @@ echo "== Statistics for project ${project.id}"`;
 		script += `
 echo "   => Count features"
 ${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
-${PSQL} -c "DELETE FROM pdm_feature_counts_per_boundary WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
+if ${HAS_BOUNDARY}; then
+	${PSQL} -c "DELETE FROM pdm_feature_counts_per_boundary WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
+fi
 
 echo "Counting from \$cnt_timestamp"
 days=""
@@ -329,7 +336,9 @@ for day in "\${days[@]}"; do
 	fi
 
 	${PSQL} -c "INSERT INTO pdm_feature_counts (project,ts,amount) VALUES ('${project.id}', '\${day}T23:59:59Z', \${nbday}) ON CONFLICT (project,ts) DO UPDATE SET amount=EXCLUDED.amount"
-	${PSQL} -c "INSERT INTO pdm_feature_counts_per_boundary(project, boundary, ts, amount) SELECT '${project.id}' as project, boundary, '\${day}T23:59:59Z' AS ts, count(*) as amount FROM pdm_features_boundary WHERE project='${project.id}' AND ('\${day}T23:59:59Z' BETWEEN start_ts AND end_ts OR (start_ts is null and end_ts is null) OR '\${day}T23:59:59Z' > start_ts OR '\${day}T23:59:59Z' < end_ts) GROUP BY project, boundary ON CONFLICT (project,boundary,ts) DO UPDATE SET amount=EXCLUDED.amount"
+	if ${HAS_BOUNDARY}; then
+		${PSQL} -c "INSERT INTO pdm_feature_counts_per_boundary(project, boundary, ts, amount) SELECT '${project.id}' as project, boundary, '\${day}T23:59:59Z' AS ts, count(*) as amount FROM pdm_features_boundary WHERE project='${project.id}' AND ('\${day}T23:59:59Z' BETWEEN start_ts AND end_ts OR (start_ts is null and end_ts is null) OR '\${day}T23:59:59Z' > start_ts OR '\${day}T23:59:59Z' < end_ts) GROUP BY project, boundary ON CONFLICT (project,boundary,ts) DO UPDATE SET amount=EXCLUDED.amount"
+	fi
 done
 rm -f "${osmStats}"
 `;
@@ -362,8 +371,11 @@ rm -f "${CSV_NOTES}" "${CSV_NOTES_CONTRIBS}" "${CSV_NOTES_USERS}"`;
 
 script += `
 echo "== Optimize database"
+if ${HAS_BOUNDARY}; then
+	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_subdivide"
+	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_tiles"
+fi
 ${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"
-${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_tiles"
 ${separator}
 
 rm -f "${CONFIG.WORK_DIR}/osh_timestamp"

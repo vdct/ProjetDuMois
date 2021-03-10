@@ -6,6 +6,7 @@ WITH contribs AS (
 	WINDOW w AS (PARTITION BY osmid ORDER BY version)
 )
 UPDATE pdm_changes SET contrib='add_covid'
+FROM contribs
 WHERE pdm_changes.contrib IS NULL AND pdm_changes.project=contribs.project AND pdm_changes.osmid=contribs.osmid AND pdm_changes.ts=contribs.ts AND contribs.prev AND contribs.curr;
 
 WITH contribs AS (
@@ -16,4 +17,5 @@ WITH contribs AS (
 	WINDOW w AS (PARTITION BY osmid ORDER BY version)
 )
 UPDATE pdm_changes SET contrib='edit_covid'
+FROM contribs
 WHERE pdm_changes.contrib IS NULL AND pdm_changes.project=contribs.project AND pdm_changes.osmid=contribs.osmid AND pdm_changes.ts=contribs.ts AND contribs.prev IS NOT NULL AND contribs.curr IS NOT NULL AND contribs.prev != contribs.curr;

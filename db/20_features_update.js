@@ -26,7 +26,7 @@ const UNINSTALL_SCRIPT = __dirname+'/91_project_uninstall_tmp.sql';
 // Generate Imposm YAML config file
 const yamlData = {
 	tables: {
-		'boundary': {
+		'boundary_osm': {
 			type: 'polygon',
 			mapping: { boundary: ['administrative'] },
 			filters: {
@@ -51,20 +51,27 @@ const preSQL = [
 const postSQL = []; // Creation des ressources projets
 const postUpdateSQL = [];
 
+if(IMPOSM_ENABLED) {
+	preSQL.push(`DROP MATERIALIZED VIEW IF EXISTS pdm_boundary CASCADE`);
+	postSQL.push(`CREATE MATERIALIZED VIEW pdm_boundary AS SELECT *, ST_Centroid(geom)::GEOMETRY(Point, 3857) AS centre FROM pdm_boundary_osm`);
+	postSQL.push(`CREATE INDEX pdm_boundary_osm_id_idx ON pdm_boundary(osm_id);`);
+	postUpdateSQL.push(`REFRESH MATERIALIZED VIEW pdm_boundary`);
+}
+
 Object.entries(projects).forEach(e => {
 	const [ id, project ] = e;
-	
-	if (IMPOSM_ENABLED) {
-		const tableData = {
-			mapping: project.database.imposm.mapping,
-			columns: [
-				{ name: 'osm_id', type: 'id' },
-				{ name: 'name', key: 'name', type: 'string' },
-				{ name: 'tags', type: 'hstore_tags' },
-				{ name: 'geom', type: 'geometry' }
-			]
-		};
 
+	const tableData = {
+		mapping: project.database.imposm.mapping,
+		columns: [
+			{ name: 'osm_id', type: 'id' },
+			{ name: 'name', key: 'name', type: 'string' },
+			{ name: 'tags', type: 'hstore_tags' },
+			{ name: 'geom', type: 'geometry' }
+		]
+	};
+
+	if (IMPOSM_ENABLED) {
 		project.database.imposm.types.forEach(type => {
 			yamlData.tables[`project_${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
 		});
@@ -122,7 +129,7 @@ if (IMPOSM_ENABLED){
 }
 
 // View for multi-type layers
-const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t\t");
+const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t");
 const sqlToScript = sqlin => sqlin.map(vs => (`${vs};`)).join("\n\t");
 const preSQLFull = preSQL.length > 0 ? sqlToFull(preSQL) : "";
 const postSQLFull = postSQL.length > 0 ? sqlToFull(postSQL) : "";

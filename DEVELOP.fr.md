@@ -114,43 +114,47 @@ geom GEOMETRY(Geometry, 3857)
 
 Créer des indexes sur les colonnes osm_id, tags et geometry peut être utile suivant la population d'objets touchée par un projet donné.
 
-### Sources de données
+### Sources de tuiles
 
-Plusieurs sources de données sont mobilisables, et sont à faire apparaître dans le champ `datasources` du fichier `info.json`.
+Plusieurs sources de tuiles sont mobilisables, et sont à faire apparaître dans le champ `datasources` du fichier `info.json`.
 
 #### Osmose
 
 [Osmose](https://wiki.openstreetmap.org/wiki/Osmose) est un outil d'analyse qualité et d'aide à l'intégration de données ouvertes. Les propriétés à renseigner sont les suivantes :
 
-* `source` : type de source, valeur obligatoire `osmose`
+* `source` (obligatoire `osmose`): type de source
 * `item` : numéro d'item (code à quatre chiffres)
-* `class` : (optionel) numéro de classe (code à plusieurs chiffres)
-* `country` : (optionel) motif de nom de pays Osmose (exemple `france*`)
+* `class` (optionnel) : numéro de classe (code à plusieurs chiffres)
+* `country` (optionnel) : motif de nom de pays Osmose (exemple `france*`)
 * `name` : nom à faire apparaître à l'utilisateur
-* `subtitles` : (optionel) objet clé > valeur pour remplacer les sous-titres des signalements Osmose (recherche par motif)
+* `subtitles` (optionnel) : objet clé > valeur pour remplacer les sous-titres des signalements Osmose (recherche par motif)
 * `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "done": "C'est fait", "false": "Rien ici" }`)
-* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `minZoom` (défaut 7): Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` (défaut 18): Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `tiles` (défaut) : Liste d'URL TMS
 
 #### Notes OSM
 
 Les [notes OpenStreetMap](https://wiki.openstreetmap.org/wiki/Notes) sont une méthode simple pour envoyer des commentaires textuels par dessus la carte, et faciliter la contribution par des publics novices. Les propriétés à renseigner sont les suivantes :
 
-* `source` : type de source, valeur obligatoire `notes`
+* `source` (obligatoire `notes`): type de source
 * `name` : nom à faire apparaître à l'utilisateur
 * `description` : texte descriptif indiquant la méthode de résolution d'une note
 * `terms` : liste des termes à rechercher dans les notes (au singulier)
 * `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "close": "C'est fait" }`)
+* `data` (défaut) : GeoJson de données de la couche
 
 #### Objets OpenStreetMap
 
 Les objets actuellement présents dans OpenStreetMap peuvent être affichés pour éviter les doublons et permettre leur édition. Les propriétés à renseigner sont les suivantes :
 
-* `source` : type de source, valeur obligatoire `osm`
+* `source` (obligatoire `osm`): type de source
 * `name` : nom à faire apparaître à l'utilisateur
 * `description` : texte descriptif de l'objet affiché
-* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `minZoom` (défaut 7) : Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `tiles` (défaut) : Liste d'URL TMS
+* `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database` de `info.json`.
 
@@ -158,11 +162,13 @@ Cette source ne peut apparaître qu'une seule fois, et correspond aux objets rec
 
 Des objets indirectement liés au projet mais pertinents pour la contribution peuvent également apparaître. Les propriétés à renseigner sont les suivantes :
 
-* `source` : type de source, valeur obligatoire `osm-compare`
+* `source` (obligatoire `osm-compare`): type de source
 * `name` : nom à faire apparaître à l'utilisateur
 * `description` : texte descriptif de l'objet affiché
-* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `minZoom` (défaut 9) : Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `tiles` (défaut) : Liste d'URL TMS
+* `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
 
@@ -170,17 +176,26 @@ Cette source ne peut apparaître qu'une seule fois, et correspond aux objets rec
 
 Des couches raster peuvent être ajoutées en fond de carte pour faciliter la contribution ou donner plus de contexte. Les propriétés suivantes doivent être définies :
 
-* `source` : type de source, valeur obligatoire `background`
-* `icon` : le symbole à afficher dans la légende (au choix `aerial`, `thematic`, `other`, par défaut `other`)
+* `source` (obligatoire `background`): type de source
+* `icon` (défaut `other`): le symbole à afficher dans la légende (au choix `aerial`, `thematic`, `other` )
 * `name` : nom à faire apparaître à l'utilisateur
 * `tiles` : Tableau d'URL TMS
 * `attribution` : Attribution à faire apparaitre sur la carte
-* `minZoom` : Niveau de zoom minimum au delà duquel la couche est visible (défaut 2)
-* `maxZoom` : Niveau de zoom maximal au delà duquel la couche n'est plus visible (défaut 19)
-* `tileSize` : Taille d'une arrête de tuile en pixels (défaut 256)
+* `minZoom` (défaut 2) : Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` (défaut 19) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `tileSize` (défaut 256) : Taille d'une arrête de tuile en pixels
 
 Ces sources doivent être déclarées dans l'ordre inverse d'apparition. La couche inférieure doit être donnée en premier.
 
+#### Sources stats
+
+Pour activer l'affichage de statistiques selon le découpage administratif, vous pouvez ajouter la couche ayant la définition suivante :
+
+* `source` (obligatoire `stats`): type de source
+* `minZoom` (défaut 2) : Niveau de zoom minimum au delà duquel la couche est visible
+* `maxZoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+* `tiles` (défaut) : Tableau d'URL TMS
+* `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
 ### Décomptes et statistiques
 

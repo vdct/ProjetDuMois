@@ -11,6 +11,19 @@ function flatten(array) {
 		return [array[0]].concat(flatten(array.slice(1)));
 }
 
+let filterDatasource = (obj = {}) => {
+	const authorized = ["minzoom", "maxzoom", "tiles", "tileSize", "layers", "data"];
+	const out = {};
+
+	Object.entries(obj).forEach(e => {
+		if(authorized.includes(e[0]) && e[1] !== undefined && e[1] !== null) {
+			out[e[0]] = e[1];
+		}
+	});
+
+	return out;
+};
+
 // Get current+past projects
 exports.foldProjects = (projects) => {
 	const prjs = { past: [], current: [], next: [] };
@@ -47,9 +60,10 @@ exports.getMapStyle = (p) => {
 	.then(res => res.json())
 	.then(style => {
 		const legend = [];
-		let vectorMinZoom = 50;
+		let vectorMinZoom;
 		let sources = {};
 		let layers = [];
+		const updateVectorMinZoom = val => { vectorMinZoom = !isNaN(parseFloat(val)) ? Math.min(vectorMinZoom === undefined ? 50 : vectorMinZoom, parseFloat(val)) : vectorMinZoom; }
 
 		if(p) {
 			const circlePaint = {
@@ -74,7 +88,7 @@ exports.getMapStyle = (p) => {
 				]
 			};
 
-			// Backgrounds
+			// Source backgrounds
 			p.datasources
 			.filter(ds => "background" === ds.source)
 			.forEach((ds, dsid) => {
@@ -83,9 +97,9 @@ exports.getMapStyle = (p) => {
 				sources[id] = Object.assign({
 					minZoom: 2,
 					maxZoom: 19,
-					tileSize: 256,
-					type: "raster"
-				}, ds);
+					tileSize: 256
+				}, filterDatasource(ds));
+				sources[id].type = "raster";
 
 				layers.push({
 					id: id,
@@ -97,27 +111,28 @@ exports.getMapStyle = (p) => {
 				legend.push({ media: "raster", color:null, label: ds.name, layerId: id, icon: ds.icon });
 			});
 
-			// OSM Compare
+			// Source OSM Compare
 			p.datasources
 			.filter(ds => "osm-compare" === ds.source)
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#FF7043"; // Orange
 				const layer = `public.pdm_project_${p.id.split("_").pop()}_compare_tiles_filtered`;
-				let minZoom = ds.hasOwnProperty("minZoom") && ds.minZoom > 0 ? ds.minZoom : 9
-				vectorMinZoom = Math.min(vectorMinZoom, minZoom);
-				sources[id] = {
-					type: "vector",
+
+				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
-					minzoom: minZoom,
-					maxzoom: ds.hasOwnProperty("maxZoom") && ds.maxZoom > 0 ? ds.maxZoom : 14
-				};
+					layers: [ layer ],
+					minzoom: 9,
+					maxzoom: 14
+				}, filterDatasource(ds));
+				sources[id].type = "vector";
+				updateVectorMinZoom(sources[id].minZoom);
 
 				layers.push({
 					id: id,
 					source: id,
 					type: "circle",
-					"source-layer": layer,
+					"source-layer": sources[id].layers[0],
 					paint: {
 						"circle-color": color,
 						"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 9, 0, 10, 1 ],
@@ -128,68 +143,72 @@ exports.getMapStyle = (p) => {
 				legend.push({ media: "vector", color, label: ds.name, layerId: id });
 			});
 
-			// OSM
+			// Source osm
 			p.datasources
 			.filter(ds => "osm" === ds.source)
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#2E7D32"; // Green
 				const layer = `public.pdm_project_${p.id.split("_").pop()}`;
-				let minZoom = ds.hasOwnProperty("minZoom") && ds.minZoom > 0 ? ds.minZoom : 7
-				vectorMinZoom = Math.min(vectorMinZoom, minZoom);
-				sources[id] = {
-					type: "vector",
+
+				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
-					minzoom: minZoom,
-					maxzoom: ds.hasOwnProperty("maxZoom") && ds.maxZoom > 0 ? ds.maxZoom : 14
-				};
+					layers: [ layer ],
+					minzoom: 7,
+					maxzoom: 14
+				}, filterDatasource(ds));
+				sources[id].type = "vector";
+				updateVectorMinZoom(sources[id].minZoom);
 
 				layers.push({
 					id: id,
 					source: id,
 					type: "circle",
-					"source-layer": layer,
+					"source-layer": sources[id].layers[0],
 					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 				});
 
 				legend.push({ media: "vector", color, label: ds.name, layerId: id });
 			});
 
-			// Osmose
+			// Source osmose
 			p.datasources
 			.filter(ds => ds.source === "osmose")
 			.forEach(ds => {
 				const id = `${ds.source}_${ds.item}_${ds.class || "all"}`;
 				const params = { item: ds.item, class: ds.class, country: ds.country };
 				const color = ds.color || "#b71c1c"; // Red
-				let minZoom = ds.hasOwnProperty("minZoom") && ds.minZoom > 0 ? ds.minZoom : 7
-				vectorMinZoom = Math.min(vectorMinZoom, minZoom);
 
-				sources[id] = {
-					type: "vector",
+				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.OSMOSE_URL}/api/0.3/issues/{z}/{x}/{y}.mvt?${exports.queryParams(params)}` ],
-					minzoom: minZoom,
-					maxzoom: ds.hasOwnProperty("maxZoom") && ds.maxZoom > 0 ? ds.maxZoom : 18
-				};
+					layers: [ "issues" ],
+					minzoom: 7,
+					maxzoom: 18
+				}, filterDatasource(ds));
+				sources[id].type = "vector";
+				updateVectorMinZoom(sources[id].minZoom);
 
 				layers.push({
 					id: id,
 					source: id,
 					type: "circle",
-					"source-layer": "issues",
+					"source-layer": sources[id].layers[0],
 					paint: Object.assign({ "circle-stroke-color": color }, circlePaint)
 				});
 
 				legend.push({ media: "vector", color, label: ds.name, layerId: id });
 			});
 
-			// Notes
+			// Source notes
 			p.datasources
 			.filter(ds => ds.source === "notes")
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#01579B"; // Blue
-				sources[id] = { type: "geojson", data: { type: "FeatureCollection", features: [] } };
+				sources[id] = Object.assign({
+					data: { type: "FeatureCollection", features: [] }
+				}, filterDatasource(ds));
+				sources[id].type = "geojson";
 
 				layers.push({
 					id: id,
@@ -207,7 +226,7 @@ exports.getMapStyle = (p) => {
 
 		return {
 			mapstyle: style,
-			minZoom: vectorMinZoom,
+			minZoom: vectorMinZoom === undefined ? 7 : vectorMinZoom,
 			legend: legend.reverse(),
 			pdmSources: Object.keys(sources)
 		};
@@ -264,6 +283,45 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 						0
 					]
 				}
+			});
+
+			// Source stats
+			p.datasources
+			.filter(ds => "stats" === ds.source)
+			.forEach((ds, dsid) => {
+				const id = `${ds.source}_${dsid}`;
+				let layer = "public.pdm_boundary_tiles";
+
+				sources[id] = Object.assign({
+					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+					layers: [ layer ],
+					minzoom: 2,
+					maxzoom: 14
+				}, filterDatasource(ds));
+				sources[id].type = "vector";
+
+				layers.push({
+					id: id,
+					source: id,
+					type: "circle",
+					"source-layer": sources[id].layers[0],
+					layout: {
+						"circle-sort-key": ["-", ["get", "nb"]]
+					},
+					paint: {
+						"circle-stroke-color": "white",
+						"circle-stroke-width": 2,
+						"circle-stroke-opacity": condOpacity,
+						"circle-color": ["match", ["get", "admin_level"], 4, legend["4"].color, 6, legend["6"].color, legend["8"].color],
+						"circle-opacity": condOpacity,
+						"circle-radius": ["match", ["get", "admin_level"],
+							4, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["4"].minValue, legend["4"].minSize, legend["4"].maxValue, legend["4"].maxSize],
+							6, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["6"].minValue, legend["6"].minSize, legend["6"].maxValue, legend["6"].maxSize],
+							8, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["8"].minValue, legend["8"].minSize, legend["8"].maxValue, legend["8"].maxSize],
+							0
+						]
+					}
+				});
 			});
 		}
 

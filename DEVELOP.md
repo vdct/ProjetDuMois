@@ -122,35 +122,39 @@ Several data sources can be used, and are to be displayed in the `datasources` f
 
 [Osmose](https://wiki.openstreetmap.org/wiki/Osmose) is a tool for quality analysis and open data integration. The properties to be filled in are the following:
 
-* `source`: source type, mandatory value `osmose`
+* `source` (mandatory `osmose`): source type
 * `item`: item number (four-digit code)
-* `class` : (optional) class number (multi-digit code)
-* `country` : (optional) Osmose country name pattern (example `france*`)
+* `class` (optional): class number (multi-digit code)
+* `country` (optional): Osmose country name pattern (example `france*`)
 * `name`: name to be displayed to the user
-* `subtitles` : (optional) key object > value to replace the subtitles of Osmose reports (search by pattern)
-* `buttons` : label to be displayed on the edit buttons (example `{ "done": "It's done", "false": "Nothing here" }`)
-* `minZoom` : minimum zoom level for making this layer visible
-* `maxZoom` : maximum zoom level for making this layer visible
+* `subtitles` (optional): key object > value to replace the subtitles of Osmose reports (search by pattern)
+* `buttons`: label to be displayed on the edit buttons (example `{ "done": "It's done", "false": "Nothing here" }`)
+* `minZoom` (default 7): minimum zoom level for making this layer visible
+* `maxZoom` (default 18): maximum zoom level for making this layer visible
+* `tiles` (default): TMS URL list
 
 #### OSM Notes
 
 The [OpenStreetMap notes](https://wiki.openstreetmap.org/wiki/Notes) are a simple method for sending text comments on the map, and facilitate contribution by novice audiences. The properties to be filled in are the following:
 
-* `source`: source type, mandatory value `notes`
+* `source` (mandatory `notes`): source type
 * `name`: name to be displayed to the user
 * `description`: descriptive text explaining the resolution method for a note
 * `terms`: list of terms to search for in the notes (singular)
-* `buttons` : label to display on the edit buttons (example `{ "close": "It's done" }`)
+* `buttons`: label to display on the edit buttons (example `{ "close": "It's done" }`)
+* `data` (default): data in Geojson format
 
 #### OpenStreetMap objects
 
 Objects currently present in OpenStreetMap can be displayed to avoid duplicates and allow editing. The properties to be filled in are the following:
 
-* `source`: source type, mandatory value `osm`
+* `source` (mandatory `osm`): source type
 * `name`: name to be displayed to the user
-* `description` : descriptive text of the displayed object
-* `minZoom` : minimum zoom level for making this layer visible
-* `maxZoom` : maximum zoom level for making this layer visible
+* `description`: descriptive text of the displayed object
+* `minZoom` (default 7): minimum zoom level for making this layer visible
+* `maxZoom` (default 14): maximum zoom level for making this layer visible
+* `tiles` (default): TMS URL list
+* `layers` (default): Layer names list to use and corresponding to `tiles` indices
 
 This source can appear only once, and corresponds to the objects searched for in the `database` options of `info.json`.
 
@@ -158,11 +162,13 @@ This source can appear only once, and corresponds to the objects searched for in
 
 Objects indirectly related to the project but relevant to the contribution may also appear. The properties to be filled in are the following:
 
-* `source`: type of source, mandatory value `osm-compare`
+* `source` (mandatory `osm-compare`): type of source, mandatory value `osm-compare`
 * `name`: name to be displayed to the user
-* `description` : descriptive text of the displayed object
-* `minZoom` : minimum zoom level for making this layer visible
-* `maxZoom` : maximum zoom level for making this layer visible
+* `description`: descriptive text of the displayed object
+* `minZoom` (default 9): minimum zoom level for making this layer visible
+* `maxZoom` (default 14): maximum zoom level for making this layer visible
+* `tiles` (default): TMS URL list
+* `layers` (default): Layer names list to use and corresponding to `tiles` indices
 
 This source can only appear once, and corresponds to the objects searched for in the `database.compare` options of `info.json`.
 
@@ -170,17 +176,26 @@ This source can only appear once, and corresponds to the objects searched for in
 
 Raster tile imagery can be added in background to make contribution easier or give context. You have to define following properties:
 
-* `source` : type of source, should be set to `background`
-* `icon` : symbol to display in legend (between `aerial`, `thematic`, `other`, defaults to `other`)
-* `name` : name shown to users
-* `tiles` : list of TMS URL
-* `attribution` : attribution to display on map
-* `minZoom` : minimum zoom level for making this layer visible (defaults to 2)
-* `maxZoom` : maximum zoom level for making this layer visible (defaults to 19)
-* `tileSize` : width and length of a tile in pixels (defaults to 256)
+* `source` (mandatory `background`): type of source
+* `icon` (default `other`): symbol to display in legend (between `aerial`, `thematic`, `other`)
+* `name`: name shown to users
+* `tiles` (default): list of TMS URL
+* `attribution`: attribution to display on map
+* `minZoom` (default 2): minimum zoom level for making this layer visible
+* `maxZoom` (default 19): maximum zoom level for making this layer visible
+* `tileSize` (default 256): width and length of a tile in pixels
 
 These sources should be declared in reverse order of display. The lower layer should be declared first.
 
+#### Sources stats
+
+Another kind of datasource can be added and refers to geographical statistics, over administrative boundaries for instance
+
+* `source` (mandatory `stats`): statistics source type
+* `minZoom` (default 2): minimum zoom level for making this layer visible
+* `maxZoom` (default 14): maximum zoom level for making this layer visible
+* `tiles` (default): list of TMS URL
+* `layers` (default): Layer names list to use and corresponding to `tiles` indices
 
 ### Feature counts and statistics
 

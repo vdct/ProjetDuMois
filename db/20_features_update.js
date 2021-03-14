@@ -13,7 +13,7 @@ const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop
 const OSM_PBF_LATEST_UNSTABLE = OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf");
 const OSM_PBF_LATEST_UNSTABLE_FILTERED = OSM_PBF_LATEST.replace(".osm.pbf", ".new-local.osm.pbf");
 const OSM_POLY = OSM_PBF_LATEST.replace("-internal.osm.pbf", ".poly");
-const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE || true;
+const IMPOSM_ENABLED = CONFIG.hasOwnProperty("DB_USE_IMPOSM_UPDATE") ? CONFIG.DB_USE_IMPOSM_UPDATE : true;
 const IMPOSM_YML = CONFIG.WORK_DIR + '/imposm.yml';
 const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
@@ -26,7 +26,7 @@ const UNINSTALL_SCRIPT = __dirname+'/91_project_uninstall_tmp.sql';
 // Generate Imposm YAML config file
 const yamlData = {
 	tables: {
-		'boundary': {
+		'boundary_osm': {
 			type: 'polygon',
 			mapping: { boundary: ['administrative'] },
 			filters: {
@@ -45,13 +45,22 @@ const yamlData = {
 };
 
 const preSQL = [
-	"DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_tiles CASCADE"
+	"DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_tiles CASCADE",
+	"DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_subdivide CASCADE"
 ]; // Suppression des ressources projets
 const postSQL = []; // Creation des ressources projets
 const postUpdateSQL = [];
 
+if(IMPOSM_ENABLED) {
+	preSQL.push(`DROP MATERIALIZED VIEW IF EXISTS pdm_boundary CASCADE`);
+	postSQL.push(`CREATE MATERIALIZED VIEW pdm_boundary AS SELECT *, ST_Centroid(geom)::GEOMETRY(Point, 3857) AS centre FROM pdm_boundary_osm`);
+	postSQL.push(`CREATE INDEX pdm_boundary_osm_id_idx ON pdm_boundary(osm_id);`);
+	postUpdateSQL.push(`REFRESH MATERIALIZED VIEW pdm_boundary`);
+}
+
 Object.entries(projects).forEach(e => {
 	const [ id, project ] = e;
+
 	const tableData = {
 		mapping: project.database.imposm.mapping,
 		columns: [
@@ -120,7 +129,7 @@ if (IMPOSM_ENABLED){
 }
 
 // View for multi-type layers
-const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t\t");
+const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t");
 const sqlToScript = sqlin => sqlin.map(vs => (`${vs};`)).join("\n\t");
 const preSQLFull = preSQL.length > 0 ? sqlToFull(preSQL) : "";
 const postSQLFull = postSQL.length > 0 ? sqlToFull(postSQL) : "";
@@ -209,6 +218,7 @@ if [ "$mode" == "init" ]; then
 
 	echo "Post SQL..."
 	${postSQLFull}
+	psql "${PSQL_DB}" -f "${__dirname}/22_features_post_init.sql"
 else
 	echo "Post Update SQL..."
 	${postUpdateSQLFull}

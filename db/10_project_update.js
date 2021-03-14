@@ -29,7 +29,6 @@ const OSC2CSV = __dirname+'/osc2csv.xslt';
 const OSC_USEFULL = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
 const OSC_UPDATES = CONFIG.WORK_DIR + '/changes.osc.gz';
 
-const CSV_COUNT = CONFIG.WORK_DIR + '/count.csv';
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
 const CSV_NOTES = CONFIG.WORK_DIR + '/notes.csv';
 const CSV_NOTES_CONTRIBS = CONFIG.WORK_DIR + '/user_notes.csv';
@@ -38,6 +37,7 @@ const CSV_NOTES_USERS = CONFIG.WORK_DIR + '/usernames_notes.csv';
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql "postgres://@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
+const HAS_BOUNDARY = `${PSQL} -c "SELECT * FROM pdm_boundary LIMIT 1" > /dev/null 2>&1 `;
 
 const runForAll = process.argv.slice(2).pop() === "all";
 
@@ -230,9 +230,6 @@ ${separator}
 `;
 }
 
-script += `
-rm -rf "${CSV_COUNT}"`;
-
 const projectsToProcess = runForAll ? Object.values(projects) : projectsFold.current;
 projectsToProcess.forEach(project => {
 	let oshInput = OSH_UPDATED;
@@ -283,10 +280,13 @@ ${PSQL} -c "DELETE FROM pdm_changes WHERE project='${project.id}' AND ts BETWEEN
 
 ${PSQL} -c "CREATE TABLE IF NOT EXISTS pdm_changes_tmp (LIKE pdm_changes)"
 ${PSQL} -c "TRUNCATE TABLE pdm_changes_tmp"
+
 ${PSQL} -c "\\COPY pdm_changes_tmp (project, action, osmid, version, ts, username, userid, tags) FROM '${CSV_CHANGES}' CSV"
-${PSQL} -c "UPDATE pdm_changes_tmp SET contrib='add' WHERE contrib IS NULL AND version=1"
-${PSQL} -c "UPDATE pdm_changes_tmp SET contrib='edit' WHERE contrib IS NULL AND version>1"
-${PSQL} -c "INSERT INTO pdm_changes SELECT * FROM pdm_changes_tmp ON CONFLICT (project,osmid,version) DO UPDATE SET tags=EXCLUDED.tags, ts=EXCLUDED.ts, username=EXCLUDED.username, action=EXCLUDED.action"
+
+${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/13_changes_populate.sql"
+if ${HAS_BOUNDARY}; then
+	${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/13_changes_boundary.sql"
+fi
 ${PSQL} -c "DROP TABLE pdm_changes_tmp"
 
 if [ -f "${__dirname}/../projects/${project.id}/contribs.sql" ]; then
@@ -296,9 +296,7 @@ fi
 
 rm -f "${CSV_CHANGES}"
 ${separator}
-`;
 
-	script += `
 echo "== Statistics for project ${project.id}"`;
 	let osmStats = OSH_USEFULL.replace("usefull.osh.pbf", `${project.id.split("_").pop()}.stats.osm.pbf`);
 	let osmStatsFiltered = OSH_USEFULL.replace("usefull.osh.pbf", `${project.id.split("_").pop()}.filtered.stats.osm.pbf`);
@@ -308,6 +306,9 @@ echo "== Statistics for project ${project.id}"`;
 		script += `
 echo "   => Count features"
 ${PSQL} -c "DELETE FROM pdm_feature_counts WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
+if ${HAS_BOUNDARY}; then
+	${PSQL} -c "DELETE FROM pdm_feature_counts_per_boundary WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
+fi
 
 echo "Counting from \$cnt_timestamp"
 days=""
@@ -319,7 +320,7 @@ done
 days=($\{days##*( )\})
 for day in "\${days[@]}"; do
 	echo "Processing $day"
-	osmium time-filter "${oshUsefull}" \${day}T23:59:59Z -O -o ${osmStats} -f osm.pbf
+	osmium time-filter "${oshUsefull}" \${day}T23:59:59Z --no-progress -O -o ${osmStats} -f osm.pbf
 	`;
 	let tagFilterLastPart = tagFilterParts.pop();
 	tagFilterParts.forEach(tagFilter => {
@@ -333,7 +334,11 @@ for day in "\${days[@]}"; do
 	if [ "$nbday" == "" ]; then
 		nbday="0"
 	fi
-	echo "${project.id},$day,$nbday" >> "${CSV_COUNT}"
+
+	${PSQL} -c "INSERT INTO pdm_feature_counts (project,ts,amount) VALUES ('${project.id}', '\${day}T23:59:59Z', \${nbday}) ON CONFLICT (project,ts) DO UPDATE SET amount=EXCLUDED.amount"
+	if ${HAS_BOUNDARY}; then
+		${PSQL} -c "INSERT INTO pdm_feature_counts_per_boundary(project, boundary, ts, amount) SELECT '${project.id}' as project, boundary, '\${day}T23:59:59Z' AS ts, count(*) as amount FROM pdm_features_boundary WHERE project='${project.id}' AND ('\${day}T23:59:59Z' BETWEEN start_ts AND end_ts OR (start_ts is null and end_ts is null) OR '\${day}T23:59:59Z' > start_ts OR '\${day}T23:59:59Z' < end_ts) GROUP BY project, boundary ON CONFLICT (project,boundary,ts) DO UPDATE SET amount=EXCLUDED.amount"
+	fi
 done
 rm -f "${osmStats}"
 `;
@@ -365,17 +370,9 @@ rm -f "${CSV_NOTES}" "${CSV_NOTES_CONTRIBS}" "${CSV_NOTES_USERS}"`;
 });
 
 script += `
-if [[ -f "${CSV_COUNT}" ]] && [[ $(wc -l "${CSV_COUNT}")>0 ]]; then
-	${PSQL} -c "CREATE TABLE IF NOT EXISTS pdm_feature_counts_tmp (LIKE pdm_feature_counts)"
-	${PSQL} -c "TRUNCATE TABLE pdm_feature_counts_tmp"
-	${PSQL} -c "\\COPY pdm_feature_counts_tmp FROM '${CSV_COUNT}' CSV"
-	${PSQL} -c "INSERT INTO pdm_feature_counts SELECT * FROM pdm_feature_counts_tmp ON CONFLICT (project,ts) DO UPDATE SET amount=EXCLUDED.amount"
-	${PSQL} -c "DROP TABLE pdm_feature_counts_tmp"
-fi
-rm -f "${CSV_COUNT}"
-
 echo "== Optimize database"
-if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
+if ${HAS_BOUNDARY}; then
+	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_subdivide"
 	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_tiles"
 fi
 ${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"

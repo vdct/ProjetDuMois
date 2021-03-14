@@ -222,15 +222,17 @@ app.get('/projects/:id/stats', (req, res) => {
 			count: results.rows.length > 0 && results.rows[0].amount
 		})));
 
-		allPromises.push(pool.query(
-			`SELECT admin_level, max(nb) AS amount FROM pdm_boundary_tiles WHERE project = $1 GROUP BY admin_level`,
-			[ req.params.id ]
-		).then(results => {
-			const maxLevel = {};
-			results.rows.forEach(r => maxLevel[r.admin_level] = r.amount);
-			return getMapStatsStyle(p, maxLevel);
-		})
-		.then(mapStyle => ({ mapStyle })));
+		if(p.datasources.find(ds => ds.source === "stats")) {
+			allPromises.push(pool.query(
+				`SELECT admin_level, max(nb) AS amount FROM pdm_boundary_tiles WHERE project = $1 GROUP BY admin_level`,
+				[ req.params.id ]
+			).then(results => {
+				const maxLevel = {};
+				results.rows.forEach(r => maxLevel[r.admin_level] = r.amount);
+				return getMapStatsStyle(p, maxLevel);
+			})
+			.then(mapStyle => ({ mapStyle })));
+		}
 	}
 
 	// Fetch user statistics from DB

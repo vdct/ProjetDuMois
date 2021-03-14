@@ -289,153 +289,153 @@ script.
 			});
 
 			// Boundary stats map
-			document.getElementById("map-stats").classList.remove("pdm-loading");
-			const isMobile = window.innerWidth < 576;
-			const mapStats = new mapboxgl.Map({
-				container: 'map-stats',
-				pitchWithRotate: false,
-				dragRotate: false,
-				center: [2.5, 46.0],
-				zoom: 4,
-				style: res.mapStyle.style,
-				minZoom: 4,
-				maxZoom: 10
-			});
+			const mapStatsContainer = document.getElementById("map-stats");
+			mapStatsContainer.classList.remove("pdm-loading");
 
-			const basePopupSize = isMobile ? 250 : 400;
-			const popupHover = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, anchor: "left" });
-			const popupClick = new mapboxgl.Popup({ closeOnClick: false, className: 'map-stats-popup', maxWidth: basePopupSize+'px' });
-			const fsctrl = new mapboxgl.FullscreenControl();
-
-			if(isMobile) {
-				const interactions = ["scrollZoom", "dragPan", "doubleClickZoom", "touchZoomRotate"];
-				interactions.forEach(it => mapStats[it].disable());
-
-				const fsctrl = new mapboxgl.FullscreenControl();
-				window.addEventListener(fsctrl._fullscreenchange, () => {
-					if(fsctrl._isFullscreen()) {
-						interactions.forEach(it => mapStats[it].enable());
-					}
-					else {
-						interactions.forEach(it => mapStats[it].disable());
-					}
+			if(res.mapStyle) {
+				const isMobile = window.innerWidth < 576;
+				const mapStats = new mapboxgl.Map({
+					container: 'map-stats',
+					pitchWithRotate: false,
+					dragRotate: false,
+					center: [2.5, 46.0],
+					zoom: 4,
+					style: res.mapStyle.style,
+					minZoom: 4,
+					maxZoom: 10
 				});
-				mapStats.addControl(fsctrl);
-			}
 
-			const findFeature = features => {
-				const z = mapStats.getZoom();
-				const admLevel = z <= 5 ? "4" : (z <= 8 ? "6" : "8");
-				return features.find(ft => ft.properties.admin_level == admLevel && ft.properties.project === "#{id}");
-			};
+				const basePopupSize = isMobile ? 250 : 400;
+				const popupHover = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, anchor: "left" });
+				const popupClick = new mapboxgl.Popup({ closeOnClick: false, className: 'map-stats-popup', maxWidth: basePopupSize+'px' });
+				const fsctrl = new mapboxgl.FullscreenControl();
 
-			mapStats.on("click", "boundary", e => {
-				const f = findFeature(e.features);
+				if(isMobile) {
+					const interactions = ["scrollZoom", "dragPan", "doubleClickZoom", "touchZoomRotate"];
+					interactions.forEach(it => mapStats[it].disable());
 
-				if(f) {
-					mapStats.getCanvas().style.cursor = 'pointer';
-					const coords = f.geometry.coordinates.slice();
-
-					while (Math.abs(e.lngLat.lng - coords[0]) > 180) {
-						coords[0] += e.lngLat.lng > coords[0] ? 360 : -360;
-					}
-
-					const div = document.createElement("div");
-					div.style.height = (basePopupSize/2)+"px";
-					div.style.width = (basePopupSize+20)+"px";
-					const canvas = document.createElement("canvas");
-					canvas.style.maxWidth = (basePopupSize-20)+"px";
-					canvas.style.maxHeight = (basePopupSize/2)+"px";
-
-					const fStats = JSON.parse(f.properties.stats);
-					const myChart = new Chart(canvas.getContext("2d"), {
-						type: "line",
-						data: {
-							datasets: [{
-								label: "#{__("Contributions")}",
-								data: projectDays.map(d => ({ t: d, y: fStats[d] || 0 })),
-								fill: false,
-								borderColor: "#388E3C",
-								lineTension: 0
-							}]
-						},
-						options: {
-							responsive: true,
-							legend: { display: false },
-							scales: {
-								xAxes: [{
-									type: 'time',
-									bounds: 'ticks',
-									time: {
-										tooltipFormat: "DD/MM",
-										displayFormats: { day: "DD/MM" },
-										round: "day",
-										unit: "day"
-									}
-								}],
-								yAxes: [ yAxeLinear ]
-							}
+					const fsctrl = new mapboxgl.FullscreenControl();
+					window.addEventListener(fsctrl._fullscreenchange, () => {
+						if(fsctrl._isFullscreen()) {
+							interactions.forEach(it => mapStats[it].enable());
+						}
+						else {
+							interactions.forEach(it => mapStats[it].disable());
 						}
 					});
-
-					div.appendChild(document.createTextNode(f.properties.name));
-					div.appendChild(canvas);
-
-					popupHover.remove();
-					popupClick.setLngLat(coords).setDOMContent(div).addTo(mapStats);
+					mapStats.addControl(fsctrl);
 				}
-			});
 
-			mapStats.on("mousemove", "boundary", e => {
-				if(isMobile) { return; }
-				const f = findFeature(e.features);
+				mapStats.on("click", "stats_0", e => {
+					const f = e.features.pop();
 
-				if(f) {
-					mapStats.getCanvas().style.cursor = 'pointer';
-					const coords = f.geometry.coordinates.slice();
+					if(f) {
+						mapStats.getCanvas().style.cursor = 'pointer';
+						const coords = f.geometry.coordinates.slice();
 
-					while (Math.abs(e.lngLat.lng - coords[0]) > 180) {
-						coords[0] += e.lngLat.lng > coords[0] ? 360 : -360;
+						while (Math.abs(e.lngLat.lng - coords[0]) > 180) {
+							coords[0] += e.lngLat.lng > coords[0] ? 360 : -360;
+						}
+
+						const div = document.createElement("div");
+						div.style.height = (basePopupSize/2)+"px";
+						div.style.width = (basePopupSize+20)+"px";
+						const canvas = document.createElement("canvas");
+						canvas.style.maxWidth = (basePopupSize-20)+"px";
+						canvas.style.maxHeight = (basePopupSize/2)+"px";
+
+						const fStats = JSON.parse(f.properties.stats);
+						const myChart = new Chart(canvas.getContext("2d"), {
+							type: "line",
+							data: {
+								datasets: [{
+									label: "#{__("Nombre total")}",
+									data: projectDays.map(d => ({ t: d, y: fStats[d] || 0 })).filter((d,i) => d.y != 0 || i < projectDays.length - 1),
+									fill: false,
+									borderColor: "#388E3C",
+									lineTension: 0
+								}]
+							},
+							options: {
+								responsive: true,
+								scales: {
+									xAxes: [{
+										type: 'time',
+										bounds: 'ticks',
+										time: {
+											tooltipFormat: "DD/MM",
+											displayFormats: { day: "DD/MM" },
+											round: "day",
+											unit: "day"
+										}
+									}],
+									yAxes: [ yAxeLinear ]
+								}
+							}
+						});
+
+						div.appendChild(document.createTextNode(f.properties.name));
+						div.appendChild(canvas);
+
+						popupHover.remove();
+						popupClick.setLngLat(coords).setDOMContent(div).addTo(mapStats);
 					}
+				});
+
+				mapStats.on("mousemove", "stats_0", e => {
+					if(isMobile) { return; }
+					const f = e.features.pop();
+
+					if(f) {
+						mapStats.getCanvas().style.cursor = 'pointer';
+						const coords = f.geometry.coordinates.slice();
+
+						while (Math.abs(e.lngLat.lng - coords[0]) > 180) {
+							coords[0] += e.lngLat.lng > coords[0] ? 360 : -360;
+						}
+
+						const div = document.createElement("div");
+						div.appendChild(document.createTextNode(`${f.properties.name} : ${f.properties.nb}`));
+						popupHover.setLngLat(coords).setDOMContent(div).addTo(mapStats);
+					}
+				});
+
+				mapStats.on("mouseleave", "stats_0", () => {
+					mapStats.getCanvas().style.cursor = '';
+					popupHover.remove();
+				});
+
+				// Boundary stats legends
+				const mapStatsLegend = document.getElementById("map-stats-legend");
+				mapStatsLegend.innerHTML = '';
+				const admLvlToText = { "4": "#{__("Région")}", "6": "#{__("Département")}", "8": "#{__("Commune")}" };
+				Object.entries(res.mapStyle.legend).forEach(e => {
+					const [lvl, data] = e;
 
 					const div = document.createElement("div");
-					div.appendChild(document.createTextNode(`${f.properties.name} : ${f.properties.nb}`));
-					popupHover.setLngLat(coords).setDOMContent(div).addTo(mapStats);
-				}
-			});
+					div.classList.add("col-md-4", "d-flex", "justify-content-start", "align-items-center");
+					const symbol1 = document.createElement("div");
+					symbol1.classList.add("map-stats-symbol");
+					symbol1.style.width = `${Math.ceil(data.minSize*1.5)}px`;
+					symbol1.style.height = `${Math.ceil(data.minSize*1.5)}px`;
+					symbol1.style.borderRadius = `${Math.ceil(data.minSize*1.5/2)}px`;
+					symbol1.style.backgroundColor = data.color;
 
-			mapStats.on("mouseleave", "boundary", () => {
-				mapStats.getCanvas().style.cursor = '';
-				popupHover.remove();
-			});
+					const symbol2 = symbol1.cloneNode(true);
+					symbol2.style.width = `${Math.ceil(data.maxSize*1.5)}px`;
+					symbol2.style.height = `${Math.ceil(data.maxSize*1.5)}px`;
+					symbol2.style.borderRadius = `${Math.ceil(data.maxSize*1.5/2)}px`;
 
-			// Boundary stats legends
-			const mapStatsLegend = document.getElementById("map-stats-legend");
-			mapStatsLegend.innerHTML = '';
-			const admLvlToText = { "4": "#{__("Région")}", "6": "#{__("Département")}", "8": "#{__("Commune")}" };
-			Object.entries(res.mapStyle.legend).forEach(e => {
-				const [lvl, data] = e;
-
-				const div = document.createElement("div");
-				div.classList.add("col-md-4", "d-flex", "justify-content-start", "align-items-center");
-				const symbol1 = document.createElement("div");
-				symbol1.classList.add("map-stats-symbol");
-				symbol1.style.width = `${Math.ceil(data.minSize*1.5)}px`;
-				symbol1.style.height = `${Math.ceil(data.minSize*1.5)}px`;
-				symbol1.style.borderRadius = `${Math.ceil(data.minSize*1.5/2)}px`;
-				symbol1.style.backgroundColor = data.color;
-
-				const symbol2 = symbol1.cloneNode(true);
-				symbol2.style.width = `${Math.ceil(data.maxSize*1.5)}px`;
-				symbol2.style.height = `${Math.ceil(data.maxSize*1.5)}px`;
-				symbol2.style.borderRadius = `${Math.ceil(data.maxSize*1.5/2)}px`;
-
-				div.appendChild(document.createTextNode(`${admLvlToText[lvl]} : ${data.minValue}`));
-				div.appendChild(symbol1);
-				div.appendChild(symbol2);
-				div.appendChild(document.createTextNode(data.maxValue));
-				mapStatsLegend.appendChild(div);
-			});
+					div.appendChild(document.createTextNode(`${admLvlToText[lvl]} : ${data.minValue}`));
+					div.appendChild(symbol1);
+					div.appendChild(symbol2);
+					div.appendChild(document.createTextNode(data.maxValue));
+					mapStatsLegend.appendChild(div);
+				});
+			}
+			else {
+				mapStatsContainer.parentNode.classList.add("d-none");
+			}
 		});
 	}
 

@@ -60,9 +60,10 @@ exports.getMapStyle = (p) => {
 	.then(res => res.json())
 	.then(style => {
 		const legend = [];
-		let vectorMinZoom = 50;
+		let vectorMinZoom;
 		let sources = {};
 		let layers = [];
+		const updateVectorMinZoom = val => { vectorMinZoom = !isNaN(parseFloat(val)) ? Math.min(vectorMinZoom === undefined ? 50 : vectorMinZoom, parseFloat(val)) : vectorMinZoom; }
 
 		if(p) {
 			const circlePaint = {
@@ -125,7 +126,7 @@ exports.getMapStyle = (p) => {
 					maxzoom: 14
 				}, filterDatasource(ds));
 				sources[id].type = "vector";
-				vectorMinZoom = Math.min(vectorMinZoom, sources[id].minZoom);
+				updateVectorMinZoom(sources[id].minZoom);
 
 				layers.push({
 					id: id,
@@ -157,7 +158,7 @@ exports.getMapStyle = (p) => {
 					maxzoom: 14
 				}, filterDatasource(ds));
 				sources[id].type = "vector";
-				vectorMinZoom = Math.min(vectorMinZoom, sources[id].minZoom);
+				updateVectorMinZoom(sources[id].minZoom);
 
 				layers.push({
 					id: id,
@@ -185,7 +186,7 @@ exports.getMapStyle = (p) => {
 					maxzoom: 18
 				}, filterDatasource(ds));
 				sources[id].type = "vector";
-				vectorMinZoom = Math.min(vectorMinZoom, sources[id].minZoom);
+				updateVectorMinZoom(sources[id].minZoom);
 
 				layers.push({
 					id: id,
@@ -225,7 +226,7 @@ exports.getMapStyle = (p) => {
 
 		return {
 			mapstyle: style,
-			minZoom: vectorMinZoom,
+			minZoom: vectorMinZoom === undefined ? 7 : vectorMinZoom,
 			legend: legend.reverse(),
 			pdmSources: Object.keys(sources)
 		};
@@ -247,12 +248,12 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 
 		if(p && p.statistics && p.statistics.count) {
 			const condOpacity = ["interpolate", ["linear"], ["zoom"],
-				4.9, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 4]], 1, 0 ],
+				4.9, ["case", ["==", ["get", "admin_level"], 4], 1, 0 ],
 				5, 0,
-				5.1, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 6]], 1, 0 ],
-				7.9, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 6]], 1, 0 ],
+				5.1, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],
+				7.9, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],
 				8, 0,
-				8.1, ["case", ["all", ["==", ["get", "project"], p.id], ["==", ["get", "admin_level"], 8]], 1, 0 ]
+				8.1, ["case", ["==", ["get", "admin_level"], 8], 1, 0 ]
 			];
 
 			// Source stats
@@ -260,10 +261,10 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 			.filter(ds => "stats" === ds.source)
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
-				let layer = "public.pdm_boundary_tiles";
+				let layer = ds.layer ? ds.layer : "public.pdm_boundary_project_tiles";
 
 				sources[id] = Object.assign({
-					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt?project_id=${p.id}` ],
 					layers: [ layer ],
 					minzoom: 2,
 					maxzoom: 14

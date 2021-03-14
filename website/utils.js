@@ -247,12 +247,6 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 		};
 
 		if(p && p.statistics && p.statistics.count) {
-			sources.boundary = {
-				type: "vector",
-				tiles: [ `${CONFIG.PDM_TILES_URL}/public.pdm_boundary_project_tiles/{z}/{x}/{y}.mvt?project_id=${p.id}` ],
-				maxzoom: 14
-			};
-
 			const condOpacity = ["interpolate", ["linear"], ["zoom"],
 				4.9, ["case", ["==", ["get", "admin_level"], 4], 1, 0 ],
 				5, 0,
@@ -262,38 +256,15 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 				8.1, ["case", ["==", ["get", "admin_level"], 8], 1, 0 ]
 			];
 
-			layers.push({
-				id: "boundary",
-				source: "boundary",
-				type: "circle",
-				"source-layer": "public.pdm_boundary_project_tiles",
-				layout: {
-					"circle-sort-key": ["-", ["get", "nb"]]
-				},
-				paint: {
-					"circle-stroke-color": "white",
-					"circle-stroke-width": 2,
-					"circle-stroke-opacity": condOpacity,
-					"circle-color": ["match", ["get", "admin_level"], 4, legend["4"].color, 6, legend["6"].color, legend["8"].color],
-					"circle-opacity": condOpacity,
-					"circle-radius": ["match", ["get", "admin_level"],
-						4, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["4"].minValue, legend["4"].minSize, legend["4"].maxValue, legend["4"].maxSize],
-						6, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["6"].minValue, legend["6"].minSize, legend["6"].maxValue, legend["6"].maxSize],
-						8, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["8"].minValue, legend["8"].minSize, legend["8"].maxValue, legend["8"].maxSize],
-						0
-					]
-				}
-			});
-
 			// Source stats
 			p.datasources
 			.filter(ds => "stats" === ds.source)
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
-				let layer = "public.pdm_boundary_tiles";
+				let layer = ds.layer ? ds.layer : "public.pdm_boundary_project_tiles";
 
 				sources[id] = Object.assign({
-					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt?project_id=${p.id}` ],
 					layers: [ layer ],
 					minzoom: 2,
 					maxzoom: 14

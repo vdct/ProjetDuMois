@@ -29,7 +29,8 @@
 			"name": "Vue aérienne",
 			"icon": "aerial",
 			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
-		}
+		},
+		{ "source": "stats" }
 	],
 	"statistics": {
 		"count": true,

@@ -61,17 +61,17 @@ if(IMPOSM_ENABLED) {
 Object.entries(projects).forEach(e => {
 	const [ id, project ] = e;
 
-	const tableData = {
-		mapping: project.database.imposm.mapping,
-		columns: [
-			{ name: 'osm_id', type: 'id' },
-			{ name: 'name', key: 'name', type: 'string' },
-			{ name: 'tags', type: 'hstore_tags' },
-			{ name: 'geom', type: 'geometry' }
-		]
-	};
-
 	if (IMPOSM_ENABLED) {
+		const tableData = {
+			mapping: project.database.imposm.mapping,
+			columns: [
+				{ name: 'osm_id', type: 'id' },
+				{ name: 'name', key: 'name', type: 'string' },
+				{ name: 'tags', type: 'hstore_tags' },
+				{ name: 'geom', type: 'geometry' }
+			]
+		};
+
 		project.database.imposm.types.forEach(type => {
 			yamlData.tables[`project_${id.split("_").pop()}_${type}`] = Object.assign({ type }, tableData);
 		});
@@ -85,12 +85,9 @@ Object.entries(projects).forEach(e => {
 				return `SELECT ${osmid}, name, hstore_to_json(tags) AS tags, tags ?| ARRAY['note','fixme'] AS needs_check, ${geom} FROM pdm_project_${id.split("_").pop()}_${type}`
 			}).join(" UNION ALL ")
 		);
-	}
 
-	// Comparison tables
-	if(project.database.compare) {
-		// Table definition
-		if (IMPOSM_ENABLED){
+		if(project.database.compare) {
+			// Table definition
 			project.database.compare.types.forEach(type => {
 				yamlData.tables[`project_${id.split("_").pop()}_compare_${type}`] = Object.assign({ type }, tableData, { mapping: project.database.compare.mapping });
 			});
@@ -105,7 +102,10 @@ Object.entries(projects).forEach(e => {
 				}).join(" UNION ALL ")
 			);
 		}
+	}
 
+	// Comparison tables
+	if(project.database.compare) {
 		preSQL.push(`DROP MATERIALIZED VIEW IF EXISTS pdm_project_${id.split("_").pop()}_compare_tiles`);
 		postSQL.push(
 			`CREATE MATERIALIZED VIEW IF NOT EXISTS pdm_project_${id.split("_").pop()}_compare_tiles AS SELECT * FROM pdm_project_${id.split("_").pop()}_compare WHERE osm_id NOT IN (SELECT DISTINCT c.osm_id FROM pdm_project_${id.split("_").pop()}_compare c, pdm_project_${id.split("_").pop()} b WHERE ST_DWithin(c.geom, b.geom, ${project.database.compare.radius}))`

@@ -112,7 +112,9 @@ app.get('/projects/:id/map', async (req, res) => {
 	const p = projects[req.params.id];
 	const all = foldProjects(projects);
 	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id) !== undefined;
-	const mapstyle = await getMapStyle(p);
+	const mapstyle = await getMapStyle(p).catch(message => {
+		// TODO error handling
+	});
 	res.render('pages/map', Object.assign({ CONFIG, isActive, tagToUrl: getOsmToUrlMappings() }, p, mapstyle));
 });
 
@@ -231,7 +233,10 @@ app.get('/projects/:id/stats', (req, res) => {
 				results.rows.forEach(r => maxLevel[r.admin_level] = r.amount);
 				return getMapStatsStyle(p, maxLevel);
 			})
-			.then(mapStyle => ({ mapStyle })));
+			.then(mapStyle => ({ mapStyle }))
+			.catch(message => {
+				// TODO error handling
+			}));
 		}
 	}
 
@@ -270,12 +275,16 @@ app.get('/projects/:id/stats', (req, res) => {
 	Promise.all(allPromises)
 	.then(results => {
 		let toSend = {};
-		results.forEach(r => {
-			Object.entries(r).forEach(e => {
-				if(!toSend[e[0]]) { toSend[e[0]] = e[1]; }
-				else if(e[0] === "chart") { toSend.chart = toSend.chart.concat(e[1]); }
+		if (typeof results == "object" && results != null){
+			results.forEach(r => {
+				if (r != null){
+					Object.entries(r).forEach(e => {
+						if(!toSend[e[0]]) { toSend[e[0]] = e[1]; }
+						else if(e[0] === "chart") { toSend.chart = toSend.chart.concat(e[1]); }
+					});
+				}
 			});
-		});
+		}
 		res.send(toSend);
 	});
 });

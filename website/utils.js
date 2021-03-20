@@ -57,7 +57,13 @@ exports.queryParams = (obj) => {
 // Map style JSON
 exports.getMapStyle = (p) => {
 	return fetch(CONFIG.MAPBOX_STYLE)
-	.then(res => res.json())
+	.then(res => {
+		if (res.ok){
+			return res.json()
+		}else{
+			return Promise.reject("Unable to fetch mapbox style")
+		}
+	})
 	.then(style => {
 		const legend = [];
 		let vectorMinZoom;
@@ -236,7 +242,13 @@ exports.getMapStyle = (p) => {
 // Map style JSON for statistics
 exports.getMapStatsStyle = (p, maxPerLevel) => {
 	return fetch(CONFIG.MAPBOX_STYLE)
-	.then(res => res.json())
+	.then(res => {
+		if (res.ok){
+			return res.json()
+		}else{
+			return Promise.reject("Unable to fetch mapbox style")
+		}
+	})
 	.then(style => {
 		let sources = {};
 		let layers = [];

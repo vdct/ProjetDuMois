@@ -2,6 +2,27 @@ const CONFIG = require('../config.json');
 const fetch = require('node-fetch');
 const tag2link = require('tag2link');
 
+function getFallbackStyle() {
+	return {
+		version: 8,
+		name: "Projet du mois.fr fallback style",
+		sources: {
+			osm: {
+				type: "raster",
+				tiles: [ "https://tile.openstreetmap.org/{z}/{x}/{y}.png" ],
+				maxzoom: 19,
+				tileSize: 256,
+				attribution: "<a href='https://www.openstreetmap.org/copyright'>&copy; OpenStreetMap</a>"
+			}
+		},
+		layers: [{
+			id: "osm_base",
+			source: "osm",
+			type: "raster"
+		}]
+	};
+}
+
 function flatten(array) {
 	if(array.length == 0)
 		return array;
@@ -57,7 +78,7 @@ exports.queryParams = (obj) => {
 // Map style JSON
 exports.getMapStyle = (p) => {
 	return fetch(CONFIG.MAPBOX_STYLE)
-	.then(res => res.json())
+	.then(res => res.ok ? res.json() : getFallbackStyle())
 	.then(style => {
 		const legend = [];
 		let vectorMinZoom;
@@ -236,7 +257,7 @@ exports.getMapStyle = (p) => {
 // Map style JSON for statistics
 exports.getMapStatsStyle = (p, maxPerLevel) => {
 	return fetch(CONFIG.MAPBOX_STYLE)
-	.then(res => res.json())
+	.then(res => res.ok ? res.json() : getFallbackStyle())
 	.then(style => {
 		let sources = {};
 		let layers = [];

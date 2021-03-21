@@ -32,103 +32,104 @@ script(src="/lib/osm-request/osmrequest.js")
 include ../components/user_button
 
 //- Auth handler (runs on client)
-script.
-	Chart.defaults.global.defaultFontSize = 15;
+if CONFIG
+	script.
+		Chart.defaults.global.defaultFontSize = 15;
 
-	const osmApi = new OsmRequest({
-		endpoint: "#{CONFIG.OSM_URL}",
-		oauthConsumerKey: "#{CONFIG.OSM_API_KEY}",
-		oauthSecret: "#{CONFIG.OSM_API_SECRET}"
-	});
+		const osmApi = new OsmRequest({
+			endpoint: "#{CONFIG.OSM_URL}",
+			oauthConsumerKey: "#{CONFIG.OSM_API_KEY}",
+			oauthSecret: "#{CONFIG.OSM_API_SECRET}"
+		});
 
-	const authOpts = {
-		url: "#{CONFIG.OSM_URL}",
-		oauth_consumer_key: "#{CONFIG.OSM_API_KEY}",
-		oauth_secret: "#{CONFIG.OSM_API_SECRET}",
-		landing: window.location.href.replace(window.location.search, ""),
-		singlepage: true
-	};
-	const auth = osmAuth(authOpts);
-	let authWait;
+		const authOpts = {
+			url: "#{CONFIG.OSM_URL}",
+			oauth_consumer_key: "#{CONFIG.OSM_API_KEY}",
+			oauth_secret: "#{CONFIG.OSM_API_SECRET}",
+			landing: window.location.href.replace(window.location.search, ""),
+			singlepage: true
+		};
+		const auth = osmAuth(authOpts);
+		let authWait;
 
-	const params = new URLSearchParams((window.location.search || "?").substring(1));
-	const token = params.get("oauth_token") || localStorage.getItem("oauth_token") || null;
+		const params = new URLSearchParams((window.location.search || "?").substring(1));
+		const token = params.get("oauth_token") || localStorage.getItem("oauth_token") || null;
 
-	function checkAuth() {
-		if(auth.authenticated()) {
-			if(authWait) {
-				clearInterval(authWait);
-			}
-
-			//Get user details
-			auth.xhr({
-				method: 'GET',
-				path: '/api/0.6/user/details'
-			}, (err, details) => {
-				if(err) {
-					console.log(err);
-					logout();
+		function checkAuth() {
+			if(auth.authenticated()) {
+				if(authWait) {
+					clearInterval(authWait);
 				}
-				else {
-					try {
-						window.osm_user = {
-							id: details.firstChild.childNodes[1].attributes.id.value,
-							name: details.firstChild.childNodes[1].attributes.display_name.value,
-							auth: auth
-						};
 
-						osmApi._auth = auth;
-						window.dispatchEvent(new Event("osm_login"));
-					}
-					catch(e) {
-						console.error(e);
+				//Get user details
+				auth.xhr({
+					method: 'GET',
+					path: '/api/0.6/user/details'
+				}, (err, details) => {
+					if(err) {
+						console.log(err);
 						logout();
 					}
-				}
-			});
+					else {
+						try {
+							window.osm_user = {
+								id: details.firstChild.childNodes[1].attributes.id.value,
+								name: details.firstChild.childNodes[1].attributes.display_name.value,
+								auth: auth
+							};
+
+							osmApi._auth = auth;
+							window.dispatchEvent(new Event("osm_login"));
+						}
+						catch(e) {
+							console.error(e);
+							logout();
+						}
+					}
+				});
+			}
 		}
-	}
 
-	function login() {
-		authOpts.landing = window.location.href + window.location.hash;
-		auth.options(authOpts);
+		function login() {
+			authOpts.landing = window.location.href + window.location.hash;
+			auth.options(authOpts);
 
-		if(!auth.authenticated()) {
-			auth.authenticate((err, res) => {
-				if(err) {
-					console.error(err);
-					alert("#{__("Une erreur s'est produite à la connexion, veuillez réessayer")}");
-					logout();
-				}
-				else {
+			if(!auth.authenticated()) {
+				auth.authenticate((err, res) => {
+					if(err) {
+						console.error(err);
+						alert("#{__("Une erreur s'est produite à la connexion, veuillez réessayer")}");
+						logout();
+					}
+					else {
+						checkAuth();
+					}
+				});
+			}
+		}
+
+		function logout() {
+			if(auth && auth.authenticated()) {
+				auth.logout();
+			}
+
+			window.osm_user = null;
+			osmApi._auth = null;
+			localStorage.removeItem("oauth_token");
+			window.dispatchEvent(new Event("osm_logout"));
+		}
+
+		window.addEventListener("load", () => {
+			if(token) {
+				auth.bootstrapToken(token, () => {
 					checkAuth();
-				}
-			});
-		}
-	}
-
-	function logout() {
-		if(auth && auth.authenticated()) {
-			auth.logout();
-		}
-
-		window.osm_user = null;
-		osmApi._auth = null;
-		localStorage.removeItem("oauth_token");
-		window.dispatchEvent(new Event("osm_logout"));
-	}
-
-	window.addEventListener("load", () => {
-		if(token) {
-			auth.bootstrapToken(token, () => {
+					window.history.replaceState(null, null, window.location.href.replace(window.location.search, ""));
+					localStorage.setItem("oauth_token", token);
+				});
+			}
+			else {
+				//Check if we receive auth token
 				checkAuth();
-				window.history.replaceState(null, null, window.location.href.replace(window.location.search, ""));
-				localStorage.setItem("oauth_token", token);
-			});
-		}
-		else {
-			//Check if we receive auth token
-			checkAuth();
-			authWait = setInterval(checkAuth.bind(this), 100);
-		}
-	});
+				authWait = setInterval(checkAuth.bind(this), 100);
+			}
+		});

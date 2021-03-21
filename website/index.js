@@ -58,6 +58,8 @@ app.set('views', __dirname+'/templates');
 
 // Index
 app.get('/', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.status(503).render('pages/maintenance');; }
+
 	const p = foldProjects(projects);
 
 	// One currently active project
@@ -84,12 +86,16 @@ app.get('/', (req, res) => {
 
 // HTTP errors
 app.get('/error/:code', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	const httpcode = req.params.code && !isNaN(req.params.code) ? req.params.code : "400";
 	res.status(httpcode).render('pages/error', { CONFIG, httpcode });
 });
 
 // Project page
 app.get('/projects/:id', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	if(!req.params.id || !projects[req.params.id]) {
 		return res.redirect('/error/404');
 	}
@@ -105,6 +111,8 @@ app.get('/projects/:id', (req, res) => {
 
 // Project map editor
 app.get('/projects/:id/map', async (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	if(!req.params.id || !projects[req.params.id]) {
 		return res.redirect('/error/404');
 	}
@@ -118,6 +126,8 @@ app.get('/projects/:id/map', async (req, res) => {
 
 // Project notes list
 app.get('/projects/:id/issues', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	if(!req.params.id || !projects[req.params.id]) {
 		return res.redirect('/error/404');
 	}
@@ -130,6 +140,8 @@ app.get('/projects/:id/issues', (req, res) => {
 
 // Project statistics
 app.get('/projects/:id/stats', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	if(!req.params.id || !projects[req.params.id]) {
 		return res.redirect('/error/404');
 	}
@@ -286,6 +298,8 @@ app.get('/projects/:id/stats', (req, res) => {
 
 // User contributions
 app.post('/projects/:id/contribute/:userid', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	// Check project is active
 	const p = foldProjects(projects);
 	if(!req.params.id || !projects[req.params.id] || p.current.length < 1 || p.current.find (p => p.id === req.params.id) === undefined) {
@@ -342,6 +356,8 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 
 // Add OSM feature to compare exclusion list
 app.post('/projects/:id/ignore/:osmtype/:osmid', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	// Check project exists
 	if(!req.params.id || !projects[req.params.id]) {
 		return res.redirect('/error/404');
@@ -362,6 +378,8 @@ app.post('/projects/:id/ignore/:osmtype/:osmid', (req, res) => {
 
 // User page
 app.get('/users/:name', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
+
 	if(!req.params.name) {
 		return res.redirect('/error/404');
 	}
@@ -463,6 +481,7 @@ app.use('/lib/fontawesome', express.static(path.join(__dirname, '../node_modules
 
 // 404
 app.use((req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.redirect('/'); }
 	res.redirect('/error/404');
 });
 

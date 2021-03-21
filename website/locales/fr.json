@@ -138,5 +138,8 @@
 	"Département": "Département",
 	"Commune": "Commune",
 	"Contributions": "Contributions",
-	"Nombre total": "Nombre total"
+	"Nombre total": "Nombre total",
+	"Maintenance en cours": "Maintenance en cours",
+	"Le site est en cours de maintenance, la magie opère en coulisses !": "Le site est en cours de maintenance, la magie opère en coulisses !",
+	"Veuillez réessayer un peu plus tard, merci pour votre compréhension.": "Veuillez réessayer un peu plus tard, merci pour votre compréhension."
 }

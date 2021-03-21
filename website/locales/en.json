@@ -137,5 +137,8 @@
 	"Région": "Region",
 	"Département": "County",
 	"Commune": "City",
-	"Contributions": "Contributions"
+	"Contributions": "Contributions",
+	"Maintenance en cours": "Ongoing maintenance",
+	"Le site est en cours de maintenance, la magie opère en coulisses !": "Our website is undergoing maintenance, magic happens behind the scenes !",
+	"Veuillez réessayer un peu plus tard, merci pour votre compréhension.": "Please try again later, thanks for your understanding."
 }

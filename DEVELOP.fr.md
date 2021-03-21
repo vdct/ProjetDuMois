@@ -46,6 +46,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `MAPBOX_STYLE` : URL d'un [style compatible avec Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 * `PDM_TILES_URL` : URL d'accès au service *pg_tileserv*, qui met à disposition les couches dans votre base de données
 * `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
+* `MAINTENANCE_MODE`: option pour afficher une page spéciale sur le site indiquant qu'il est en cours de maintenance (valeur `true` pour activer)
 
 ### Connexion à Postgresql
 

@@ -42,6 +42,7 @@ The general configuration of the tool is to be filled in `config.json`. There is
 * `OSMOSE_URL`: Osmose instance to use (example `https://osmose.openstreetmap.fr`)
 * `NOMINATIM_URL`: instance of Nominatim to use (example `https://nominatim.openstreetmap.org`)
 * `MAPILLARY_URL`: Mapillary instance to use (example `https://www.mapillary.com`)
+* `MAPILLARY_API_KEY`: Mapillary API key ([could be created here](https://www.mapillary.com/dashboard/developers))
 * `REPOSITORY_URL`: URL of the software repository (example `https://github.com/vdct/ProjetDuMois`)
 * `MAPBOX_STYLE` : URL to [Mapbox GL compatible style](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (example `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 * `PDM_TILES_URL`: URL to access the *pg_tileserv* service, which provides the layers in your database
@@ -182,7 +183,7 @@ This source can only appear once, and corresponds to the objects searched for in
 Raster tile imagery can be added in background to make contribution easier or give context. You have to define following properties:
 
 * `source` (mandatory `background`): type of source
-* `icon` (default `other`): symbol to display in legend (between `aerial`, `thematic`, `other`)
+* `icon` (default `other`): symbol to display in legend (between `aerial`, `thematic`, `picture`, `other`)
 * `name`: name shown to users
 * `tiles` (default): list of TMS URL
 * `attribution`: attribution to display on map

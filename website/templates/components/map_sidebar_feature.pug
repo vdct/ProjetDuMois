@@ -499,6 +499,55 @@ script.
 			divButtonFalse.addEventListener("click", e => ignoreOsmCompare(feature));
 			resDiv.appendChild(divButtonFalse);
 		}
+		// Mapillary pictures
+		else if(s.startsWith("background_") && p.skey && p.key) {
+			// Mapillary viewer
+			const mlyDiv = document.createElement("div");
+			mlyDiv.style.height = '350px';
+			mlyDiv.style.width = '100%';
+			const mly = new Mapillary.Viewer({
+				apiClient: "#{CONFIG.MAPILLARY_API_KEY}",
+				container: mlyDiv,
+				imageKey: p.key,
+				component: { cover: false }
+			});
+
+			// To avoid sizing issues
+			mly.on(Mapillary.Viewer.loadingchanged, () => {
+				mly.off(Mapillary.Viewer.loadingchanged, this);
+				mly.resize();
+			});
+
+			// Update map marker position
+			mly.on(Mapillary.Viewer.nodechanged, e => {
+				showMarker(e.latLon);
+			});
+
+			// Fullscreen button
+			const fullscreenBtn = document.createElement("button");
+			fullscreenBtn.innerHTML = '<i class="fa fa-expand"></i>';
+			fullscreenBtn.addEventListener("click", () => {
+				if(document.fullscreenElement === mlyDiv) {
+					mlyDiv.exitFullscreen();
+				}
+				else {
+					mlyDiv.requestFullscreen();
+				}
+			});
+			document.addEventListener("fullscreenchange", e => {
+				if(mly) {
+					mly.resize();
+				}
+			});
+			fullscreenBtn.style.position = "absolute";
+			fullscreenBtn.style.top = "5px";
+			fullscreenBtn.style.right = "5px";
+			fullscreenBtn.classList.add("mapillary-viewer-btn");
+
+			resDiv.style.position = "relative";
+			resDiv.appendChild(mlyDiv);
+			resDiv.appendChild(fullscreenBtn);
+		}
 		else {
 			resDiv.innerHTML = "<ul>"+Object.entries(p).map(e => "<li>"+e.join(" : ")+"</li>").join("")+"</ul>";
 		}

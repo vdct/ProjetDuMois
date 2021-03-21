@@ -30,6 +30,12 @@
 			"icon": "aerial",
 			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
 		},
+		{
+			"source": "background",
+			"tiles": "mapillary",
+			"name": "Photos de rue",
+			"icon": "picture"
+		},
 		{ "source": "stats" }
 	],
 	"statistics": {

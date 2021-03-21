@@ -116,20 +116,48 @@ exports.getMapStyle = (p) => {
 				const id = `${ds.source}_${dsid}`;
 
 				sources[id] = Object.assign({
-					minZoom: 2,
-					maxZoom: 19,
+					minzoo: 2,
+					maxzoom: 19,
 					tileSize: 256
 				}, filterDatasource(ds));
-				sources[id].type = "raster";
 
-				layers.push({
-					id: id,
-					source: id,
-					type: "raster",
-					layout: { visibility: "none" }
-				});
+				if(ds.tiles === "mapillary") {
+					sources[id].tiles = [ "https://tiles3.mapillary.com/v0.1/{z}/{x}/{y}.mvt" ];
+					sources[id].type = "vector";
+					sources[id].minzoom = 14;
+					sources[id].maxzoom = 14;
+					sources[id].tileSize = 512;
 
-				legend.push({ media: "raster", color:null, label: ds.name, layerId: id, icon: ds.icon });
+					layers.push({
+						id: id,
+						type: "circle",
+						source: id,
+						"source-layer": "mapillary-images",
+						paint: {
+							"circle-color": "rgb(53, 175, 109)",
+							"circle-radius": ["interpolate", ["linear"], ["zoom"], 14, 2, 16, 6],
+							"circle-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, ["case", ["all",
+								[">=", ["get","captured_at"], Date.now()-3*365*24*60*60*1000],
+								[">=", ["get", "quality_score"], 3]],
+							1, 0]]
+						},
+						layout: { visibility: "none" }
+					});
+
+					legend.push({ media: "raster", color: "rgb(53, 175, 109)", label: ds.name, layerId: id, icon: ds.icon });
+				}
+				else {
+					sources[id].type = "raster";
+
+					layers.push({
+						id: id,
+						source: id,
+						type: "raster",
+						layout: { visibility: "none" }
+					});
+
+					legend.push({ media: "raster", color:null, label: ds.name, layerId: id, icon: ds.icon });
+				}
 			});
 
 			// Source OSM Compare

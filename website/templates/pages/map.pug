@@ -4,11 +4,15 @@ html(lang="fr")
 	head
 		include ../common/head.pug
 
+		//- Map specific styles
+		link(rel="stylesheet" type="text/css" href="/lib/mapillary-js/mapillary.css")
+
 		//- Map specific libraries
 		script(src="/lib/mapbox-gl/mapbox-gl.js")
 		script(src="/lib/swiped-events/swiped-events.js")
 		script(src="/lib/pic4carto/pic4carto.js")
 		script(src="/turf.js")
+		script(src="/lib/mapillary-js/mapillary.js")
 		script.
 			const booleanContains = turf.default;
 		include ../components/pictures.pug

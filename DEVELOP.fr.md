@@ -42,6 +42,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `OSMOSE_URL` : instance Osmose à utiliser (exemple `https://osmose.openstreetmap.fr`)
 * `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
 * `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
+* `MAPILLARY_API_KEY`: clé d'API Mapillary ([peut être créée ici](https://www.mapillary.com/dashboard/developers))
 * `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
 * `MAPBOX_STYLE` : URL d'un [style compatible avec Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 * `PDM_TILES_URL` : URL d'accès au service *pg_tileserv*, qui met à disposition les couches dans votre base de données
@@ -182,7 +183,7 @@ Cette source ne peut apparaître qu'une seule fois, et correspond aux objets rec
 Des couches raster peuvent être ajoutées en fond de carte pour faciliter la contribution ou donner plus de contexte. Les propriétés suivantes doivent être définies :
 
 * `source` (obligatoire `background`): type de source
-* `icon` (défaut `other`): le symbole à afficher dans la légende (au choix `aerial`, `thematic`, `other` )
+* `icon` (défaut `other`): le symbole à afficher dans la légende (au choix `aerial`, `thematic`, `picture`, `other`)
 * `name` : nom à faire apparaître à l'utilisateur
 * `tiles` : Tableau d'URL TMS
 * `attribution` : Attribution à faire apparaitre sur la carte

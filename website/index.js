@@ -231,7 +231,7 @@ app.get('/projects/:id/stats', (req, res) => {
 				results.rows.forEach(r => maxLevel[r.admin_level] = r.amount);
 				return getMapStatsStyle(p, maxLevel);
 			})
-			.then(mapStyle => ({ mapStyle }));
+			.then(mapStyle => ({ mapStyle })));
 		}
 	}
 

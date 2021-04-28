@@ -89,7 +89,7 @@ script.
 			addBlock(numberFormat.format(res.nbContributors), "#{__("personnes ayant contribué")}");
 
 			// Leaderboard
-			if(res.leaderboard) {
+			if(res.leaderboard && res.leaderboard.length > 0) {
 				let wordCloud = [];
 				document.getElementById("stats-leaderboard-container").classList.remove("d-none");
 				document.getElementById("stats-leaderboard-noauth").classList.add("d-none");
@@ -189,6 +189,10 @@ script.
 					createWordCloud(wordCloudDom, wordCloud);
 				}
 			}
+			else if(res.leaderboard && res.leaderboard.length === 0) {
+				document.getElementById("stats-leaderboard-container").classList.add("d-none");
+				document.getElementById("stats-leaderboard-noauth").classList.add("d-none");
+			}
 			else {
 				document.getElementById("stats-leaderboard-container").classList.add("d-none");
 				document.getElementById("stats-leaderboard-noauth").classList.remove("d-none");
@@ -273,20 +277,26 @@ script.
 			});
 
 			// Keys chart
-			const ctx2 = document.getElementById("stats-chart-keys").getContext("2d");
-			const myChart2 = new Chart(ctx2, {
-				type: "bar",
-				data: res.chartKeys,
-				options: {
-					responsive: true,
-					scales: {
-						xAxes: [{
-							ticks: { callback: (value, index, values) => value.length > 15 ? value.slice(0, 12)+"..." : value }
-						}],
-						yAxes: [ yAxeLinear ]
+			if(res.chartKeys) {
+				document.getElementById("stats-chart-keys-container").classList.remove("d-none");
+				const ctx2 = document.getElementById("stats-chart-keys").getContext("2d");
+				const myChart2 = new Chart(ctx2, {
+					type: "bar",
+					data: res.chartKeys,
+					options: {
+						responsive: true,
+						scales: {
+							xAxes: [{
+								ticks: { callback: (value, index, values) => value.length > 15 ? value.slice(0, 12)+"..." : value }
+							}],
+							yAxes: [ yAxeLinear ]
+						}
 					}
-				}
-			});
+				});
+			}
+			else {
+				document.getElementById("stats-chart-keys-container").classList.add("d-none");
+			}
 
 			// Boundary stats map
 			const mapStatsContainer = document.getElementById("map-stats");

@@ -279,13 +279,13 @@ app.get('/projects/:id/stats', (req, res) => {
 		};
 	}));
 
-	Promise.all(allPromises)
+	Promise.allSettled(allPromises)
 	.then(results => {
 		let toSend = {};
 		if (typeof results == "object" && results != null){
 			results.forEach(r => {
-				if (r != null){
-					Object.entries(r).forEach(e => {
+				if (r != null && r.status === "fulfilled"){
+					Object.entries(r.value).forEach(e => {
 						if(!toSend[e[0]]) { toSend[e[0]] = e[1]; }
 						else if(e[0] === "chart") { toSend.chart = toSend.chart.concat(e[1]); }
 					});

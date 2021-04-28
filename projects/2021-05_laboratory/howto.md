@@ -1,0 +1,4 @@
+L'objectif est de compléter autant que possible la liste des laboratoires d'analyses médicales dans OpenStreetMap. Pour cela, il y a deux façons principales de participer :
+
+* Parcourir votre ville et trouver les labos manquants : ils sont souvent dans un bâtiment dédié, reconnaissables par leur enseigne indiquant "Laboratoire d'analyse médicale" ou "laboratoire de biologie médicale". On les trouve en centre-ville, dans des zones d'activités ou près de centres de santés. Durant la crise du Covid, de longues queues d'attente se forment devant ces établissements.
+* Vérifier et intégrer les laboratoires listés sur la carte : ceux-ci sont extraits de la base officielle FINESS mais peuvent être positionnés approximativement. Sur la base de votre connaissance locale ou de visites terrain, ajoutez-les dans OSM.

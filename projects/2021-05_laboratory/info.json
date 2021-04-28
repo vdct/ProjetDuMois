@@ -1,0 +1,94 @@
+{
+	"id": "2021-05_laboratory",
+	"title": "Laboratoires d'analyses médicales",
+	"start_date": "2021-04-27",
+	"end_date": "2021-06-06",
+	"summary": "Les laboratoires d'analyses médicales permettent l'analyse de prélévement d'origine humaine. C'est un maillon essentiel de la réponse à la crise sanitaire du Covid. Cartographions ensemble ces lieux dans OpenStreetMap ! #Labos #ProjetDuMois",
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Projet_du_mois/laboratoire_de_biologie_m%C3%A9dicale"
+	},
+	"database": {
+		"osmium_tag_filter": "nw/healthcare=laboratory",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": { "healthcare": ["laboratory"] }
+		}
+	},
+	"datasources": [
+		{
+			"source": "osmose",
+			"item": "8351",
+			"country": "france*",
+			"name": "Labo à compléter",
+			"description": "Ce labo existe déjà dans OSM, et des données supplémentaires peuvent être ajoutées depuis une source officielle. Vérifiez ces infos puis validez leur ajout.",
+			"color": "#4A148C",
+			"buttons": { "edit": "Compléter ce labo" }
+		},
+		{
+			"source": "osmose",
+			"item": "8350", "country": "france*",
+			"name": "Labo à localiser",
+			"description": "Il y a un laboratoire à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap.",
+			"buttons": { "add": "Intégrer ce labo" }
+		},
+		{
+			"source": "notes",
+			"name": "Labo à intégrer",
+			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
+			"terms": [ "laboratoire", "labo", "lbm" ]
+		},
+		{
+			"source": "osm",
+			"name": "Labo dans OSM",
+			"description": "Ce laboratoire existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		},
+		{
+			"source": "background",
+			"tiles": [ "https://proxy-ign.openstreetmap.fr/94GjiyqD/bdortho/{z}/{x}/{y}.jpg" ],
+			"name": "Vue aérienne",
+			"icon": "aerial",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
+		},
+		{
+			"source": "background",
+			"tiles": "mapillary",
+			"name": "Photos de rue",
+			"icon": "picture"
+		},
+		{ "source": "stats" }
+	],
+	"statistics": {
+		"count": true,
+		"feature_name": "laboratoires",
+		"osmose_tasks": "laboratoires officiels intégrés",
+		"points": { "add": 3, "edit": 1, "note": 1 }
+	},
+	"editors": {
+		"all": {
+			"comment": "Ajout de laboratoires de biologie médicale",
+			"hashtags": "projetdumois,projetdumoisfr,deficoeur"
+		},
+		"pdm": {
+			"fields": [
+				{ "type": "hidden", "tags": { "healthcare": "laboratory", "healthcare:speciality": "biology", "ref:FR:FINESS": "*", "ref:FR:SIRET": "*", "type:FR:FINESS": "*", "source": "*" } },
+				{ "type": "text", "name": "Nom", "tag": "name" },
+				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
+				{ "type": "text", "name": "Téléphone", "tag": "phone", "optional": true, "description": "Au format international : +33 X XX XX XX XX" },
+				{ "type": "text", "name": "Site web", "tag": "website", "optional": true },
+				{ "type": "select", "name": "Accessibilité fauteuil roulant", "tag": "wheelchair", "optional": true, "values": [
+					{ "v": "yes", "l": "Complètement accessible" },
+					{ "v": "limited", "l": "Partiellement accessible" },
+					{ "v": "no", "l": "Pas accessible" }
+				] },
+				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, infos pratiques...", "optional": true }
+			],
+			"title": {
+				"add": "Ajouter un labo manquant",
+				"edit": "Compléter ce labo"
+			}
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	}
+}

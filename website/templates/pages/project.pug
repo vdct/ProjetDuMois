@@ -109,7 +109,7 @@ block content
 			h2.blog-post-title
 				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
 				| #{__("Données")}
-			if !isNext
+			if !isNext && datalink && datalink.length > 0
 				p= __("L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :")
 				ul
 					each datalink in opendata

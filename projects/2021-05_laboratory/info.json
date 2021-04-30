@@ -74,7 +74,8 @@
 				{ "type": "text", "name": "Nom", "tag": "name" },
 				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
 				{ "type": "text", "name": "Téléphone", "tag": "phone", "optional": true, "description": "Au format international : +33 X XX XX XX XX" },
-				{ "type": "text", "name": "Site web", "tag": "website", "optional": true },
+				{ "type": "text", "name": "Site web officiel", "tag": "website", "optional": true },
+				{ "type": "text", "name": "Lien prise de RDV", "tag": "reservation:website", "optional": true },
 				{ "type": "select", "name": "Accessibilité fauteuil roulant", "tag": "wheelchair", "optional": true, "values": [
 					{ "v": "yes", "l": "Complètement accessible" },
 					{ "v": "limited", "l": "Partiellement accessible" },

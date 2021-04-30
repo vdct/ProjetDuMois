@@ -405,8 +405,8 @@ exports.getProjectDays = (project) => {
 	const days = [];
 	const start = new Date(project.start_date);
 	let end = new Date(project.end_date);
-	if(end > new Date()) { end = new Date(); }
-	for(var arr=[],dt=new Date(start); dt<=end; dt.setDate(dt.getDate()+1)){
+	if(end.getTime() > Date.now()) { end = new Date(); }
+	for(var arr=[],dt=new Date(start); dt.getTime()<=end.getTime(); dt.setDate(dt.getDate()+1)){
 		days.push(new Date(dt).toISOString().split("T")[0]);
 	}
 	return days;

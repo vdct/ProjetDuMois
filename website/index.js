@@ -18,9 +18,7 @@ const { I18n } = require('i18n');
  * Connect to database
  */
 const pool = new Pool({
-  host: CONFIG.DB_HOST,
-  database: CONFIG.DB_NAME,
-  port: CONFIG.DB_PORT,
+	connectionString: `${process.env.DB_URL}`
 });
 
 /*

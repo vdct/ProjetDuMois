@@ -6,12 +6,27 @@
 * Bash tools : curl, awk, grep, sed, xsltproc, bc
 * PostgreSQL >= 10
 * Python 3
-* [Osmium](https://osmcode.org/osmium-tool/)
+* [Osmium](https://osmcode.org/osmium-tool/) > 1.10
 * [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 * [Imposm](https://imposm.org/) >= 3
 * [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
 * Dependencies of [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
+### Osmium building
+
+ProjetDuMois requires a recent version of osmium as it takes advantage to newest tags-filter abilities.  
+Not many Linux distros got the appropriate package available in their repositories and you may need to build your own binary of osmium.
+
+See guidelines on the [official README](https://github.com/osmcode/osmium-tool/blob/master/README.md#building). 
+
+Following packets on debian can be useful
+* build-essential
+* cmake
+* zlib1g-dev
+* libbz2-dev
+* liblz4-dev
+* libboost-dev
+* libboost-program-options-dev
 
 ## Installation
 
@@ -19,9 +34,29 @@
 git clone https://github.com/vdct/ProjetDuMois.git
 cd ProjetDuMois
 git submodule update --init
-npm install
 ```
 
+Then choose between Docker or standalone to continue with installation.  
+Refers to Database section below to make ProjetDuMois fully runable.
+
+### Docker build
+
+You can build a node.js based ProjetDuMois server including necessary features to run. 
+It doesn't includes a PgSQL server. You can use [CampToCamp Postgres image](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
+
+```bash
+docker build --build-arg OSMIUM_DIR=/osmium/build/dir [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+```
+
+Where:
+* OSMIUM_PATH: Directory path towards osmium build location
+* IMPOSM3_VERSION: Version of imposm3 to use in the docker image
+
+### Standalone instance
+
+```bash
+npm install
+```
 
 ## General configuration
 
@@ -32,9 +67,6 @@ The general configuration of the tool is to be filled in `config.json`. There is
 * `OSM_API_KEY`: OSM API key
 * `OSM_API_SECRET`: secret linked to the OSM API key
 * `OSH_PBF_URL`: URL of the OSH.PBF file (history and metadata, example `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
-* `DB_NAME`: name of the PostgreSQL database (example `pdm`)
-* `DB_HOST`: hostname of the PostgreSQL database (example `localhost`)
-* `DB_PORT`: port number of the PostgreSQL database (example `5432`)
 * `DB_USE_IMPOSM_UPDATE` : enable or disabled Imposm3 integration (to use an existing database which would be maintained by other means, by default `true`)
 * `WORK_DIR`: download and temporary storage folder (must have capacity to store the OSH PBF file, example `/tmp/pdm`)
 * `OSM_URL`: OpenStreetMap instance to use (example `https://www.openstreetmap.org`)
@@ -51,9 +83,14 @@ The general configuration of the tool is to be filled in `config.json`. There is
 
 ### Postgresql connection
 
-No user or password are defined in application configuration. Create a `~/.pgpass` file for application user to allow psql or its dependencies to login.
+As to connect to any Postgresql host, `DB_URL` environement variable is expected to be set with a conninfo string.  
+This is necessary for standalone or Docker environments.
 
-See also https://www.postgresql.org/docs/current/libpq-pgpass.html
+```bash
+export DB_URL="postgres://user:password@host:5432/database"
+```
+
+See also 33.1.1 chapter about [Postgresql conninfo strings](https://www.postgresql.org/docs/13/libpq-connect.html).
 
 
 ## Project configuration
@@ -88,6 +125,8 @@ The properties in `info.json` are as follows:
 It is possible to define projects occuring during overlapping time periods. The `project:update` script will only update currently active projects.
 
 ### Disable imposm3 usage
+
+Imposm3 is not included in Docker image
 
 It is possible to not use Imposm3 and connect to an existing database already populated with necessary data.
 You should make sure that it is correctly hourly-updated for this application needs.
@@ -235,7 +274,6 @@ Configuration of points is in `info.json`:
 }
 ```
 
-
 ## Database
 
 The database relies on PostgreSQL. To create the database :
@@ -266,19 +304,9 @@ npm run features:update
 ./db/21_features_update_tmp.sh
 ```
 
-
 ## Website
 
 The code for the web interface can be found in the `website` folder. This is an [ExpressJS](http://expressjs.com/) server, combined with [Pug](https://pugjs.org) templates.
-
-To launch the web site :
-
-```bash
-export PGUSER=`whoami` # Database username
-npm run start
-```
-
-The site can be viewed at [localhost:3000](http://localhost:3000).
 
 The Pug templates are in the `templates` sub-folder. It is organized according to the following logic:
 
@@ -286,3 +314,29 @@ The Pug templates are in the `templates` sub-folder. It is organized according t
 * In `common`, generic elements to all pages (`<head>`, header, footer)
 * In `components`, the main components that populate the pages (map, statistics block...)
 * In `pages`, each page of the site (home, map, project page...)
+
+
+## Run
+
+### Docker
+
+Docker image includes websites and background updating tasks.  
+You can run it with:
+
+```bash
+docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest
+```
+
+### Standalone
+
+Standalone running requires a node server and planned tasks to update projects regularly.
+
+To launch the web site :
+
+```bash
+export DB_URL=`postgres://user:password@host:5432/database` # Database URL
+export PORT=3000 # Nodejs port (defaults to 3000)
+npm run start
+```
+
+The site can be viewed at [localhost:3000](http://localhost:3000).

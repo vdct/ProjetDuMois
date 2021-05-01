@@ -5,3 +5,4 @@
 /db/*_tmp.sql
 /db/13_points.sql
 /.idea
+/osmium

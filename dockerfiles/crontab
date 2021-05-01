@@ -1,0 +1,4 @@
+PATH="/usr/local/bin:/usr/bin"
+
+# Refresh stats pdm
+0 3 * * * /opt/pdm/db/09_project_update_tmp.sh > /proc/$(cat /var/run/crond.pid)/fd/1 2>&1

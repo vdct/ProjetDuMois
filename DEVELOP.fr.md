@@ -32,9 +32,6 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `OSM_API_KEY` : clé d'API OSM
 * `OSM_API_SECRET` : secret lié à la clé d'API OSM
 * `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
-* `DB_NAME` : nom de la base PostgreSQL (exemple `pdm`)
-* `DB_HOST` : nom d'hôte de la base PostgreSQL (exemple `localhost`)
-* `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)*
 * `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
 * `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 * `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)

@@ -19,7 +19,6 @@ const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
 const OSC_FULL = CONFIG.WORK_DIR + '/changes_features.osc.gz';
 const OSC_LOCAL = CONFIG.WORK_DIR + '/changes_features.local.osc.gz';
-const PSQL_DB = `postgres://${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}`;
 const OUTPUT_SCRIPT = __dirname+'/21_features_update_tmp.sh';
 const UNINSTALL_SCRIPT = __dirname+'/91_project_uninstall_tmp.sql';
 
@@ -129,7 +128,7 @@ if (IMPOSM_ENABLED){
 }
 
 // View for multi-type layers
-const sqlToFull = sqlin => sqlin.map(vs => (`psql "${PSQL_DB}" -c "${vs}"`)).join("\n\t");
+const sqlToFull = sqlin => sqlin.map(vs => (`psql -d ${process.env.DB_URL} -c "${vs}"`)).join("\n\t");
 const sqlToScript = sqlin => sqlin.map(vs => (`${vs};`)).join("\n\t");
 const preSQLFull = preSQL.length > 0 ? sqlToFull(preSQL) : "";
 const postSQLFull = postSQL.length > 0 ? sqlToFull(postSQL) : "";
@@ -186,21 +185,21 @@ if [ "$mode" == "init" ]; then
 	${preSQLFull}
 
 	imposm import -write \\
-		-connection "${PSQL_DB}?prefix=pdm_" \\
+		-connection "${process.env.DB_URL}?prefix=pdm_" \\
 		-mapping "${IMPOSM_YML}" \\
 		-cachedir "${IMPOSM_CACHE_DIR}" \\
 		-dbschema-import public -diff
 
 	echo "Post SQL..."
 	${postSQLFull}
-	psql "${PSQL_DB}" -f "${__dirname}/22_features_post_init.sql"
+	psql -d ${process.env.DB_URL} -f "${__dirname}/22_features_post_init.sql"
 else
 	echo "==== Apply latest changes to database"
 	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
 	imposm diff -mapping "${IMPOSM_YML}" \\
 		-cachedir "${IMPOSM_CACHE_DIR}" \\
 		-dbschema-production public \\
-		-connection "${PSQL_DB}?prefix=pdm_" \\
+		-connection "${process.env.DB_URL}?prefix=pdm_" \\
 		"${OSC_LOCAL}"
 
 	echo "Post Update SQL..."
@@ -218,7 +217,7 @@ if [ "$mode" == "init" ]; then
 
 	echo "Post SQL..."
 	${postSQLFull}
-	psql "${PSQL_DB}" -f "${__dirname}/22_features_post_init.sql"
+	psql -d ${PSQL_DB} -f "${__dirname}/22_features_post_init.sql"
 else
 	echo "Post Update SQL..."
 	${postUpdateSQLFull}

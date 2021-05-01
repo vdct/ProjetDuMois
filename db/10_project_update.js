@@ -35,16 +35,14 @@ const CSV_NOTES_CONTRIBS = CONFIG.WORK_DIR + '/user_notes.csv';
 const CSV_NOTES_USERS = CONFIG.WORK_DIR + '/usernames_notes.csv';
 
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
-const PSQL = `psql "postgres://@${CONFIG.DB_HOST}:${CONFIG.DB_PORT}/${CONFIG.DB_NAME}"`;
+const PSQL = `psql -d ${process.env.DB_URL}`;
 const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
 const HAS_BOUNDARY = `${PSQL} -c "SELECT * FROM pdm_boundary LIMIT 1" > /dev/null 2>&1 `;
 
 const runForAll = process.argv.slice(2).pop() === "all";
 
 const pgPool = new Pool({
-	host: CONFIG.DB_HOST,
-	database: CONFIG.DB_NAME,
-	port: CONFIG.DB_PORT
+	connectionString: `${process.env.DB_URL}`
 });
 
 // Notes statistics

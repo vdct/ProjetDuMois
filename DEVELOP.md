@@ -126,8 +126,6 @@ It is possible to define projects occuring during overlapping time periods. The 
 
 ### Disable imposm3 usage
 
-Imposm3 is not included in Docker image
-
 It is possible to not use Imposm3 and connect to an existing database already populated with necessary data.
 You should make sure that it is correctly hourly-updated for this application needs.
 
@@ -274,14 +272,26 @@ Configuration of points is in `info.json`:
 }
 ```
 
-## Database
+## Run
+
+### Database
 
 The database relies on PostgreSQL. To create the database :
 
 ```bash
 psql -c "CREATE DATABASE pdm"
-psql -d pdm -f db/00_init.sql
 ```
+
+#### Docker
+
+Database is installed and inited simply with:
+
+```bash
+docker run [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest install
+docker run [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
+```
+
+#### Standalone
 
 The following script has to be launched daily to retrieve the contribution statistics (notes, objects added, badges obtained):
 
@@ -315,8 +325,7 @@ The Pug templates are in the `templates` sub-folder. It is organized according t
 * In `components`, the main components that populate the pages (map, statistics block...)
 * In `pages`, each page of the site (home, map, project page...)
 
-
-## Run
+The site can be viewed at [localhost:3000](http://localhost:3000).
 
 ### Docker
 
@@ -338,5 +347,3 @@ export DB_URL=`postgres://user:password@host:5432/database` # Database URL
 export PORT=3000 # Nodejs port (defaults to 3000)
 npm run start
 ```
-
-The site can be viewed at [localhost:3000](http://localhost:3000).

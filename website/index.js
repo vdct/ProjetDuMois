@@ -10,7 +10,7 @@ const fs = require('fs');
 const fetch = require('node-fetch');
 const projects = require('./projects');
 const CONFIG = require('../config.json');
-const { foldProjects, queryParams, getMapStyle, getMapStatsStyle, getBadgesDetails, getOsmToUrlMappings } = require('./utils');
+const { foldProjects, queryParams, getMapStyle, getMapStatsStyle, getBadgesDetails, getOsmToUrlMappings, getProjectDays } = require('./utils');
 const { Pool } = require('pg');
 const { I18n } = require('i18n');
 
@@ -106,7 +106,7 @@ app.get('/projects/:id', (req, res) => {
 	const isActive = all.current.length > 0 && all.current.find(p => p.id === req.params.id) !== undefined;
 	const isNext = all.next && all.next.find(p => p.id === req.params.id) !== undefined;
 	const isRecentPast = all.past && all.past.length > 0 && all.past.find (p => p.id === req.params.id && new Date(p.end_date+"T23:59:59Z").getTime() >= Date.now() - 30*24*60*60*1000) !== undefined;
-	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, isRecentPast, projects: all, projectsToDisplay: toDisplay}, p));
+	res.render('pages/project', Object.assign({ CONFIG, isActive, isNext, isRecentPast, projects: all, projectsToDisplay: toDisplay, days: getProjectDays(p) }, p));
 });
 
 // Project map editor
@@ -204,7 +204,11 @@ app.get('/projects/:id/stats', (req, res) => {
 					lineTension: 0
 				}
    			],
-			pctClosedNotes: results.rows.length > 0 && (results.rows[results.rows.length-1].closed / results.rows[results.rows.length-1].open * 100).toFixed(0),
+			statClosedNotes: results.rows.length > 0 ?
+				(results.rows[results.rows.length-1].closed > results.rows[results.rows.length-1].open ?
+					results.rows[results.rows.length-1].closed
+					: (results.rows[results.rows.length-1].closed / results.rows[results.rows.length-1].open * 100).toFixed(0)+'%')
+				: '0',
 			openedNotes: results.rows.length > 0 && results.rows[results.rows.length-1].open
 		})));
 	}

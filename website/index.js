@@ -155,7 +155,7 @@ app.get('/projects/:id/stats', (req, res) => {
 	.filter(ds => ds.source === "osmose")
 	.map(ds => {
 		const params = { item: ds.item, class: ds.class, start_date: p.start_date, end_date: p.end_date, country: ds.country };
-		return fetch(`${CONFIG.OSMOSE_URL}/fr/errors/graph.json?${queryParams(params)}`)
+		return fetch(`${CONFIG.OSMOSE_URL}/fr/issues/graph.json?${queryParams(params)}`)
 		.then(res => res.json())
 		.then(res => ({
 			label: ds.name,

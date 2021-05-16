@@ -2,7 +2,7 @@
 
 ## Dependencies
 
-* NodeJS >= 9
+* NodeJS >= 12.9
 * Bash tools : curl, awk, grep, sed, xsltproc, bc
 * PostgreSQL >= 10
 * Python 3
@@ -336,9 +336,29 @@ You can run it with:
 docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest
 ```
 
+### Docker compose
+
+A compose file is provided to ease the running processing. It won't prevent you from creating database, adding users and make the appropriate configuration nor building dockers as mentionned upside.  
+Docker compose only allows to run easilly a functionnal instance if and only it has already been properly configured before.
+
+Depending on your Postgresql configuration, you'll surely have to customize the `DB_URL` env variable in the compose file to let the pdm server access the database safely.
+
+Don't try to run the instance with docker-compose first, try to run each component separately and check if everything work as expected.  
+Once everything runs normally, you can use the following for further runs:
+
+To start:
+```
+docker-compose up
+```
+
+To stop:
+```
+docker-compose down
+```
+
 ### Standalone
 
-Standalone running requires a node server and planned tasks to update projects regularly.
+Standalone running requires a node server complient with compatility at the top of this document and planned tasks to update projects regularly.
 
 To launch the web site :
 

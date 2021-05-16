@@ -2,7 +2,7 @@
 
 ## Dépendances
 
-* NodeJS >= 9
+* NodeJS >= 12.9
 * Outils Bash : curl, awk, grep, sed, xsltproc, bc
 * PostgreSQL >= 10
 * Python 3
@@ -334,9 +334,29 @@ Vous pouvez la lancer avec:
 docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest
 ```
 
+### Docker compose
+
+Un fichier docker-compose est fourni ici pour faciliter l'execution de la plateforme. Cela ne vous dispensera pas de créer la base de données, y ajouter les bons rôles et configurer pdm de manière appropriée selon la méthode expliquée ci-dessus.  
+Docker-compose permet seulement de faciliter l'execution d'une instance déjà fonctionnelle si et seulement si elle a été configurée correctement préalablement.
+
+En fonction de la configuration de votre serveur Postgresql, vous devrez certainement adapter la valeur de la variable `DB_URL` dans le fichier compose pour permettre au serveur pdm d'accéder à la base de données correctement.
+
+N'essayez pas de débuter la configuration d'une instance avec docker-compose, essayez plutôt d'obtenir une configuration fonctionnelle de chaque composant et de vous assurer que tout fonctionne séparément d'abord.  
+Une fois que vous avez constaté que tout fonctionnait, lancez-vous avec docker-compose pour faciliter les executions futures.
+
+Pour démarrer :
+```
+docker-compose up
+```
+
+Pour arrêter :
+```
+docker-compose down
+```
+
 ### Locale
 
-L'execution locale nécessite un serveur node et des tâches planifiées pour tenir la base de données à jour.
+L'execution locale nécessite un serveur node conforme à la compatilité ci-dessus et des tâches planifiées pour tenir la base de données à jour.
 
 Pour lancer le site web :
 

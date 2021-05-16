@@ -1,4 +1,4 @@
-FROM node:10-buster-slim
+FROM node:14.17.0-stretch-slim
 
 RUN groupadd --gid 10001 -r osm \
     && useradd --uid 10001 -d /home/osm -r -s /bin/false -g osm osm \
@@ -7,7 +7,7 @@ RUN groupadd --gid 10001 -r osm \
     && apt-get -y install --no-install-recommends \
         apt-utils curl xsltproc osmctools ca-certificates gnupg \
     && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
     && apt-get -y --no-install-recommends install postgresql-client-13 libpq-dev libgeos-dev \
     && apt-get clean \

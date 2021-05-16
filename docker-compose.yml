@@ -14,6 +14,8 @@ services:
   pdm:
     image: pdm/server:latest
     restart: always
+    depends_on:
+      - pgsqldb
     networks:
       - oim-internal
     ports:
@@ -25,8 +27,8 @@ services:
     command: "run"
 
 volumes:
-  - db-data
-  - pdm-data
+  db-data:
+  pdm-data:
 
 networks:
-  oim-internal
+  oim-internal:

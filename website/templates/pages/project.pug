@@ -109,7 +109,7 @@ block content
 			h2.blog-post-title
 				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
 				| #{__("Données")}
-			if !isNext && datalink && datalink.length > 0
+			if !isNext && opendata && opendata.length > 0
 				p= __("L'ensemble des données produites avant, pendant et après le projet du mois sont disponibles aux adresses suivantes :")
 				ul
 					each datalink in opendata
@@ -117,17 +117,25 @@ block content
 							| #{datalink.title}
 							small &nbsp;(via #{datalink.via})
 
-			p= __("Retrouvez d'autres projets du mois, leurs outils, statistiques et données.")
-				div.row.align-items-center
-					each proj in projectsToDisplay
-						div.col-md-6.col-lg-4.h-100
-							div.media.mb-3
-								a.align-self-center.mr-3(href=`/projects/${proj.id}`)
-									img(src=proj.icon alt="" style="max-width: 100px")
-								div.media-body.align-self-center
-									a.text-decoration-none(href=`/projects/${proj.id}`)
-										| #{proj.title}
-										span.text-muted.d-block= new Date(proj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
+	//- Other projects
+	if projectsToDisplay && projectsToDisplay.length > 0
+		a#projects
+		div.container-fluid.py-5
+			div.container.blog-post
+				h2.blog-post-title
+					i.fa.fa-share.mr-2(style="font-size: 2.1rem")
+					| #{__("D'autres projets")}
+				p= __("Retrouvez d'autres projets du mois, leurs outils, statistiques et données.")
+					div.row.align-items-center
+						each proj in projectsToDisplay
+							div.col-md-6.col-lg-4.h-100
+								div.media.mb-3
+									a.align-self-center.mr-3(href=`/projects/${proj.id}`)
+										img(src=proj.icon alt="" style="max-width: 100px")
+									div.media-body.align-self-center
+										a.text-decoration-none(href=`/projects/${proj.id}`)
+											| #{proj.title}
+											span.text-muted.d-block= new Date(proj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })
 
 
 block prepend footer

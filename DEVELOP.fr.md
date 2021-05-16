@@ -40,7 +40,7 @@ Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois expl
 
 ### Construction Docker
 
-Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toutes l'exploitation.  
+Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation.  
 L'image Docker n'inclue cependant pas de serveur postgresql et vous pourrez utiliser [l'image de CampToCamp](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
 
 ```bash

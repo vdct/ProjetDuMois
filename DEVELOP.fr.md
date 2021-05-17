@@ -40,15 +40,14 @@ Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois expl
 
 ### Construction Docker
 
-Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation.  
+Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation. Il inclus osmium 1.10.0 avec Debian Buster.  
 L'image Docker n'inclue cependant pas de serveur postgresql et vous pourrez utiliser [l'image de CampToCamp](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
 
 ```bash
-docker build --build-arg OSMIUM_DIR=/osmium/build/dir [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
 ```
 
 Avec :
-* OSMIUM_PATH : Un chemin vers le binaire compilé d'osmium évoqué ci-dessus
 * IMPOSM3_VERSION : Version d'imposm3 à intégrer à l'image Docker
 
 ### Installation locale

@@ -1,4 +1,4 @@
-FROM node:14.17.0-stretch-slim
+FROM node:14.17.0-buster-slim
 
 RUN groupadd --gid 10001 -r osm \
     && useradd --uid 10001 -d /home/osm -r -s /bin/false -g osm osm \
@@ -9,12 +9,11 @@ RUN groupadd --gid 10001 -r osm \
     && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && echo "deb http://apt.postgresql.org/pub/repos/apt stretch-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get -y --no-install-recommends install postgresql-client-13 libpq-dev libgeos-dev \
+    && apt-get -y --no-install-recommends install postgresql-client-13 libpq-dev libgeos-dev osmium-tool \
     && apt-get clean \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-ARG OSMIUM_PATH
 ARG IMPOSM3_VERSION=0.11.0
 
 WORKDIR /opt/imposm3
@@ -25,7 +24,6 @@ RUN curl -L https://github.com/omniscale/imposm3/releases/download/v${IMPOSM3_VE
 
 WORKDIR /opt/pdm
 
-COPY --chown=osm:osm $OSMIUM_PATH /usr/local/bin/
 COPY --chown=osm:osm ./db/ ./db
 COPY --chown=osm:osm ./projects ./projects
 COPY --chown=osm:osm ./website ./website

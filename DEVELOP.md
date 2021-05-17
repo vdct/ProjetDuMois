@@ -41,15 +41,14 @@ Refers to Database section below to make ProjetDuMois fully runable.
 
 ### Docker build
 
-You can build a node.js based ProjetDuMois server including necessary features to run. 
+You can build a node.js based ProjetDuMois server including necessary features to run. It includes osmium 1.10.0 with Debian Buster.
 It doesn't includes a PgSQL server. You can use [CampToCamp Postgres image](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
 
 ```bash
-docker build --build-arg OSMIUM_DIR=/osmium/build/dir [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
 ```
 
 Where:
-* OSMIUM_PATH: Directory path towards osmium build location
 * IMPOSM3_VERSION: Version of imposm3 to use in the docker image
 
 ### Standalone instance

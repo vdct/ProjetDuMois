@@ -182,6 +182,18 @@ var script = `#!/bin/bash
 
 set -e
 
+echo "== Prerequisites"
+nbProjects=$(${PSQL} -tAc "select count(*) from pdm_projects" | sed 's/[^0-9]*//g' )
+nbPoints=$(${PSQL} -tAc "select count(*) from pdm_projects_points" | sed 's/[^0-9]*//g' )
+
+if [[ $nbProjects < 1 ]]; then
+  echo "WARN: No known projects in SQL projects table"
+fi
+if [[ $nbPoints < 1 ]]; then
+  echo "WARN: No declared points for projects contributions"
+fi
+${separator}
+
 echo "== Create work directory"
 mkdir -p "${CONFIG.WORK_DIR}"
 ${separator}

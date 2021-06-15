@@ -13,9 +13,6 @@
 	"OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf",
 	"MAPBOX_STYLE": "https://tile-vect.openstreetmap.fr/styles/liberty/style.json",
 	"PDM_TILES_URL": "http://localhost:7800",
-	"DB_HOST": "localhost",
-	"DB_PORT": "5432",
-	"DB_NAME": "pdm",
 	"DB_USE_IMPOSM_UPDATE": true,
 	"WORK_DIR": "/tmp/pdm",
 	"GEOJSON_BOUNDS": {

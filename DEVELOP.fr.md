@@ -28,32 +28,12 @@ Les paquets suivants pourront être utiles pour cela
 * libboost-dev
 * libboost-program-options-dev
 
-## Installation
+## Débuter
 
 ```bash
 git clone https://github.com/vdct/ProjetDuMois.git
 cd ProjetDuMois
 git submodule update --init
-```
-Choisissez ensuite entre une instance Docker ou locale pour poursuivre.  
-Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois exploitable.
-
-### Construction Docker
-
-Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation. Il inclus osmium 1.10.0 avec Debian Buster.  
-L'image Docker n'inclue cependant pas de serveur postgresql et vous pourrez utiliser [l'image de CampToCamp](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
-
-```bash
-docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
-```
-
-Avec :
-* IMPOSM3_VERSION : Version d'imposm3 à intégrer à l'image Docker
-
-### Installation locale
-
-```bash
-npm install
 ```
 
 ## Configuration générale
@@ -269,11 +249,40 @@ Les montant de points attribués sont configurés dans `info.json` :
 }
 ```
 
+## Installation
+
+Choisissez ensuite entre une instance Docker ou locale pour poursuivre.  
+Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois exploitable.
+
+### Construction Docker
+
+Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation. Il inclus osmium 1.10.0 avec Debian Buster.  
+L'image Docker n'inclue cependant pas de serveur postgresql et vous pourrez utiliser [l'image de CampToCamp](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
+
+```bash
+docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+```
+
+Avec :
+* IMPOSM3_VERSION : Version d'imposm3 à intégrer à l'image Docker
+
+### Installation locale
+
+```bash
+npm install
+```
+
 ## Déploiement
 
 ### Base de données
 
-#### Docker
+The database relies on PostgreSQL. To create the database :
+
+```bash
+psql -c "CREATE DATABASE pdm"
+```
+
+### Docker
 
 Le service s'installe avec les deux commandes suivantes :
 
@@ -282,7 +291,7 @@ docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host
 docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
 ```
 
-And then run the server with:
+Ensuite, lancez le serveur avec la commande :
 ```bash
 docker run -d --rm [--network=your-network -p 3000:3000] --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
@@ -292,7 +301,7 @@ N'oubliez pas d'ajouter la ligne suivante dans vos crontab pour mettre à jour l
 docker exec -it pdm /opt/pdm/db/09_project_update_tmp.sh
 ```
 
-#### Locale
+### Locale
 
 La base de données s'appuie sur PostgreSQL. Pour installer la base :
 

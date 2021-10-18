@@ -28,33 +28,12 @@ Following packets on debian can be useful
 * libboost-dev
 * libboost-program-options-dev
 
-## Installation
+## Getting started
 
 ```bash
 git clone https://github.com/vdct/ProjetDuMois.git
 cd ProjetDuMois
 git submodule update --init
-```
-
-Then choose between Docker or standalone to continue with installation.  
-Refers to Database section below to make ProjetDuMois fully runable.
-
-### Docker build
-
-You can build a node.js based ProjetDuMois server including necessary features to run. It includes osmium 1.10.0 with Debian Buster.
-It doesn't includes a PgSQL server. You can use [CampToCamp Postgres image](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
-
-```bash
-docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
-```
-
-Where:
-* IMPOSM3_VERSION: Version of imposm3 to use in the docker image
-
-### Standalone instance
-
-```bash
-npm install
 ```
 
 ## General configuration
@@ -270,6 +249,29 @@ Configuration of points is in `info.json`:
 }
 ```
 
+## Build
+
+Once PDM has been properly configured, you should choose between Docker or standalone to build it. 
+Refers to Database section in run chapter to make ProjetDuMois fully runable.
+
+### Docker build
+
+You can build a node.js based ProjetDuMois server including necessary features to run. It includes osmium 1.10.0 with Debian Buster.
+It doesn't includes a PgSQL server. You can use [CampToCamp Postgres image](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
+
+```bash
+docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+```
+
+Where:
+* IMPOSM3_VERSION: Version of imposm3 to use in the docker image
+
+### Standalone instance
+
+```bash
+npm install
+```
+
 ## Run
 
 ### Database
@@ -300,6 +302,11 @@ docker exec -it pdm /opt/pdm/db/09_project_update_tmp.sh
 ```
 
 ### Standalone
+
+Database relies on PostgreSQL. To install the schema before first run: 
+```bash
+psql -d pdm -f db/00_init.sql
+```
 
 The following script has to be launched daily to retrieve the contribution statistics (notes, objects added, badges obtained):
 

@@ -1,0 +1,34 @@
+services:
+  pgsqldb:
+    image: camptocamp/postgres:13-postgis-3
+    restart: always
+    networks:
+      - oim-internal
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=pgpassword
+      
+  pdm:
+    image: pdm/server:latest
+    restart: always
+    depends_on:
+      - pgsqldb
+    networks:
+      - oim-internal
+    ports:
+      - "3000:3000"
+    volumes:
+      - pdm-data:/data/files/pdm
+    environment:
+      - DB_URL=postgres://user:password@pgsqldb:5432/database
+    command: "run"
+
+volumes:
+  db-data:
+  pdm-data:
+
+networks:
+  oim-internal:

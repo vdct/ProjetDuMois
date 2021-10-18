@@ -2,26 +2,39 @@
 
 ## Dépendances
 
-* NodeJS >= 9
+* NodeJS >= 12.9
 * Outils Bash : curl, awk, grep, sed, xsltproc, bc
 * PostgreSQL >= 10
 * Python 3
-* [Osmium](https://osmcode.org/osmium-tool/)
+* [Osmium](https://osmcode.org/osmium-tool/) > 1.10
 * [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 * [Imposm](https://imposm.org/) >= 3
 * [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
 * Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
+### Compilation osmium
 
-## Installation
+ProjetDuMois a besoin d'une version récente de osmium puisqu'il tire parti des nouvelles fonctions tags-filter.  
+Peu de distributions linux ont les dernières versions disponibles et vous aurez surement besoin de compiler osmium vous-même.
+
+Voir les consignes sur le [README officiel](https://github.com/osmcode/osmium-tool/blob/master/README.md#building).
+
+Les paquets suivants pourront être utiles pour cela
+* build-essential
+* cmake
+* zlib1g-dev
+* libbz2-dev
+* liblz4-dev
+* libboost-dev
+* libboost-program-options-dev
+
+## Débuter
 
 ```bash
 git clone https://github.com/vdct/ProjetDuMois.git
 cd ProjetDuMois
 git submodule update --init
-npm install
 ```
-
 
 ## Configuration générale
 
@@ -32,9 +45,6 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 * `OSM_API_KEY` : clé d'API OSM
 * `OSM_API_SECRET` : secret lié à la clé d'API OSM
 * `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
-* `DB_NAME` : nom de la base PostgreSQL (exemple `pdm`)
-* `DB_HOST` : nom d'hôte de la base PostgreSQL (exemple `localhost`)
-* `DB_PORT` : numéro de port de la base PostgreSQL (exemple `5432`)*
 * `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
 * `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 * `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
@@ -51,10 +61,14 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 
 ### Connexion à Postgresql
 
-Aucun identifiant ni mot de passe ne sont ajoutés à la configuration de l'application.
-Ajoutez un fichier ~/.pgpass (chmod 600) pour l'utilisateur applicatif afin de permettre à psql ou ses dépendances de s'authentifier.
+Pour se connecter à Postgresql, une variable d'environement `DB_URL` est attendue avec une chaine conninfo pour disposer des informations nécessaires.
+Ceci est valable quelle que soit la solution retenue, docker ou locale.
 
-Voir https://www.postgresql.org/docs/current/libpq-pgpass.html
+```bash
+export DB_URL="postgres://user:password@host:5432/database"
+```
+
+Reportez-vous au chapitre 33.1.1 du [guide postgresql](https://www.postgresql.org/docs/13/libpq-connect.html).
 
 ## Configuration des projets
 
@@ -235,13 +249,63 @@ Les montant de points attribués sont configurés dans `info.json` :
 }
 ```
 
+## Installation
 
-## Base de données
+Choisissez ensuite entre une instance Docker ou locale pour poursuivre.  
+Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois exploitable.
 
-La base de données s'appuie sur PostgreSQL. Pour créer la base :
+### Construction Docker
+
+Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation. Il inclus osmium 1.10.0 avec Debian Buster.  
+L'image Docker n'inclue cependant pas de serveur postgresql et vous pourrez utiliser [l'image de CampToCamp](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
+
+```bash
+docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+```
+
+Avec :
+* IMPOSM3_VERSION : Version d'imposm3 à intégrer à l'image Docker
+
+### Installation locale
+
+```bash
+npm install
+```
+
+## Déploiement
+
+### Base de données
+
+The database relies on PostgreSQL. To create the database :
 
 ```bash
 psql -c "CREATE DATABASE pdm"
+```
+
+### Docker
+
+Le service s'installe avec les deux commandes suivantes :
+
+```bash
+docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest install
+docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
+```
+
+Ensuite, lancez le serveur avec la commande :
+```bash
+docker run -d --rm [--network=your-network -p 3000:3000] --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
+```
+
+N'oubliez pas d'ajouter la ligne suivante dans vos crontab pour mettre à jour les projets périodiquement, idéalement quotidiennement.
+```bash
+docker exec -it pdm /opt/pdm/db/09_project_update_tmp.sh
+```
+
+### Locale
+
+La base de données s'appuie sur PostgreSQL. Pour installer la base :
+
+```bash
 psql -d pdm -f db/00_init.sql
 ```
 
@@ -266,19 +330,9 @@ npm run features:update
 ./db/21_features_update_tmp.sh
 ```
 
-
 ## Site web
 
 Le code de l'interface web se trouve dans le dossier `website`. Il s'agit d'un serveur [ExpressJS](http://expressjs.com/), combiné à des modèles [Pug](https://pugjs.org).
-
-Pour lancer le site web :
-
-```bash
-export PGUSER=`whoami` # Nom d'utilisateur pour accéder à la base de données
-npm run start
-```
-
-Le site est visible à l'adresse [localhost:3000](http://localhost:3000).
 
 Les modèles Pug sont dans le sous-dossier `templates`. Celui-ci est organisé selon la logique suivante :
 
@@ -286,3 +340,46 @@ Les modèles Pug sont dans le sous-dossier `templates`. Celui-ci est organisé s
 * Dans `common`, les éléments génériques à toutes les pages (`<head>`, en-tête, pied de page)
 * Dans `components`, les composants principaux qui peuplent les pages (carte, bloc statistiques...)
 * Dans `pages`, chacune des pages du site (accueil, carte, page projet...)
+
+Le site est visible à l'adresse [localhost:3000](http://localhost:3000).
+
+### Docker
+
+L'image Docker inclue le nécessaire pour servir le site web et executer les tâches de mise à jour automatiques.  
+Vous pouvez la lancer avec:
+
+```bash
+docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest
+```
+
+### Docker compose
+
+Un fichier docker-compose est fourni ici pour faciliter l'execution de la plateforme. Cela ne vous dispensera pas de créer la base de données, y ajouter les bons rôles et configurer pdm de manière appropriée selon la méthode expliquée ci-dessus.  
+Docker-compose permet seulement de faciliter l'execution d'une instance déjà fonctionnelle si et seulement si elle a été configurée correctement préalablement.
+
+En fonction de la configuration de votre serveur Postgresql, vous devrez certainement adapter la valeur de la variable `DB_URL` dans le fichier compose pour permettre au serveur pdm d'accéder à la base de données correctement.
+
+N'essayez pas de débuter la configuration d'une instance avec docker-compose, essayez plutôt d'obtenir une configuration fonctionnelle de chaque composant et de vous assurer que tout fonctionne séparément d'abord.  
+Une fois que vous avez constaté que tout fonctionnait, lancez-vous avec docker-compose pour faciliter les executions futures.
+
+Pour démarrer :
+```
+docker-compose up
+```
+
+Pour arrêter :
+```
+docker-compose down
+```
+
+### Locale
+
+L'execution locale nécessite un serveur node conforme à la compatilité ci-dessus et des tâches planifiées pour tenir la base de données à jour.
+
+Pour lancer le site web :
+
+```bash
+export DB_URL=`postgres://user:password@host:5432/database` # Database URL
+export PORT=3000 # Nodejs port (defaults to 3000)
+npm run start
+```

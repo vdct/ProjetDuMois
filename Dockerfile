@@ -9,7 +9,7 @@ RUN groupadd --gid 10001 -r osm \
     && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update \
-    && apt-get -y --no-install-recommends install postgresql-client-13 libpq-dev libgeos-dev osmium-tool python3 python3-requests \
+    && apt-get -y --no-install-recommends install postgresql-client-13 libpq-dev libgeos-dev osmium-tool python3 python3-requests bc \
     && apt-get clean \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*

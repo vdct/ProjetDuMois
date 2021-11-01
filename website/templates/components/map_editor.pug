@@ -12,7 +12,10 @@ form#pdm-editor-form
 		each field in editors.pdm.fields
 			if field.type !== "hidden"
 				div.form-group
-					label(for=`pdm-editor_${field.tag}`)= field.name
+					label(for=`pdm-editor_${field.tag}`)
+						if field.help
+							a(class="badge bg-primary text-light mr-2" href=field.help target="_blank")= "?"
+						field.name
 
 					if ["text", "number", "email"].includes(field.type)
 						input.form-control(id=`pdm-editor_${field.tag}` name=field.tag type=field.type required=(!field.optional || false))

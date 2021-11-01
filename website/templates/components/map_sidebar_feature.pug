@@ -145,9 +145,18 @@ script.
 					if(tags[field.tag]) {
 						const p = document.createElement("p");
 						p.classList.add("mb-1");
+						const title = document.createElement("div");
+						title.classList.add("text-muted");
 
-						const title = document.createElement("span");
-						title.classList.add("text-muted", "d-block");
+						if (field.hasOwnProperty("help")){
+							helpBadge = document.createElement("a");
+							helpBadge.className = "badge bg-primary text-light mr-2";
+							helpBadge.href = field.help;
+							helpBadge.target = "_blank";
+							helpBadge.appendChild(document.createTextNode("?"));
+							title.appendChild(helpBadge);
+						}
+
 						title.appendChild(document.createTextNode(field.name));
 						p.appendChild(title);
 

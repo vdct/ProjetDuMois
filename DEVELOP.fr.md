@@ -95,7 +95,7 @@ Les propriétés dans `info.json` sont les suivantes :
 * `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
 * `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
 * `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
-* `editors` : configuration spécifique à chaque éditeur OSM. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+* `editors` : configuration spécifique à chaque éditeur OSM. Pour ProjetDuMois, les informations sont disponibles ci-dessous. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Temporalité des projets
 
@@ -216,6 +216,76 @@ Pour activer l'affichage de statistiques selon le découpage administratif, vous
 * `maxZoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
 * `tiles` (défaut) : Tableau d'URL TMS
 * `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
+
+### Editeur Pdm
+
+La configuration des projets permets de personnaliser les champs disponibles dans l'éditeur intégré. La configuration s'exprime comme le josn suivant ajouté à la liste `editors`:
+
+```json
+"pdm": {
+  "fields": [
+    ... liste de champs...
+  ],
+  "title": {
+    "add": "Libellé de l'action ajouter",
+    "edit": "Libellé de l'action éditer"
+  }
+}
+```
+Les champs sont définis comme des objets Json standards, ajouté au tableau `fields` ci-dessus.
+Chaque type, à l'exception de `hidden` supporte les champ communs suivants :
+* `name`: Libellé du champ tel qu'affiché à l'utilisateur
+* `help`: Lien hypertexte pointant vers toute ressource appropriée d'aide pour ce champ
+* `description`: Un text plus long que le libellé qui apporte les détails nécessaire à propos de champ
+* `optional`: Un champ booléen false/true rendant respectivement le champ obligatoire ou non.
+
+#### Type caché
+
+Il permet de définir des tags statiques ajoutés à tout objet créé avec l'éditeur.
+
+```json
+  { "type": "hidden", "tags": { "tag_1":"value_1", "tag_2":"value_2" } }
+```
+
+#### Champ scalaire
+
+Les champs textuels simples sont couverts par 3 types différents : `text`, `number` ou `email`.
+Ils produisent tous trois un champ texte standard muni des fonctions de validation appropriées.
+
+```json
+  { "type": "text", "name": "Libellé", "tag": "tag_key", "optional": false },
+  { "type": "number", "name": "Libellé", "tag": "tag_key", "optional": false },
+  { "type": "email", "name": "Libellé", "tag": "tag_key", "optional": false }
+```
+
+#### Zone de texte
+
+Une zone de texte plus ample pour saisir des valeurs plus conséquentes.
+
+```json
+  { "type": "textarea", "name": "Libellé", "tag": "tag_key", "optional": false }
+```
+
+#### Listes de valeurs
+
+Une liste de valeurs avec des entrées personnalisées pointant sur une clé OSM définie.
+
+```json
+{ "type": "select", "name": "Libellé", "tag": "tag_key", "optional": false, "values": [
+  { "v": "value_1", "l": "Value 1 label" },
+  { "v": "value_2", "l": "Value 2 label" }
+] }
+```
+
+#### 2 ou 3 états
+
+Les champs à états utilisent les boutons radio pour proposer des options à l'utilisateur vers une clé OSM définie.
+`2states` pour oui/inconnu et `3states` pour oui/non/inconnu.
+
+```json
+  { "type": "2states", "name": "Libellé", "tag": "tag_key"},
+  { "type": "3states", "name": "Libellé", "tag": "tag_key"}
+```
 
 ### Décomptes et statistiques
 
@@ -379,7 +449,7 @@ L'execution locale nécessite un serveur node conforme à la compatilité ci-des
 Pour lancer le site web :
 
 ```bash
-export DB_URL=`postgres://user:password@host:5432/database` # Database URL
+export DB_URL="postgres://user:password@host:5432/database" # Database URL
 export PORT=3000 # Nodejs port (defaults to 3000)
 npm run start
 ```

@@ -146,9 +146,20 @@ script.
 						const p = document.createElement("p");
 						p.classList.add("mb-1");
 
-						const title = document.createElement("span");
-						title.classList.add("text-muted", "d-block");
+						const title = document.createElement("div");
+						title.classList.add("text-muted");
 						title.appendChild(document.createTextNode(field.name));
+
+						if (field.hasOwnProperty("help")){
+							helpBadge = document.createElement("a");
+							helpBadge.className = "badge badge-pill text-light ml-2 bg-info";
+							helpBadge.href = field.help;
+							helpBadge.title = "#{__("Plus d'infos sur ce champ")}";
+							helpBadge.target = "_blank";
+							helpBadge.appendChild(document.createTextNode("?"));
+							title.appendChild(helpBadge);
+						}
+
 						p.appendChild(title);
 
 						let valueText = tags[field.tag];

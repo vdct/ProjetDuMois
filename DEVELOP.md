@@ -95,7 +95,7 @@ The properties in `info.json` are as follows:
 * `statistics.feature_name`: name to display to the user for these objects
 * `statistics.osmose_tasks`: name of the tasks performed via Osmose
 * `statistics.points`: configuration of the points obtained according to the type of contribution (in relation with `contribs.sql`)
-* `editors`: specific configuration to each OSM editor. For iD, it is possible to use [the parameters listed here](https://github.com/openstreetmap/iD/blob/develop/API.md).
+* `editors`: specific configuration to each OSM editor. ProjetDuMois is described below, for iD, it is possible to use [the parameters listed here](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Projects timing
 
@@ -216,6 +216,77 @@ Another kind of datasource can be added and refers to geographical statistics, o
 * `maxZoom` (default 14): maximum zoom level for making this layer visible
 * `tiles` (default): list of TMS URL
 * `layers` (default): Layer names list to use and corresponding to `tiles` indices
+
+### Pdm editor
+
+Project configuration allows to customize embedded editor with appropriate fields. Let's consider following json to be set in the `editors` list:
+
+```json
+"pdm": {
+  "fields": [
+    ... fields list...
+  ],
+  "title": {
+    "add": "Add action label",
+    "edit": "Edit action label"
+  }
+}
+```
+
+Fields are defined with standard json objects added to the `fields` array in the uspide json.
+Every type except `hidden` supports those common attributes:
+* `name`: Field name to be displayed to the user
+* `help`: HREF link to a relevant help page regarding this particular field
+* `description`: An extensive text displayed to the user providing details about the field
+* `optional`: A boolean false/true field making the field respectively mandatory or not
+
+#### Hidden field
+
+Define static tags to be added to every created object by the editor
+
+```json
+  { "type": "hidden", "tags": { "tag_1":"value_1", "tag_2":"value_2" } }
+```
+
+#### Scalar field
+
+Text fields comes with 3 different types: text, number or email.
+They're all producing a standard text field, leading to a given OSM key with appropriate validation features.
+
+```json
+  { "type": "text", "name": "Field label", "tag": "tag_key", "optional": false },
+  { "type": "number", "name": "Field label", "tag": "tag_key", "optional": false },
+  { "type": "email", "name": "Field label", "tag": "tag_key", "optional": false }
+```
+
+#### Textarea field
+
+A wider textarea field similar to text one.
+
+```json
+  { "type": "textarea", "name": "Field label", "tag": "tag_key", "optional": false }
+```
+
+#### Drop down list
+
+A drop down list with custom entries leading to a given OSM tag
+
+```json
+{ "type": "select", "name": "Field label", "tag": "tag_key", "optional": false, "values": [
+  { "v": "value_1", "l": "Value 1 label" },
+  { "v": "value_2", "l": "Value 2 label" }
+] }
+```
+
+#### 2 or 3 states
+
+States input are using radio buttons to provide 2 or 3 options to the user. It leads to a given OSM key.
+`2states` is yes/unknown and `3states` is yes/no/unknown.
+
+```json
+  { "type": "2states", "name": "Field label", "tag": "tag_key"},
+  { "type": "3states", "name": "Field label", "tag": "tag_key"}
+```
 
 ### Feature counts and statistics
 
@@ -378,7 +449,7 @@ Standalone running requires a node server complient with compatility at the top 
 To launch the web site :
 
 ```bash
-export DB_URL=`postgres://user:password@host:5432/database` # Database URL
+export DB_URL="postgres://user:password@host:5432/database" # Database URL
 export PORT=3000 # Nodejs port (defaults to 3000)
 npm run start
 ```

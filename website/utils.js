@@ -122,7 +122,7 @@ exports.getMapStyle = (p) => {
 				}, filterDatasource(ds));
 
 				if(ds.tiles === "mapillary") {
-					sources[id].tiles = [ "https://tiles3.mapillary.com/v0.1/{z}/{x}/{y}.mvt" ];
+					sources[id].tiles = [ "https://tiles.mapillary.com/maps/vtp/mly1_computed_public/2/{z}/{x}/{y}?access_token="+CONFIG.MAPILLARY_API_KEY ];
 					sources[id].type = "vector";
 					sources[id].minzoom = 14;
 					sources[id].maxzoom = 14;
@@ -132,7 +132,7 @@ exports.getMapStyle = (p) => {
 						id: id,
 						type: "circle",
 						source: id,
-						"source-layer": "mapillary-images",
+						"source-layer": "image",
 						paint: {
 							"circle-color": "rgb(53, 175, 109)",
 							"circle-radius": ["interpolate", ["linear"], ["zoom"], 14, 2, 16, 6],

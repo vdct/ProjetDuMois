@@ -14,8 +14,10 @@ case $command in
     psql -d $DB_URL -f ./db/00_init.sql
     ;;
 "init")
-    npm run feature:update
-    ./db/21_features_update_tmp.sh
+    npm run project:update
+    ./db/09_project_update_tmp.sh
+    npm run features:update
+    ./db/21_features_update_tmp.sh init
     ;;
 "run")
     npm run project:update

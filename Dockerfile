@@ -20,7 +20,10 @@ WORKDIR /opt/imposm3
 
 RUN curl -L https://github.com/omniscale/imposm3/releases/download/v${IMPOSM3_VERSION}/imposm-${IMPOSM3_VERSION}-linux-x86-64.tar.gz -o imposm3.tar.gz \
     && tar -xvf imposm3.tar.gz --strip 1 \
-    && rm -f imposm3.tar.gz
+    && rm -f imposm3.tar.gz \
+    && chmod a+x ./imposm \
+    && cp ./imposm /usr/local/bin/ \
+    && cp ./lib/* /usr/lib/
 
 WORKDIR /opt/pdm
 
@@ -30,6 +33,8 @@ COPY --chown=osm:osm ./website ./website
 COPY --chown=osm:osm ./lib ./lib
 COPY --chown=osm:osm ./config.json ./config.json
 COPY --chown=osm:osm ./package.json ./package.json
+
+RUN sed -i -e 's/allow_read_prefs": "yes"/allow_read_prefs": "1"/g' ./lib/sendfile_osm_oauth_protector/oauth_cookie_client.py
 
 RUN npm install
 

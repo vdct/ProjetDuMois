@@ -14,7 +14,7 @@
 
 ### Compilation osmium
 
-ProjetDuMois a besoin d'une version récente de osmium puisqu'il tire parti des nouvelles fonctions tags-filter.  
+ProjetDuMois a besoin d'une version récente de osmium puisqu'il tire parti des nouvelles fonctions tags-filter.
 Peu de distributions linux ont les dernières versions disponibles et vous aurez surement besoin de compiler osmium vous-même.
 
 Voir les consignes sur le [README officiel](https://github.com/osmcode/osmium-tool/blob/master/README.md#building).
@@ -251,12 +251,12 @@ Les montant de points attribués sont configurés dans `info.json` :
 
 ## Installation
 
-Choisissez ensuite entre une instance Docker ou locale pour poursuivre.  
+Choisissez ensuite entre une instance Docker ou locale pour poursuivre.
 Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois exploitable.
 
 ### Construction Docker
 
-Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation. Il inclus osmium 1.10.0 avec Debian Buster.  
+Il est possible de construire un serveur node.js unique pourvu des fonctionnalités nécessaires à toute l'exploitation. Il inclus osmium 1.10.0 avec Debian Buster.
 L'image Docker n'inclue cependant pas de serveur postgresql et vous pourrez utiliser [l'image de CampToCamp](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
 
 ```bash
@@ -276,7 +276,7 @@ npm install
 
 ### Base de données
 
-The database relies on PostgreSQL. To create the database :
+La base de données utilise PostgreSQL. Pour créer la base, lancez la commande :
 
 ```bash
 psql -c "CREATE DATABASE pdm"
@@ -288,12 +288,12 @@ Le service s'installe avec les deux commandes suivantes :
 
 ```bash
 docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest install
-docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
 ```
 
 Ensuite, lancez le serveur avec la commande :
 ```bash
-docker run -d --rm [--network=your-network -p 3000:3000] --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
+docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
 
 N'oubliez pas d'ajouter la ligne suivante dans vos crontab pour mettre à jour les projets périodiquement, idéalement quotidiennement.
@@ -345,7 +345,7 @@ Le site est visible à l'adresse [localhost:3000](http://localhost:3000).
 
 ### Docker
 
-L'image Docker inclue le nécessaire pour servir le site web et executer les tâches de mise à jour automatiques.  
+L'image Docker inclue le nécessaire pour servir le site web et executer les tâches de mise à jour automatiques.
 Vous pouvez la lancer avec:
 
 ```bash
@@ -354,12 +354,12 @@ docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:passw
 
 ### Docker compose
 
-Un fichier docker-compose est fourni ici pour faciliter l'execution de la plateforme. Cela ne vous dispensera pas de créer la base de données, y ajouter les bons rôles et configurer pdm de manière appropriée selon la méthode expliquée ci-dessus.  
+Un fichier docker-compose est fourni ici pour faciliter l'execution de la plateforme. Cela ne vous dispensera pas de créer la base de données, y ajouter les bons rôles et configurer pdm de manière appropriée selon la méthode expliquée ci-dessus.
 Docker-compose permet seulement de faciliter l'execution d'une instance déjà fonctionnelle si et seulement si elle a été configurée correctement préalablement.
 
 En fonction de la configuration de votre serveur Postgresql, vous devrez certainement adapter la valeur de la variable `DB_URL` dans le fichier compose pour permettre au serveur pdm d'accéder à la base de données correctement.
 
-N'essayez pas de débuter la configuration d'une instance avec docker-compose, essayez plutôt d'obtenir une configuration fonctionnelle de chaque composant et de vous assurer que tout fonctionne séparément d'abord.  
+N'essayez pas de débuter la configuration d'une instance avec docker-compose, essayez plutôt d'obtenir une configuration fonctionnelle de chaque composant et de vous assurer que tout fonctionne séparément d'abord.
 Une fois que vous avez constaté que tout fonctionnait, lancez-vous avec docker-compose pour faciliter les executions futures.
 
 Pour démarrer :

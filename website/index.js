@@ -448,8 +448,8 @@ const authorized = {
 		"mapbox-gl.css": "dist/mapbox-gl.css"
 	},
 	"mapillary-js": {
-		"mapillary.js": "dist/mapillary.min.js",
-		"mapillary.css": "dist/mapillary.min.css"
+		"mapillary.js": "dist/mapillary.js",
+		"mapillary.css": "dist/mapillary.css"
 	},
 	"osm-auth": { "osmauth.js": "osmauth.min.js" },
 	"osm-request": { "osmrequest.js": "dist/OsmRequest.js" },

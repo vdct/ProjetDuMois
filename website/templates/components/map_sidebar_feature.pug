@@ -500,27 +500,27 @@ script.
 			resDiv.appendChild(divButtonFalse);
 		}
 		// Mapillary pictures
-		else if(s.startsWith("background_") && p.skey && p.key) {
+		else if(s.startsWith("background_") && p.sequence_id && p.id) {
 			// Mapillary viewer
 			const mlyDiv = document.createElement("div");
 			mlyDiv.style.height = '350px';
 			mlyDiv.style.width = '100%';
-			const mly = new Mapillary.Viewer({
-				apiClient: "#{CONFIG.MAPILLARY_API_KEY}",
+			const mly = new mapillary.Viewer({
+				accessToken: "#{CONFIG.MAPILLARY_API_KEY}",
 				container: mlyDiv,
-				imageKey: p.key,
+				imageId: p.id,
 				component: { cover: false }
 			});
 
 			// To avoid sizing issues
-			mly.on(Mapillary.Viewer.loadingchanged, () => {
-				mly.off(Mapillary.Viewer.loadingchanged, this);
+			mly.on("load", () => {
+				mly.off("load", this);
 				mly.resize();
 			});
 
 			// Update map marker position
-			mly.on(Mapillary.Viewer.nodechanged, e => {
-				showMarker(e.latLon);
+			mly.on("image", e => {
+				showMarker(e.image.lngLat);
 			});
 
 			// Fullscreen button

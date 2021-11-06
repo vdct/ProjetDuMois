@@ -14,10 +14,10 @@
 
 ### Osmium building
 
-ProjetDuMois requires a recent version of osmium as it takes advantage to newest tags-filter abilities.  
+ProjetDuMois requires a recent version of osmium as it takes advantage to newest tags-filter abilities.
 Not many Linux distros got the appropriate package available in their repositories and you may need to build your own binary of osmium.
 
-See guidelines on the [official README](https://github.com/osmcode/osmium-tool/blob/master/README.md#building). 
+See guidelines on the [official README](https://github.com/osmcode/osmium-tool/blob/master/README.md#building).
 
 Following packets on debian can be useful
 * build-essential
@@ -61,7 +61,7 @@ The general configuration of the tool is to be filled in `config.json`. There is
 
 ### Postgresql connection
 
-As to connect to any Postgresql host, `DB_URL` environement variable is expected to be set with a conninfo string.  
+As to connect to any Postgresql host, `DB_URL` environement variable is expected to be set with a conninfo string.
 This is necessary for standalone or Docker environments.
 
 ```bash
@@ -251,7 +251,7 @@ Configuration of points is in `info.json`:
 
 ## Build
 
-Once PDM has been properly configured, you should choose between Docker or standalone to build it. 
+Once PDM has been properly configured, you should choose between Docker or standalone to build it.
 Refers to Database section in run chapter to make ProjetDuMois fully runable.
 
 ### Docker build
@@ -288,12 +288,12 @@ Database is installed and inited simply with:
 
 ```bash
 docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest install
-docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
 ```
 
 And then run the server with:
 ```bash
-docker run -d --rm [--network=your-network -p 3000:3000] --name=pdm -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
+docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
 
 Don't forget to add the following in your crontab to periodically update projects
@@ -303,7 +303,7 @@ docker exec -it pdm /opt/pdm/db/09_project_update_tmp.sh
 
 ### Standalone
 
-Database relies on PostgreSQL. To install the schema before first run: 
+Database relies on PostgreSQL. To install the schema before first run:
 ```bash
 psql -d pdm -f db/00_init.sql
 ```
@@ -344,7 +344,7 @@ The site can be viewed at [localhost:3000](http://localhost:3000).
 
 ### Docker
 
-Docker image includes websites and background updating tasks.  
+Docker image includes websites and background updating tasks.
 You can run it with:
 
 ```bash
@@ -353,12 +353,12 @@ docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:passw
 
 ### Docker compose
 
-A compose file is provided to ease the running processing. It won't prevent you from creating database, adding users and make the appropriate configuration nor building dockers as mentionned upside.  
+A compose file is provided to ease the running processing. It won't prevent you from creating database, adding users and make the appropriate configuration nor building dockers as mentionned upside.
 Docker compose only allows to run easilly a functionnal instance if and only it has already been properly configured before.
 
 Depending on your Postgresql configuration, you'll surely have to customize the `DB_URL` env variable in the compose file to let the pdm server access the database safely.
 
-Don't try to run the instance with docker-compose first, try to run each component separately and check if everything work as expected.  
+Don't try to run the instance with docker-compose first, try to run each component separately and check if everything work as expected.
 Once everything runs normally, you can use the following for further runs:
 
 To start:

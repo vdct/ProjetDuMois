@@ -2,6 +2,7 @@ const fs = require('fs');
 const { queryParams } = require('./utils');
 const marked = require('marked');
 const PROJECTS_PATH = __dirname + '/../projects';
+const fetch = require('node-fetch');
 
 const projects = {};
 fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
@@ -26,6 +27,29 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 		project.idParams = queryParams(Object.assign({}, project.editors.all, project.editors.iD));
 		project.josmParams = queryParams(Object.assign({ changeset_comment: project.editors.all.comment, changeset_hashtags: project.editors.all.hashtags }, project.editors.JOSM));
 		project.icon = `/images/badges/${projectDir.split("_").pop()}.svg`;
+
+		// Replace NSI editors fields by actual value
+		if(project.editors && project.editors.pdm && project.editors.pdm.fields) {
+			project.editors.pdm.fields.map(async (f, id) => {
+				if(f.type === "nsi") {
+					const nsi = await (await fetch(`https://github.com/osmlab/name-suggestion-index/raw/main/data/${f.path}.json`)).json();
+					f.type = "select";
+					f.tag = "_select"+id;
+
+					f.values = nsi.items
+						.filter(it => !f.locationSet || !it.locationSet || !it.locationSet.include || it.locationSet.include.includes(f.locationSet))
+						.map(it => ({
+							l: it.displayName,
+							tags: it.tags
+						}));
+
+					delete f.path;
+					delete f.locationSet;
+				}
+
+				return f;
+			});
+		}
 
 		projects[project.id] = project;
 	}

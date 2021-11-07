@@ -1,6 +1,6 @@
 script.
 	const osmSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm"))};
-	const osmCompareSources = !{JSON.stringify(datasources.filter(ds => ds.source === "osm-compare"))};
+	const osmCompareSources = !{JSON.stringify(datasources.filter(ds => ["osm-compare", "osm-extra"].includes(ds.source)))};
 	const editors = !{JSON.stringify(editors)};
 	const tagToUrl = !{JSON.stringify(tagToUrl)};
 
@@ -491,7 +491,7 @@ script.
 			});
 		}
 		// OSM comparison features
-		else if(s.startsWith("osm-compare_")) {
+		else if(s.startsWith("osm-compare_") || s.startsWith("osm-extra_")) {
 			const tags = typeof p.tags === "string" ? JSON.parse(p.tags) : p.tags;
 			const osmSource = osmCompareSources[parseInt(feature.source.split("_")[1])];
 
@@ -501,14 +501,24 @@ script.
 				${p.name || tags.ref ? `<p>${p.name || tags.ref}</p>` : ''}`;
 
 			getReadableTags(resDiv, tags, "Attributs");
-			createFeatureButton(resDiv, "add", "btn-block mt-2 dropup", { originalCoordinates });
 
-			const divButtonFalse = document.createElement("button");
-			divButtonFalse.classList.add("btn", "btn-warning", "btn-block", "mt-2");
-			divButtonFalse.appendChild(document.createTextNode("✘ #{__("Rien ici / déjà fait")}"));
-			divButtonFalse.title = "Marquer qu'il n'y a rien ici si vous n'avez pas vu de #{statistics.feature_name} sur le terrain";
-			divButtonFalse.addEventListener("click", e => ignoreOsmCompare(feature));
-			resDiv.appendChild(divButtonFalse);
+			if(s.startsWith("osm-compare_")) {
+				createFeatureButton(resDiv, "add", "btn-block mt-2 dropup", { originalCoordinates });
+
+				const divButtonFalse = document.createElement("button");
+				divButtonFalse.classList.add("btn", "btn-warning", "btn-block", "mt-2");
+				divButtonFalse.appendChild(document.createTextNode("✘ #{__("Rien ici / déjà fait")}"));
+				divButtonFalse.title = "Marquer qu'il n'y a rien ici si vous n'avez pas vu de #{statistics.feature_name} sur le terrain";
+				divButtonFalse.addEventListener("click", e => ignoreOsmCompare(feature));
+				resDiv.appendChild(divButtonFalse);
+			}
+			else {
+				createFeatureButton(resDiv, "info", "btn-block mt-2 dropup", {
+					osmid: p.osm_id,
+					tags,
+					originalCoordinates
+				});
+			}
 		}
 		// Mapillary pictures
 		else if(s.startsWith("background_") && p.sequence_id && p.id) {

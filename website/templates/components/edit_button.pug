@@ -2,6 +2,8 @@ div.d-none#map-marker-plus
 	include ../../images/marker_plus.svg
 div.d-none#map-marker-edit
 	include ../../images/marker_edit.svg
+div.d-none#map-marker-info
+	include ../../images/marker_info.svg
 
 script.
 	// Generate button for feature creation / editing
@@ -21,12 +23,16 @@ script.
 		let buttonIcon = document.createElement("span");
 		buttonIcon.classList.add("d-inline-block", "container-svg-fa");
 		buttonIcon.style.height = options.mini ? "24px" : "30px";
-		buttonIcon.appendChild(document.getElementById(mode === "add" ? "map-marker-plus" : "map-marker-edit").firstChild.cloneNode(true));
+		const iconName = { "add": "map-marker-plus", "edit": "map-marker-edit", "info": "map-marker-info" };
+		buttonIcon.appendChild(document.getElementById(iconName[mode]).firstChild.cloneNode(true));
 
 		// PdM action
-		const pdmfct = options.page !== "issues" && (mode === "add" ?
-				e => onStartNewFeature(optsPdm)
-				: e => onStartEditFeature(Object.assign({ osmid: options.osmid }, optsPdm)));
+		let pdmfct;
+		if(["add", "edit"].includes(mode)) {
+			pdmfct = options.page !== "issues" && (mode === "add" ?
+					e => onStartNewFeature(optsPdm)
+					: e => onStartEditFeature(Object.assign({ osmid: options.osmid }, optsPdm)));
+		}
 
 		if(options.mini) {
 			if(classes.includes("btn-floating")) {
@@ -57,7 +63,7 @@ script.
 			const dropdown = document.createElement("div");
 			dropdown.classList.add("dropdown-menu");
 
-			if(editors.pdm && (window.osm_user || !(options.noteid || options.osmoseuuid))) {
+			if(editors.pdm && (window.osm_user || !(options.noteid || options.osmoseuuid)) && pdmfct) {
 				// Split dropdown button
 				dropButton = document.createElement("button");
 				dropButton.classList.add("btn", "btn-primary", "dropdown-toggle");
@@ -68,20 +74,22 @@ script.
 				dropButton.classList.add("dropdown-toggle-split");
 				button.classList.add("w-100");
 
-				const editWithPdm = document.createElement("a");
-				editWithPdm.classList.add("dropdown-item");
-				editWithPdm.appendChild(document.createTextNode("#{__("Avec l'éditeur intégré")}"));
-				dropdown.appendChild(editWithPdm);
+				if(mode !== "info") {
+					const editWithPdm = document.createElement("a");
+					editWithPdm.classList.add("dropdown-item");
+					editWithPdm.appendChild(document.createTextNode("#{__("Avec l'éditeur intégré")}"));
+					dropdown.appendChild(editWithPdm);
 
-				if(options.page === "issues") {
-					editWithPdm.href = `/projects/#{id}/map#map=18/${lat}/${lng}&load=osm~${options.noteid}`;
-					editWithPdm.target = "_blank";
-					button.href = editWithPdm.href;
-					button.target = "_blank";
-				}
-				else {
-					button.addEventListener("click", pdmfct);
-					editWithPdm.addEventListener("click", pdmfct);
+					if(options.page === "issues") {
+						editWithPdm.href = `/projects/#{id}/map#map=18/${lat}/${lng}&load=osm~${options.noteid}`;
+						editWithPdm.target = "_blank";
+						button.href = editWithPdm.href;
+						button.target = "_blank";
+					}
+					else {
+						button.addEventListener("click", pdmfct);
+						editWithPdm.addEventListener("click", pdmfct);
+					}
 				}
 			}
 			else {

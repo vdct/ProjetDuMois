@@ -149,8 +149,8 @@ Several data sources can be used, and are to be displayed in the `datasources` f
 * `name`: name to be displayed to the user
 * `subtitles` (optional): key object > value to replace the subtitles of Osmose reports (search by pattern)
 * `buttons`: label to be displayed on the edit buttons (example `{ "done": "It's done", "false": "Nothing here" }`)
-* `minZoom` (default 7): minimum zoom level for making this layer visible
-* `maxZoom` (default 18): maximum zoom level for making this layer visible
+* `minzoom` (default 7): minimum zoom level for making this layer visible
+* `maxzoom` (default 18): maximum zoom level for making this layer visible
 * `tiles` (default): TMS URL list
 
 #### OSM Notes
@@ -171,8 +171,8 @@ Objects currently present in OpenStreetMap can be displayed to avoid duplicates 
 * `source` (mandatory `osm`): source type
 * `name`: name to be displayed to the user
 * `description`: descriptive text of the displayed object
-* `minZoom` (default 7): minimum zoom level for making this layer visible
-* `maxZoom` (default 14): maximum zoom level for making this layer visible
+* `minzoom` (default 7): minimum zoom level for making this layer visible
+* `maxzoom` (default 14): maximum zoom level for making this layer visible
 * `tiles` (default): TMS URL list
 * `layers` (default): Layer names list to use and corresponding to `tiles` indices
 
@@ -182,15 +182,29 @@ This source can appear only once, and corresponds to the objects searched for in
 
 Objects indirectly related to the project but relevant to the contribution may also appear. The properties to be filled in are the following:
 
-* `source` (mandatory `osm-compare`): type of source, mandatory value `osm-compare`
+* `source` (mandatory `osm-compare`): type of source
 * `name`: name to be displayed to the user
 * `description`: descriptive text of the displayed object
-* `minZoom` (default 9): minimum zoom level for making this layer visible
-* `maxZoom` (default 14): maximum zoom level for making this layer visible
+* `minzoom` (default 9): minimum zoom level for making this layer visible
+* `maxzoom` (default 14): maximum zoom level for making this layer visible
 * `tiles` (default): TMS URL list
 * `layers` (default): Layer names list to use and corresponding to `tiles` indices
 
 This source can only appear once, and corresponds to the objects searched for in the `database.compare` options of `info.json`.
+
+#### OpenStreetMap extra objects
+
+Objects outside the project's scope, displayed as to inform contributors that something different already exists in place. The properties to be filled in are the following:
+
+* `source` (mandatory `osm-extra`): type of source
+* `name`: name to be displayed to the user
+* `description`: descriptive text of the displayed object
+* `minzoom` (default 9): minimum zoom level for making this layer visible
+* `maxzoom` (default 14): maximum zoom level for making this layer visible
+* `tiles` (default): TMS URL list
+* `layers` (default): Layer names list to use and corresponding to `tiles` indices
+
+This source can appear as many time as required
 
 #### Background imagery
 
@@ -201,8 +215,8 @@ Raster tile imagery can be added in background to make contribution easier or gi
 * `name`: name shown to users
 * `tiles` (default): list of TMS URL
 * `attribution`: attribution to display on map
-* `minZoom` (default 2): minimum zoom level for making this layer visible
-* `maxZoom` (default 19): maximum zoom level for making this layer visible
+* `minzoom` (default 2): minimum zoom level for making this layer visible
+* `maxzoom` (default 19): maximum zoom level for making this layer visible
 * `tileSize` (default 256): width and length of a tile in pixels
 
 These sources should be declared in reverse order of display. The lower layer should be declared first.
@@ -212,8 +226,8 @@ These sources should be declared in reverse order of display. The lower layer sh
 Another kind of datasource can be added and refers to geographical statistics, over administrative boundaries for instance
 
 * `source` (mandatory `stats`): statistics source type
-* `minZoom` (default 2): minimum zoom level for making this layer visible
-* `maxZoom` (default 14): maximum zoom level for making this layer visible
+* `minzoom` (default 2): minimum zoom level for making this layer visible
+* `maxzoom` (default 14): maximum zoom level for making this layer visible
 * `tiles` (default): list of TMS URL
 * `layers` (default): Layer names list to use and corresponding to `tiles` indices
 

@@ -54,7 +54,7 @@ script.
 				}
 				else {
 					filter = ["==", ["get", "osm_id"], id];
-					layers = listOfSources.filter(ps => ps.startsWith("osm_") || ps.startsWith("osm-compare_"));
+					layers = listOfSources.filter(ps => ps.startsWith("osm_") || ps.startsWith("osm-compare_") || ps.startsWith("osm-extra_"));
 				}
 			}
 

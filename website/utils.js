@@ -116,7 +116,7 @@ exports.getMapStyle = (p) => {
 				const id = `${ds.source}_${dsid}`;
 
 				sources[id] = Object.assign({
-					minzoo: 2,
+					minzoom: 2,
 					maxzoom: 19,
 					tileSize: 256
 				}, filterDatasource(ds));
@@ -160,6 +160,38 @@ exports.getMapStyle = (p) => {
 				}
 			});
 
+			// Source osm-extra
+			p.datasources
+			.filter(ds => "osm-extra" === ds.source)
+			.forEach((ds, dsid) => {
+				const id = `${ds.source}_${dsid}`;
+				const color = ds.color;
+				const layer = ds.layer;
+
+				sources[id] = Object.assign({
+					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
+					layers: [ layer ],
+					minzoom: 9,
+					maxzoom: 14
+				}, filterDatasource(ds));
+				sources[id].type = "vector";
+				updateVectorMinZoom(sources[id].minzoom);
+
+				layers.push({
+					id: id,
+					source: id,
+					type: "circle",
+					"source-layer": sources[id].layers[0],
+					paint: {
+						"circle-color": color,
+						"circle-opacity": [ "interpolate", ["linear"], ["zoom"], 9, 0, 10, 1 ],
+						"circle-radius": [ "interpolate", ["linear"], ["zoom"], 9, 2, 11, 3, 13, 5, 19, 12 ]
+					}
+				});
+
+				legend.push({ media: "vector", color, label: ds.name, layerId: id });
+			});
+
 			// Source OSM Compare
 			p.datasources
 			.filter(ds => "osm-compare" === ds.source)
@@ -175,7 +207,7 @@ exports.getMapStyle = (p) => {
 					maxzoom: 14
 				}, filterDatasource(ds));
 				sources[id].type = "vector";
-				updateVectorMinZoom(sources[id].minZoom);
+				updateVectorMinZoom(sources[id].minzoom);
 
 				layers.push({
 					id: id,
@@ -207,7 +239,7 @@ exports.getMapStyle = (p) => {
 					maxzoom: 14
 				}, filterDatasource(ds));
 				sources[id].type = "vector";
-				updateVectorMinZoom(sources[id].minZoom);
+				updateVectorMinZoom(sources[id].minzoom);
 
 				layers.push({
 					id: id,
@@ -235,7 +267,7 @@ exports.getMapStyle = (p) => {
 					maxzoom: 18
 				}, filterDatasource(ds));
 				sources[id].type = "vector";
-				updateVectorMinZoom(sources[id].minZoom);
+				updateVectorMinZoom(sources[id].minzoom);
 
 				layers.push({
 					id: id,

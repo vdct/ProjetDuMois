@@ -217,7 +217,7 @@ Another kind of datasource can be added and refers to geographical statistics, o
 * `tiles` (default): list of TMS URL
 * `layers` (default): Layer names list to use and corresponding to `tiles` indices
 
-### Pdm editor
+### Projet du Mois integrated editor
 
 Project configuration allows to customize embedded editor with appropriate fields. Let's consider following json to be set in the `editors` list:
 
@@ -233,19 +233,20 @@ Project configuration allows to customize embedded editor with appropriate field
 }
 ```
 
-Fields are defined with standard json objects added to the `fields` array in the uspide json.
+Fields are defined with standard JSON objects added to the `fields` array in the uspide json.
 Every type except `hidden` supports those common attributes:
+
 * `name`: Field name to be displayed to the user
 * `help`: HREF link to a relevant help page regarding this particular field
 * `description`: An extensive text displayed to the user providing details about the field
 * `optional`: A boolean false/true field making the field respectively mandatory or not
 
-#### Hidden field
+#### Static or external attributes
 
-Define static tags to be added to every created object by the editor
+Define static tags to be added to every created object by the editor, or retrieve existing values from external sources (like identifiers from Osmose such as `ref:FR:SIRET` tag, use in that case `*` value).
 
 ```json
-  { "type": "hidden", "tags": { "tag_1":"value_1", "tag_2":"value_2" } }
+  { "type": "hidden", "tags": { "tag_1":"value_1", "tag_2":"value_2", "external_tag_3": "*" } }
 ```
 
 #### Scalar field
@@ -278,6 +279,15 @@ A drop down list with custom entries leading to a given OSM tag
 ] }
 ```
 
+You can also set multiple tags using a single value in the list, for example:
+
+```json
+{ "type": "select", "name": "Type", "tag": "_select1", "values": [
+	{ "l": "National police", "tags": { "name": "National police", "operator": "National police", "police:FR": "police" } },
+	{ "l": "City police", "tags": { "name": "City police", "police:FR": "police_municipale" } }
+] }
+```
+
 #### 2 or 3 states
 
 States input are using radio buttons to provide 2 or 3 options to the user. It leads to a given OSM key.
@@ -287,6 +297,20 @@ States input are using radio buttons to provide 2 or 3 options to the user. It l
   { "type": "2states", "name": "Field label", "tag": "tag_key"},
   { "type": "3states", "name": "Field label", "tag": "tag_key"}
 ```
+
+#### Brands and operators
+
+To make brand or operators input easier, you can use the `nsi` field (related to [Name Suggestion Index](https://nsi.guide/), a collaborative listing of all brands and operators worldwide). It has specific options:
+
+- `path` : path to brand listing to use (this appears in website title, for example `brands/shop/coffee`)
+- `locationSet` : a two-letter, lowercase country code to only list brands from this specific country (optional)
+
+For example:
+
+```json
+{ "type": "nsi", "name": "Brand", "path": "brands/shop/bakery", "locationSet": "fr" }
+```
+
 
 ### Feature counts and statistics
 

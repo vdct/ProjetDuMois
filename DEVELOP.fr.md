@@ -217,9 +217,9 @@ Pour activer l'affichage de statistiques selon le découpage administratif, vous
 * `tiles` (défaut) : Tableau d'URL TMS
 * `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
-### Editeur Pdm
+### Éditeur intégré de Projet du Mois
 
-La configuration des projets permets de personnaliser les champs disponibles dans l'éditeur intégré. La configuration s'exprime comme le josn suivant ajouté à la liste `editors`:
+La configuration des projets permets de personnaliser les champs disponibles dans l'éditeur intégré. La configuration s'exprime en JSON comme l'exemple suivant (ajouté dans l'objet `editors` du fichier `config.json`) :
 
 ```json
 "pdm": {
@@ -232,22 +232,25 @@ La configuration des projets permets de personnaliser les champs disponibles dan
   }
 }
 ```
-Les champs sont définis comme des objets Json standards, ajouté au tableau `fields` ci-dessus.
+
+Les champs sont définis comme des objets JSON standards, ajouté au tableau `fields` ci-dessus.
+
 Chaque type, à l'exception de `hidden` supporte les champ communs suivants :
+
 * `name`: Libellé du champ tel qu'affiché à l'utilisateur
 * `help`: Lien hypertexte pointant vers toute ressource appropriée d'aide pour ce champ
 * `description`: Un text plus long que le libellé qui apporte les détails nécessaire à propos de champ
 * `optional`: Un champ booléen false/true rendant respectivement le champ obligatoire ou non.
 
-#### Type caché
+#### Attributs statiques ou externes
 
-Il permet de définir des tags statiques ajoutés à tout objet créé avec l'éditeur.
+Il permet de définir des tags statiques ajoutés à tout objet créé avec l'éditeur. Il est possible dans la liste de tags d'ajouter une valeur `*` pour accepter toute valeur arrivant d'une source externe (par exemple les identifiants `ref:FR:SIRET` renseignés dans Osmose).
 
 ```json
-  { "type": "hidden", "tags": { "tag_1":"value_1", "tag_2":"value_2" } }
+  { "type": "hidden", "tags": { "tag_1":"value_1", "tag_2":"value_2", "tag_3_externe": "*" } }
 ```
 
-#### Champ scalaire
+#### Champs classiques
 
 Les champs textuels simples sont couverts par 3 types différents : `text`, `number` ou `email`.
 Ils produisent tous trois un champ texte standard muni des fonctions de validation appropriées.
@@ -277,15 +280,39 @@ Une liste de valeurs avec des entrées personnalisées pointant sur une clé OSM
 ] }
 ```
 
-#### 2 ou 3 états
+On peut également faire en sorte que une valeur dans la liste renseigne plusieurs attributs OSM, par exemple :
 
-Les champs à états utilisent les boutons radio pour proposer des options à l'utilisateur vers une clé OSM définie.
+```json
+{ "type": "select", "name": "Type", "tag": "_select1", "values": [
+	{ "l": "Gendarmerie", "tags": { "name": "Gendarmerie nationale", "operator": "Gendarmerie nationale", "police:FR": "gendarmerie" } },
+	{ "l": "Police nationale", "tags": { "name": "Police nationale", "operator": "Police nationale", "police:FR": "police" } },
+	{ "l": "Police municipale", "tags": { "name": "Police municipale", "police:FR": "police_municipale" } }
+] }
+```
+
+#### Champs booléens
+
+Les champs booléens à 2 ou 3 états utilisent les boutons radio pour proposer des options à l'utilisateur vers une clé OSM définie.
 `2states` pour oui/inconnu et `3states` pour oui/non/inconnu.
 
 ```json
   { "type": "2states", "name": "Libellé", "tag": "tag_key"},
   { "type": "3states", "name": "Libellé", "tag": "tag_key"}
 ```
+
+#### Opérateurs et enseignes
+
+Pour faciliter la sélection d'une enseigne ou d'un réseau de commerces/équipements, le champ de type `nsi` (pour [Name Suggestion Index](https://nsi.guide/), un recensement collaboratif des marques et enseignes) peut être utilisé. Celui-ci dispose d'options spécifiques :
+
+- `path` : chemin vers la liste à utiliser (elle apparaît en titre du site web, par exemple `brands/shop/coffee`)
+- `locationSet` : un code pays sur deux lettres, en minuscules, pour ne lister que les enseignes du pays concerné (optionel)
+
+Exemple d'utilisation :
+
+```json
+{ "type": "nsi", "name": "Marque", "path": "brands/shop/bakery", "locationSet": "fr" }
+```
+
 
 ### Décomptes et statistiques
 

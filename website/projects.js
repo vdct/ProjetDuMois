@@ -37,7 +37,7 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 					f.tag = "_select"+id;
 
 					f.values = nsi.items
-						.filter(it => !f.locationSet || !it.locationSet || !it.locationSet.include || it.locationSet.include.includes(f.locationSet))
+						.filter(it => !f.locationSet || !it.locationSet || !it.locationSet.include || it.locationSet.include.includes("001") || it.locationSet.include.includes(f.locationSet))
 						.map(it => ({
 							l: it.displayName,
 							tags: it.tags

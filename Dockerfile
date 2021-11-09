@@ -31,13 +31,13 @@ COPY --chown=osm:osm ./db/ ./db
 COPY --chown=osm:osm ./projects ./projects
 COPY --chown=osm:osm ./website ./website
 COPY --chown=osm:osm ./lib ./lib
-COPY --chown=osm:osm ./config.json ./config.json
 COPY --chown=osm:osm ./package.json ./package.json
 
 RUN sed -i -e 's/allow_read_prefs": "yes"/allow_read_prefs": "1"/g' ./lib/sendfile_osm_oauth_protector/oauth_cookie_client.py
 
 RUN npm install
 
+COPY --chown=osm:osm ./config.json ./config.json
 COPY --chown=osm:osm dockerfiles/docker-entrypoint.sh README.md ./
 
 RUN chmod +x ./docker-entrypoint.sh \

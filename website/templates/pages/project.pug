@@ -116,6 +116,9 @@ block content
 						li: a(href=datalink.url)
 							| #{datalink.title}
 							small &nbsp;(via #{datalink.via})
+			else
+				p
+					a(href=CONFIG.OSM_URL target="_blank")= __("Retrouvez l'ensemble des données directement sur le site d'OpenStreetMap.")
 
 	//- Other projects
 	if projectsToDisplay && projectsToDisplay.length > 0

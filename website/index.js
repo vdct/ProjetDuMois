@@ -186,7 +186,7 @@ app.get('/projects/:id/stats', (req, res) => {
 			ORDER BY ts ASC
 		`, [req.params.id])
 		.then(results => ({
-			chartNotes: [
+			chartNotes: results.rows.length > 0 ? [
 				{
 					label: "Ouvertes",
 					data: results.rows.map(r => ({ t: r.ts, y: r.open })),
@@ -201,7 +201,7 @@ app.get('/projects/:id/stats', (req, res) => {
 					borderColor: "#388E3C",
 					lineTension: 0
 				}
-   			],
+   			] : null,
 			statClosedNotes: results.rows.length > 0 ?
 				(results.rows[results.rows.length-1].closed > results.rows[results.rows.length-1].open ?
 					results.rows[results.rows.length-1].closed
@@ -242,8 +242,10 @@ app.get('/projects/:id/stats', (req, res) => {
 				[ req.params.id ]
 			).then(results => {
 				const maxLevel = {};
-				results.rows.forEach(r => maxLevel[r.admin_level] = r.amount);
-				return getMapStatsStyle(p, maxLevel);
+				results.rows.forEach(r => {
+					if(!isNaN(parseInt(r.amount))) { maxLevel[r.admin_level] = r.amount; }
+				});
+				return Object.keys(maxLevel).length > 0 ? getMapStatsStyle(p, maxLevel) : null;
 			})
 			.then(mapStyle => ({ mapStyle })));
 		}

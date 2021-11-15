@@ -23,6 +23,14 @@ case $command in
     npm run project:update
     npm run start
     ;;
+"update_project")
+    npm run project:update
+    ./db/09_project_update_tmp.sh
+    ;;
+"update_features")
+    npm run features:update
+    ./db/21_features_update_tmp.sh
+    ;;
 *)
     echo "Command $command unknown"
     exit 2

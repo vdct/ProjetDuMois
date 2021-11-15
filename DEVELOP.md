@@ -405,9 +405,10 @@ And then run the server with:
 docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
 
-Don't forget to add the following in your crontab to periodically update projects
+Don't forger to add following lines into your crontab for periodic updates, for example daily updates:
 ```bash
-docker exec -it pdm /opt/pdm/db/09_project_update_tmp.sh
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_project
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
 ```
 
 ### Standalone

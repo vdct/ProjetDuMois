@@ -263,6 +263,7 @@ script.
 							if(
 								feature.properties.status === "open"
 								&& !existingNotesIds.includes(feature.properties.id)
+								&& feature.properties.comments && feature.properties.comments.length > 0
 							) {
 								existingNotesIds.push(feature.properties.id);
 								if(booleanContains(geojsonBounds, feature)) {

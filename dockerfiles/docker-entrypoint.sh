@@ -31,6 +31,12 @@ case $command in
     npm run features:update
     ./db/21_features_update_tmp.sh
     ;;
+"uninstall")
+    npm run features:update
+    
+    psql -d $DB_URL -f ./db/91_project_uninstall_tmp.sql
+    psql -d $DB_URL -f ./db/90_uninstall.sql
+    ;;
 *)
     echo "Command $command unknown"
     exit 2

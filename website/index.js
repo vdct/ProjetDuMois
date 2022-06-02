@@ -56,25 +56,29 @@ app.set('views', __dirname+'/templates');
 
 // Index
 app.get('/', (req, res) => {
-	if(CONFIG.MAINTENANCE_MODE === true) { return res.status(503).render('pages/maintenance');; }
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.status(503).render('pages/maintenance'); }
 
 	const p = foldProjects(projects);
+	const nbProjects = (p.current ? p.current.length : 0) + (p.next ? p.next.length : 0) + (p.past ? p.past.length : 0);
 
-	// One currently active project
-	if(p.current && p.current.length === 1) {
-		res.redirect(`/projects/${p.current.pop().id}`);
+	// One single project
+	if(nbProjects === 1) {
+		// One currently active project
+		if(p.current && p.current.length === 1) {
+			res.redirect(`/projects/${p.current.pop().id}`);
+		}
+		// One next project
+		else if(p.next && p.next.length > 0) {
+			res.redirect(`/projects/${p.next.pop().id}`);
+		}
+		// One last project
+		else if(p.past && p.past.length > 0) {
+			res.redirect(`/projects/${p.past.pop().id}`);
+		}
 	}
-	// Multiple currently active projects
-	else if(p.current && p.current.length > 1) {
+	// Multiple projects
+	else if(nbProjects > 1) {
 		res.render('pages/multi_projects', Object.assign({ CONFIG, currentProjects: p.current, otherProjects: p.past.reverse() }));
-	}
-	// One next project
-	else if(p.next && p.next.length > 0) {
-		res.redirect(`/projects/${p.next.pop().id}`);
-	}
-	// One last project
-	else if(p.past && p.past.length > 0) {
-		res.redirect(`/projects/${p.past.pop().id}`);
 	}
 	// No projects at all
 	else {

@@ -137,7 +137,7 @@ a.dropdown-item:not([href]):hover {
 	margin-bottom: 1.25rem;
 	color: #999;
 }
-.blog-post-readme img {
+.blog-post img {
 	max-width: 100%;
 }
 

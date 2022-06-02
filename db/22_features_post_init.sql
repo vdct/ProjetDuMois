@@ -23,7 +23,7 @@ stats AS (
 	FROM pdm_feature_counts_per_boundary
 	GROUP BY project, boundary
 )
-SELECT s.project, s.boundary, b.name, b.admin_level, s.stats, maxc.amount - minc.amount AS nb, b.centre AS geom
+SELECT s.project, s.boundary, b.id, b.name, b.admin_level, s.stats, maxc.amount - minc.amount AS nb, b.centre AS geom
 FROM stats s
 JOIN minc ON minc.project = s.project AND minc.boundary = s.boundary
 JOIN maxc ON maxc.project = s.project AND maxc.boundary = s.boundary

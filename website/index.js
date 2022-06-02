@@ -332,8 +332,8 @@ app.post('/projects/:id/contribute/:userid', (req, res) => {
 		.then(r2 => {
 			const badgesBefore = r2.rows;
 
-			// Insert contribution
-			pool.query('INSERT INTO pdm_user_contribs(project, userid, ts, contribution, verified, points) VALUES ($1, $2, current_timestamp, $3, false, get_points($1, $3))', [req.params.id, req.params.userid, req.query.type])
+			// Insert contribution (will be deleted and re-inserted at next project update)
+			pool.query('WITH points AS (SELECT pts FROM pdm_projects_points WHERE project=$1 AND contrib=$3) INSERT INTO pdm_user_contribs(project, userid, ts, contribution, verified, points) VALUES (SELECT $1, $2, current_timestamp, $3, false, pts FROM points)', [req.params.id, req.params.userid, req.query.type])
 			.then(r3 => {
 				// Get badges after contribution
 				pool.query('SELECT * FROM pdm_get_badges($1, $2)', [req.params.id, req.params.userid])

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 command=${1}
+otherArgs=${@: 2}
 
 if [ -z $DB_URL ]; then
     echo "Required env variable DB_URL should be set to reach pgsql backend"
@@ -15,7 +16,7 @@ case $command in
     ;;
 "init")
     npm run project:update
-    ./db/09_project_update_tmp.sh
+    ./db/09_project_update_tmp.sh $otherArgs
     npm run features:update
     ./db/21_features_update_tmp.sh init
     ;;
@@ -25,15 +26,15 @@ case $command in
     ;;
 "update_project")
     npm run project:update
-    ./db/09_project_update_tmp.sh
+    ./db/09_project_update_tmp.sh $otherArgs
     ;;
 "update_features")
     npm run features:update
-    ./db/21_features_update_tmp.sh
+    ./db/21_features_update_tmp.sh $otherArgs
     ;;
 "uninstall")
     npm run features:update
-    
+
     psql -d $DB_URL -f ./db/91_project_uninstall_tmp.sql
     psql -d $DB_URL -f ./db/90_uninstall.sql
     ;;

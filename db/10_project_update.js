@@ -30,9 +30,9 @@ const OSC_USEFULL = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
 const OSC_UPDATES = CONFIG.WORK_DIR + '/changes.osc.gz';
 
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
-const CSV_NOTES = CONFIG.WORK_DIR + '/notes.csv';
-const CSV_NOTES_CONTRIBS = CONFIG.WORK_DIR + '/user_notes.csv';
-const CSV_NOTES_USERS = CONFIG.WORK_DIR + '/usernames_notes.csv';
+const CSV_NOTES = (project) => `${CONFIG.WORK_DIR}/notes_${project}.csv`;
+const CSV_NOTES_CONTRIBS = (project) => `${CONFIG.WORK_DIR}/user_notes_${project}.csv`;
+const CSV_NOTES_USERS = (project) => `${CONFIG.WORK_DIR}/usernames_notes_${project}.csv`;
 
 const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql -d ${process.env.DB_URL}`;
@@ -46,7 +46,7 @@ const pgPool = new Pool({
 });
 
 // Notes statistics
-function processNotes (project){
+function processNotes(project) {
 	const days = getProjectDays(project);
 	const today = new Date().toISOString().split("T")[0];
 	const notesSources = project.datasources.filter(ds => ds.source === "notes");
@@ -107,21 +107,21 @@ function processNotes (project){
 		Promise.all(promises).then(() => {
 			// Notes per day
 			const csvText = Object.entries(notesPerDay).map(e => `${project.id},${e[0]},${e[1].open},${e[1].closed}`).join("\n");
-			fs.writeFile(CSV_NOTES, csvText, (err) => {
+			fs.writeFile(CSV_NOTES(project.id), csvText, (err) => {
 				if(err) { console.error(err); }
 				else { console.log("Written note stats"); }
 			});
 
 			// User notes
 			const csvUserNotes = userNotes.map(un => un.join(",")).join("\n");
-			fs.writeFile(CSV_NOTES_CONTRIBS, csvUserNotes, (err) => {
+			fs.writeFile(CSV_NOTES_CONTRIBS(project.id), csvUserNotes, (err) => {
 				if(err) { console.error(err); }
 				else { console.log("Written user notes contributions"); }
 			});
 
 			// User names from notes
 			const csvUserNames = Object.entries(userNames).map(e => `${e[0]},${e[1]}`).join("\n");
-			fs.writeFile(CSV_NOTES_USERS, csvUserNames, (err) => {
+			fs.writeFile(CSV_NOTES_USERS(project.id), csvUserNames, (err) => {
 				if(err) { console.error(err); }
 				else { console.log("Written user names from notes"); }
 			});
@@ -180,6 +180,7 @@ var script = `#!/bin/bash
 
 set -e
 
+mode="$1"
 echo "== Prerequisites"
 nbProjects=$(${PSQL} -tAc "select count(*) from pdm_projects" | sed 's/[^0-9]*//g' )
 nbPoints=$(${PSQL} -tAc "select count(*) from pdm_projects_points" | sed 's/[^0-9]*//g' )
@@ -223,19 +224,27 @@ else
 fi
 ${separator}
 
-echo "== Update OSH PBF file with replication files"
-osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" $prev_timestamp "${OSC_UPDATES}"
-osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED_NEW}"
-osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED_NEW}" -O -o "${OSH_UPDATED}"
-rm -f "${OSC_UPDATES}"
-rm -f "${OSH_UPDATED_NEW}"
+if [[ "$mode" != "fast" ]]; then
+	echo "== Update OSH PBF file with replication files"
+	osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" $prev_timestamp "${OSC_UPDATES}"
+	osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED_NEW}"
+	osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED_NEW}" -O -o "${OSH_UPDATED}"
+	rm -f "${OSC_UPDATES}"
+	rm -f "${OSH_UPDATED_NEW}"
+else
+	echo "== Skipped update of OSH PBF file"
+fi
 ${separator}
 `;
 
 if (IMPOSM_ENABLED){
 	script += `
-echo "== Write current state of OSM data as OSM.PBF"
-osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
+if [[ "$mode" != "fast" ]]; then
+	echo "== Write current state of OSM data as OSM.PBF"
+	osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
+else
+	echo "== Skipped creation of current OSM.PBF file"
+fi
 ${separator}
 `;
 }
@@ -364,17 +373,17 @@ rm -f "${osmStats}"
 	`;
 
 	// Notes count (optional)
-	let notesSources = processNotes (project);
+	let notesSources = processNotes(project);
 	if (notesSources.length > 0){
 		script += `
 echo "   => Notes statistics"
 ${PSQL} -c "DELETE FROM pdm_note_counts WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
-${PSQL} -c "\\COPY pdm_note_counts FROM '${CSV_NOTES}' CSV"
-${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS}' CSV"
+${PSQL} -c "\\COPY pdm_note_counts FROM '${CSV_NOTES(project.id)}' CSV"
+${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS(project.id)}' CSV"
 ${PSQL} -c "CREATE TABLE pdm_user_names_notes(userid BIGINT, username VARCHAR)"
-${PSQL} -c "\\COPY pdm_user_names_notes FROM '${CSV_NOTES_USERS}' CSV"
+${PSQL} -c "\\COPY pdm_user_names_notes FROM '${CSV_NOTES_USERS(project.id)}' CSV"
 ${PSQL} -c "INSERT INTO pdm_user_names SELECT userid, username FROM pdm_user_names_notes ON CONFLICT (userid) DO NOTHING; DROP TABLE pdm_user_names_notes;"
-rm -f "${CSV_NOTES}" "${CSV_NOTES_CONTRIBS}" "${CSV_NOTES_USERS}"`;
+rm -f "${CSV_NOTES(project.id)}" "${CSV_NOTES_CONTRIBS(project.id)}" "${CSV_NOTES_USERS(project.id)}"`;
 	}
 
 });
@@ -385,7 +394,6 @@ if ${HAS_BOUNDARY}; then
 	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_subdivide"
 	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_tiles"
 fi
-${PSQL} -c "REINDEX DATABASE ${CONFIG.DB_NAME}"
 ${separator}
 
 rm -f "${CONFIG.WORK_DIR}/osh_timestamp"

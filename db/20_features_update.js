@@ -195,7 +195,7 @@ if [ "$mode" == "init" ]; then
 	psql -d ${process.env.DB_URL} -f "${__dirname}/22_features_post_init.sql"
 else
 	echo "==== Apply latest changes to database"
-	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -o "${OSC_LOCAL}"
+	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -O -o "${OSC_LOCAL}"
 	imposm diff -mapping "${IMPOSM_YML}" \\
 		-cachedir "${IMPOSM_CACHE_DIR}" \\
 		-dbschema-production public \\

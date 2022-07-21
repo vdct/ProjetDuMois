@@ -302,6 +302,15 @@ You can also set multiple tags using a single value in the list, for example:
 ] }
 ```
 
+In case of multiple tags for a single value, you can force removal of certain tags with empty strings, for example to cover objects that belongs to different categories:
+
+```json
+{ "type": "select", "name": "Type de commerce", "tag": "_select1", "values": [
+  { "l": "Agence d'assurance", "tags": { "shop": "", "office": "insurance" } },
+  { "l": "Agence de voyages", "tags": { "shop": "travel_agency", "office": "" } }
+] }
+```
+
 #### 2 or 3 states
 
 States input are using radio buttons to provide 2 or 3 options to the user. It leads to a given OSM key.

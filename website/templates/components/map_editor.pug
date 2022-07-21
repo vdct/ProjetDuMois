@@ -131,7 +131,7 @@ script.
 						// Check if all tags in this response match feature
 						let hasAllTags = true;
 						for(let k in v.tags) {
-							if(currentEditorData.tags[k] !== v.tags[k]) {
+							if(currentEditorData.tags[k] !== v.tags[k] && (v.tags[k] !== "" || currentEditorData.tags[k] !== undefined)) {
 								hasAllTags = false;
 								break;
 							}
@@ -262,7 +262,7 @@ script.
 		e.preventDefault();
 		showMarker();
 		const formData = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[0] && !kv[0].startsWith("_") && kv[1] && kv[1].toString().trim() !== ""));
-		const emptyTags = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[0] && kv[0].toString().trim() !== "" && !kv[0].startsWith("_") && !kv[1] || kv[1].trim() === ""));
+		let emptyTags = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[0] && kv[0].toString().trim() !== "" && !kv[0].startsWith("_") && !kv[1] || kv[1].trim() === ""));
 		const fixedTags = Object.fromEntries(
 			editors.pdm.fields
 			.filter(f => f.type === "hidden")
@@ -273,7 +273,14 @@ script.
 		);
 		let multiselectTags = {};
 		[...new FormData(e.target)].filter(kv => kv[0] && kv[0].startsWith("_") && kv[1] && kv[1].toString().trim() !== "").forEach(e => {
-			multiselectTags = Object.assign(multiselectTags, JSON.parse(e[1]));
+			Object.entries(JSON.parse(e[1])).forEach(mste => {
+				if(mste[0] && mste[0].toString().trim() !== "" && (!mste[1] || mste[1].trim() === "")) {
+					emptyTags[mste[0]] = mste[1]
+				}
+				else {
+					multiselectTags[mste[0]] = mste[1]
+				}
+			});
 		});
 
 		const tagsToApply = Object.assign(
@@ -281,6 +288,9 @@ script.
 			fixedTags, formData, multiselectTags,
 			currentEditorData.usedZoom < 16 ? { fixme: "Position approximative" } : {}
 		);
+
+		// Remove from tagsToApply the emptyTags
+		Object.keys(emptyTags).forEach(k => delete tagsToApply[k]);
 
 		if(osmApi && currentEditorData && Object.keys(tagsToApply).length > 0) {
 			// Show wait message

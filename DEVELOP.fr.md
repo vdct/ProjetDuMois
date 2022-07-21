@@ -304,6 +304,15 @@ On peut également faire en sorte que une valeur dans la liste renseigne plusieu
 ] }
 ```
 
+Dans le cas où plusieurs attributs sont renseignés, il est possible de forcer la suppression de certains tags avec un texte vide, par exemple pour gérer le cas où les objets sont dans plusieurs catégories :
+
+```json
+{ "type": "select", "name": "Type de commerce", "tag": "_select1", "values": [
+  { "l": "Agence d'assurance", "tags": { "shop": "", "office": "insurance" } },
+  { "l": "Agence de voyages", "tags": { "shop": "travel_agency", "office": "" } }
+] }
+```
+
 #### Champs booléens
 
 Les champs booléens à 2 ou 3 états utilisent les boutons radio pour proposer des options à l'utilisateur vers une clé OSM définie.

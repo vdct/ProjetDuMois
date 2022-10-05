@@ -1,5 +1,5 @@
 {
-	"Catalyseur d'énergies pour OpenStreetMap": "Energy catalyst for OpenStreetMap",
+	"Catalyseur d'énergies pour OpenStreetMap v%s": "Energy catalyst for OpenStreetMap v%s",
 	"Projet du mois OpenStreetMap": "OpenStreetMap Project of the Month",
 	"Copyright 2020 ProjetDuMois.fr - Développé sous licence libre AGPL 3.0": "Copyright 2020 ProjetDuMois.fr - Developed under AGPL 3.0 license",
 	"Un projet supporté par l'association": "A project supported by",
@@ -142,5 +142,6 @@
 	"Le site est en cours de maintenance, la magie opère en coulisses !": "Our website is undergoing maintenance, magic happens behind the scenes !",
 	"Veuillez réessayer un peu plus tard, merci pour votre compréhension.": "Please try again later, thanks for your understanding.",
 	"Plus d'infos sur ce champ": "More details about this field",
-	"Retrouvez l'ensemble des données directement sur le site d'OpenStreetMap.": "Find all data directly on OpenStreetMap website."
+	"Retrouvez l'ensemble des données directement sur le site d'OpenStreetMap.": "Find all data directly on OpenStreetMap website.",
+	"A propos": "About"
 }

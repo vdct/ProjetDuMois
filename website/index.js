@@ -9,10 +9,13 @@ const path = require('path');
 const fs = require('fs');
 const fetch = require('node-fetch');
 const projects = require('./projects');
-const CONFIG = require('../config.json');
+const CONFFILE = require('../config.json');
+const PCKGE = require('../package.json');
 const { foldProjects, queryParams, getMapStyle, getMapStatsStyle, getBadgesDetails, getOsmToUrlMappings, getProjectDays } = require('./utils');
 const { Pool } = require('pg');
 const { I18n } = require('i18n');
+
+const CONFIG = Object.assign(CONFFILE, {package_version:PCKGE.version});
 
 /*
  * Connect to database
@@ -84,6 +87,13 @@ app.get('/', (req, res) => {
 	else {
 		res.redirect('/error/500');
 	}
+});
+
+// About
+app.get('/about', (req, res) => {
+	if(CONFIG.MAINTENANCE_MODE === true) { return res.status(503).render('pages/maintenance'); }
+
+	res.render('pages/about', Object.assign({ CONFIG }));
 });
 
 // HTTP errors

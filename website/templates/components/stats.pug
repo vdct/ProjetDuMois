@@ -76,13 +76,6 @@ script.
 			};
 
 			// Blocks for small stats
-			if(new Date("#{end_date}T23:59:59Z").getTime() >= Date.now()) {
-				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - Date.now()) / (1000*3600*24)), "#{__("jours restants")}");
-			}
-			else {
-				addBlock(Math.round((new Date("#{end_date}T23:59:59Z").getTime() - new Date("#{start_date}T00:00:00Z").getTime()) / (1000*3600*24)), "#{__("jours de contributions")}");
-			}
-
 			if(res.added) { addBlock(numberFormat.format(res.added), "#{title.toLowerCase()} ajoutés"); }
 			if(res.count) { addBlock(numberFormat.format(res.count), "#{title.toLowerCase()} au total dans OSM"); }
 			if(res.tasksSolved !== undefined) { addBlock(numberFormat.format(res.tasksSolved), "#{statistics.osmose_tasks}"); }

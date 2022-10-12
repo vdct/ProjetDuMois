@@ -436,11 +436,13 @@ exports.getOsmToUrlMappings = () => {
 exports.getProjectDays = (project) => {
 	const days = [];
 	const start = new Date(project.start_date);
-	let end = new Date(project.end_date);
-	if(end.getTime() > Date.now()) { end = new Date(); }
+	let end = new Date();
+	const summarize = end.getTime() - start.getTime() > 1000*60*60*24*60;
 
 	for(let dt = new Date(start); dt.getTime() <= end.getTime(); dt.setTime(dt.getTime() + 1000*60*60*24)) {
-		days.push(new Date(dt).toISOString().split("T")[0]);
+		if(!summarize || end.getTime() - dt.getTime() < 1000*60*60*24 || new Date(dt).toISOString().split("T")[0].substring(8,10) === "01") {
+			days.push(new Date(dt).toISOString().split("T")[0]);
+		}
 	}
 
 	return days;

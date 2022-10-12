@@ -161,17 +161,23 @@ app.get('/projects/:id/stats', (req, res) => {
 	const p = projects[req.params.id];
 	const allPromises = [];
 	const osmUserAuthentified = typeof req.query.osm_user === "string" && req.query.osm_user.trim().length > 0;
+	const daysToKeep = (day) => {
+		if(Date.now() - (new Date(p.start_date)).getTime() < 1000*60*60*24*60) { return true; }
+		else if(Date.now() - (new Date(day)).getTime() < 1000*60*60*24) { return true; }
+		else { return day.substring(8, 10) == "01"; }
+	};
 
 	// Fetch Osmose statistics
 	allPromises.push(Promise.all(p.datasources
 	.filter(ds => ds.source === "osmose")
 	.map(ds => {
-		const params = { item: ds.item, class: ds.class, start_date: p.start_date, end_date: p.end_date, country: ds.country };
+		const params = { item: ds.item, class: ds.class, start_date: p.start_date, country: ds.country };
 		return fetch(`${CONFIG.OSMOSE_URL}/fr/issues/graph.json?${queryParams(params)}`)
 		.then(res => res.json())
 		.then(res => ({
 			label: ds.name,
 			data: Object.entries(res.data)
+				.filter(e => daysToKeep(e[0]))
 				.map(e => ({ t: e[0], y: e[1] }))
 				.sort((a,b) => a.t.localeCompare(b.t)),
 			fill: false,

@@ -1,0 +1,15 @@
+extends ../layout.pug
+
+
+block navbar
+	a(href="#about")
+		i.fa.fa-flag(title=__("A propos"))
+		span= __("A propos")
+
+
+block content
+	a#about
+	div.container.text-left
+		div.row
+			div.blog-post.col-md-8
+				include:markdown-it ../../../README.md

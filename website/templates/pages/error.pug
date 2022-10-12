@@ -2,15 +2,9 @@ extends ../layout.pug
 
 
 block navbar
-	a(href="/#summary")
-		i.fa.fa-calendar-day(title=__("En ce moment"))
-		span= __("En ce moment")
-	a(href="/#statistics")
-		i.fa.fa-chart-bar(title=__("Statistiques"))
-		span= __("Statistiques")
-	a(href="/#data")
-		i.fa.fa-file-download(title=__("Données"))
-		span= __("Données")
+	a(href="/about")
+		i.fa.fa-flag(title=__("A propos"))
+		span= __("A propos")
 
 
 block content

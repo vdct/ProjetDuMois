@@ -3,39 +3,40 @@ extends ../layout.pug
 
 block navbar
 	a(href="#others")
-		i.fa.fa-file-download(title=__("Autres projets"))
-		span= __("Autres projets")
+		i.fa.fa-file-download(title=__("Les projets"))
+		span= __("Les projets")
 	a(href="/about")
-		i.fa.fa-flag(title=__("A propos"))
-		span= __("A propos")
+		i.fa.fa-flag(title=__("À propos"))
+		span= __("À propos")
 
 
 block content
-	div.container
-		//- Project summary
-		div#summary.jumbotron.py-2.px-3.pb-3.p-md-5.mb-3.text-white.rounded.bg-dark.position-relative
-			img.position-absolute.pdm-project-badge(src=icon alt="" width="100")
-			div.col-8.px-0.pb-1
-				h1.font-italic= __("En ce moment : %s projets en cours", currentProjects.length)
+	if currentProjects.length > 0
+		div.container.pb-5
+			//- Project summary
+			div#summary.jumbotron.py-2.px-3.pb-3.p-md-5.mb-3.text-white.rounded.bg-dark.position-relative
+				img.position-absolute.pdm-project-badge(src=icon alt="" width="100")
+				div.col-8.px-0.pb-1
+					h1.font-italic= __("En ce moment : %s projets prioritaires", currentProjects.length)
 
-			div.row
-				each proj in currentProjects
-					div.col-md-6.col-lg-4.h-100
-						div.media.my-1.p-2(style="background-color: white; border-radius: 10px")
-							a.align-self-center.mr-3(href=`/projects/${proj.id}`)
-								img(src=proj.icon alt="" style="height: 100px")
-							div.media-body.align-self-center
-								a.text-decoration-none(href=`/projects/${proj.id}`)= proj.title
+				div.row
+					each proj in currentProjects
+						div.col-md-6.col-lg-4.h-100
+							div.media.my-1.p-2(style="background-color: white; border-radius: 10px")
+								a.align-self-center.mr-3(href=`/projects/${proj.id}`)
+									img(src=proj.icon alt="" style="height: 100px")
+								div.media-body.align-self-center
+									a.text-decoration-none(href=`/projects/${proj.id}`)= proj.title
 
 	//- Other projects
 	a#others
-	div.container-fluid.py-5
+	div.container-fluid.pb-5
 		div.container.blog-post
 			h2.blog-post-title
 				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
-				| #{__("Autres projets")}
+				| #{__("Tous nos projets")}
 
-			p= __("Retrouvez d'autres projets du mois, leurs outils, statistiques et données.")
+			p= __("Retrouvez l'ensemble des projets du mois, leurs outils, statistiques et données.")
 				div.row.align-items-center
 					each proj in otherProjects
 						div.col-md-6.col-lg-4.h-100

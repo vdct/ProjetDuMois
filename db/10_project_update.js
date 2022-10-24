@@ -249,18 +249,18 @@ ${separator}
 `;
 }
 
-const projectsToProcess = runForAll ? Object.values(projects) : projectsFold.current;
-projectsToProcess.forEach(project => {
+Object.values(projects).forEach(project => {
 	let oshInput = OSH_UPDATED;
 	const oshProject = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}`);
 	const oshFiltered = OSH_FILTERED.replace("filtered", `${project.id.split("_").pop()}.filtered`);
 	const oshUsefull = OSH_USEFULL.replace("usefull", `${project.id.split("_").pop()}.usefull`);
+	const days = getProjectDays(project);
 
 	let tagFilterParts = project.database.osmium_tag_filter.split("&");
 
 	script += `
-cur_timestamp=$(date -Idate --utc ${new Date(project.end_date+"T23:59:59Z").getTime() < Date.now() ? `-d ${project.end_date}` : ""})
-cnt_timestamp=${new Date(project.end_date+"T23:59:59Z").getTime() < Date.now() ? `$(date -Idate --utc -d ${project.start_date})` : `""`}
+cur_timestamp=$(date -Idate --utc)
+cnt_timestamp=$(date -Idate --utc -d ${project.start_date})
 prj_timestamp=$(date -Idate --utc -d ${project.start_date})
 if [[ -z \$cnt_timestamp && -n "\$prev_timestamp" ]]; then
 	cnt_timestamp=$(date -Idate --utc -d \$prev_timestamp)
@@ -330,12 +330,7 @@ if ${HAS_BOUNDARY}; then
 fi
 
 echo "Counting from \$cnt_timestamp"
-days=""
-local_timestamp=$cnt_timestamp
-until [[ ! "\$local_timestamp" < "\$cur_timestamp" ]]; do
-	days="\$days \$local_timestamp"
-	local_timestamp=$(date -Idate --utc -d "\$local_timestamp + 1 day" )
-done
+days="${days.join(" ")}"
 days=($\{days##*( )\})
 for day in "\${days[@]}"; do
 	echo "Processing $day"

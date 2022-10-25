@@ -43,7 +43,7 @@
     "pic4carto": "^2.1.12",
     "pug": "^3.0.1",
     "swiped-events": "^1.1.4",
-    "tag2link": "^2020.10.18",
+    "tag2link": "^2021.3.21",
     "wordcloud": "^1.1.1"
   },
   "devDependencies": {

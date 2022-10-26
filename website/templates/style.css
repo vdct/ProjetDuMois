@@ -493,6 +493,67 @@ a.navbar-brand:hover {
 }
 
 
+/* Icon checkbox group */
+
+.custom-control.image-checkbox {
+	position: relative;
+	padding-left: 0;
+}
+
+.custom-control.image-checkbox .custom-control-input:checked ~ .custom-control-label:after, .custom-control.image-checkbox .custom-control-input:checked ~ .custom-control-label:before {
+	opacity: 1;
+}
+
+.custom-control-input:checked+label {
+	border-color: #1565C0 !important;
+}
+
+.custom-control.image-checkbox label {
+	cursor: pointer;
+	border: 2px solid lightgray;
+	border-radius: 2.5px;
+	padding: 2px;
+	display: block;
+}
+
+.custom-control.image-checkbox label:before {
+	border-color: #007bff;
+	background-color: #007bff;
+}
+
+.custom-control.image-checkbox label:after, .custom-control.image-checkbox label:before {
+	transition: opacity .3s ease;
+	opacity: 0;
+	left: .25rem;
+}
+
+.custom-control.image-checkbox label:focus, .custom-control.image-checkbox label:hover {
+	opacity: .8;
+}
+
+.custom-control.image-checkbox label img {
+	border-radius: 2.5px;
+	border: 2px lightgray;
+}
+
+.custom-control.image-checkbox label p {
+	font-size: 0.7em;
+	white-space: nowrap;
+	margin: 0;
+	text-align: center;
+	width: 100%;
+	overflow-x: hidden;
+}
+
+.form-group-image-checkbox.is-invalid label {
+	color: #dc3545;
+}
+
+.form-group-image-checkbox.is-invalid .invalid-feedback {
+	display: block;
+}
+
+
 /* Features list */
 
 #pdm-sidebar-features-list {

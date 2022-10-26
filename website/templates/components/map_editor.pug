@@ -44,6 +44,16 @@ form#pdm-editor-form
 							div.form-check.form-check-inline
 								input.form-check-input(type="radio" name=field.tag value="" id=`pdm-editor_${field.tag}_unknown` checked required=(!field.optional || false))
 								label.form-check-label(for=`pdm-editor_${field.tag}_unknown`)= __("Ne sais pas")
+					else if field.type === "icons"
+						div.container
+							div.row.mx-n4.mb-n2.align-items-center
+								each icon, id in field.values
+									div.px-2.mb-2.col-4
+										div.custom-control.custom-checkbox.image-checkbox
+											input.custom-control-input(type="checkbox" value=JSON.stringify(icon.tags) id=`pdm-editor_${field.tag}_${id}`)
+											label.custom-control-label(for=`pdm-editor_${field.tag}_${id}` title=icon.label)
+												img.img-fluid(src=`/images/form/${icon.icon}.png`)
+												p= icon.label
 
 					if field.description
 						small.form-text.text-muted= field.description
@@ -123,11 +133,13 @@ script.
 			});
 
 			// Auto-select appropriate entry in select with multiple tags
-			if(editors.pdm && editors.pdm.fields && editors.pdm.fields.find(fld => fld.type === "select" && fld.tag.startsWith("_"))) {
-				editors.pdm.fields.filter(fld => fld.type === "select" && fld.tag.startsWith("_"))
+			if(editors.pdm && editors.pdm.fields && editors.pdm.fields.find(fld => ["select", "icons"].includes(fld.type) && fld.tag.startsWith("_"))) {
+				editors.pdm.fields.filter(fld => ["select", "icons"].includes(fld.type) && fld.tag.startsWith("_"))
 				.forEach(field => {
 					// Read each response for this field
-					for(let v of field.values) {
+					for(let i = 0; i < field.values.length; i++) {
+						let v = field.values[i];
+
 						// Check if all tags in this response match feature
 						let hasAllTags = true;
 						for(let k in v.tags) {
@@ -139,8 +151,13 @@ script.
 
 						// If matching, make this response as field value
 						if(hasAllTags) {
-							editorFormDom.elements[field.tag].value = JSON.stringify(v.tags);
-							break;
+							if(field.type === "select") {
+								editorFormDom.elements[field.tag].value = JSON.stringify(v.tags);
+								break;
+							}
+							else if(field.type === "icons") {
+								editorFormDom.elements[`pdm-editor_${field.tag}_${i}`].checked = true;
+							}
 						}
 					}
 				});
@@ -262,6 +279,7 @@ script.
 		e.preventDefault();
 		showMarker();
 		const formData = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[0] && !kv[0].startsWith("_") && kv[1] && kv[1].toString().trim() !== ""));
+		console.log(e.target, [...new FormData(e.target)]);
 		let emptyTags = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[0] && kv[0].toString().trim() !== "" && !kv[0].startsWith("_") && !kv[1] || kv[1].trim() === ""));
 		const fixedTags = Object.fromEntries(
 			editors.pdm.fields
@@ -292,6 +310,8 @@ script.
 		// Remove from tagsToApply the emptyTags
 		Object.keys(emptyTags).forEach(k => delete tagsToApply[k]);
 
+		console.log(tagsToApply, emptyTags);
+		return;
 		if(osmApi && currentEditorData && Object.keys(tagsToApply).length > 0) {
 			// Show wait message
 			editorFormDom.classList.add("d-none");

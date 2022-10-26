@@ -54,12 +54,20 @@
 				{ "type": "hidden", "tags": { "amenity": "charging_station", "ref:EU:EVSE": "*", "owner": "*", "socket:typee": "*", "socket:type2": "*", "socket:type2_combo": "*", "socket:chademo": "*", "socket:type3c": "*", "source": "*" } },
 				{ "type": "text", "name": "Nom de la borne", "tag": "name", "optional": true },
 				{ "type": "3states", "name": "Service payant ?", "tag": "fee" },
-				{ "type": "3states", "name": "Recharge pour voitures ?", "tag": "motorcar" },
-				{ "type": "3states", "name": "Recharge pour vélos ?", "tag": "bicycle" },
-				{ "type": "3states", "name": "Recharge pour scooter ?", "tag": "scooter" },
+				{ "type": "icons", "name": "Véhicules autorisés", "tag": "_vehicle", "values": [
+				  { "icon": "vehicle_motorcar", "label": "Auto", "tags": { "motorcar": "yes" } },
+				  { "icon": "vehicle_motorcycle", "label": "Moto", "tags": { "motorcycle": "yes" } },
+				  { "icon": "vehicle_bicycle", "label": "Vélo", "tags": { "bicycle": "yes" } }
+				] },
 				{ "type": "number", "name": "Nombre de places", "tag": "capacity", "description": "Nombre de véhicules qui peuvent être chargés en même temps", "optional": true },
 				{ "type": "text", "name": "Nom commercial du réseau", "tag": "network", "optional": true },
 				{ "type": "text", "name": "Gestionnaire du réseau", "tag": "operator", "optional": true },
+				{ "type": "icons", "name": "Prises disponibles", "tag": "_socket", "values": [
+				  { "icon": "socket_typee", "label": "Type E", "tags": { "socket:typee": "yes" } },
+				  { "icon": "socket_type2", "label": "Type 2", "tags": { "socket:type2": "yes" } },
+				  { "icon": "socket_type2_combo", "label": "T2 Combo", "tags": { "socket:type2_combo": "yes" } },
+				  { "icon": "socket_chademo", "label": "Chademo", "tags": { "socket:chademo": "yes" } }
+				] },
 				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Types et nombre de prises, infos pratiques...", "optional": true }
 			],
 			"title": {

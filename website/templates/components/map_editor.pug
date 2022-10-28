@@ -279,8 +279,9 @@ script.
 		e.preventDefault();
 		showMarker();
 		const formData = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[0] && !kv[0].startsWith("_") && kv[1] && kv[1].toString().trim() !== ""));
-		console.log(e.target, [...new FormData(e.target)]);
+
 		let emptyTags = Object.fromEntries([...new FormData(e.target)].filter(kv => kv[0] && kv[0].toString().trim() !== "" && !kv[0].startsWith("_") && !kv[1] || kv[1].trim() === ""));
+
 		const fixedTags = Object.fromEntries(
 			editors.pdm.fields
 			.filter(f => f.type === "hidden")
@@ -289,17 +290,32 @@ script.
 			.map(e => e[1] === "*" && currentEditorData.tags && currentEditorData.tags[e[0]] ? [e[0], currentEditorData.tags[e[0]]] : e)
 			.filter(e => e[1] !== "*")
 		);
+
 		let multiselectTags = {};
 		[...new FormData(e.target)].filter(kv => kv[0] && kv[0].startsWith("_") && kv[1] && kv[1].toString().trim() !== "").forEach(e => {
 			Object.entries(JSON.parse(e[1])).forEach(mste => {
 				if(mste[0] && mste[0].toString().trim() !== "" && (!mste[1] || mste[1].trim() === "")) {
-					emptyTags[mste[0]] = mste[1]
+					emptyTags[mste[0]] = "";
 				}
 				else {
-					multiselectTags[mste[0]] = mste[1]
+					multiselectTags[mste[0]] = mste[1];
 				}
 			});
 		});
+
+		// Values from checkbox, which aren't handled by FormData object
+		for(let input of e.target.elements) {
+			if(input.type == "checkbox") {
+				Object.entries(JSON.parse(input.value)).forEach(cbt => {
+					if(input.checked) {
+						multiselectTags[cbt[0]] = cbt[1];
+					}
+					else {
+						emptyTags[cbt[0]] = "";
+					}
+				});
+			}
+		}
 
 		const tagsToApply = Object.assign(
 			{},
@@ -310,8 +326,6 @@ script.
 		// Remove from tagsToApply the emptyTags
 		Object.keys(emptyTags).forEach(k => delete tagsToApply[k]);
 
-		console.log(tagsToApply, emptyTags);
-		return;
 		if(osmApi && currentEditorData && Object.keys(tagsToApply).length > 0) {
 			// Show wait message
 			editorFormDom.classList.add("d-none");

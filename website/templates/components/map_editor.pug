@@ -120,6 +120,29 @@ script.
 	window.addEventListener("osm_login", showEditingMode);
 	window.addEventListener("osm_logout", showEditingMode);
 
+	// Check if an OSM feature tags matches pattern PdM tags
+	function checkFeatureMatchesPatternTags(osmTags, pdmKey, pdmPattern) {
+		if(typeof pdmPattern !== "object") {
+			return false;
+		}
+
+		return pdmPattern.valid.filter(valid => {
+			// Special values
+			if(valid.startsWith("<")) {
+				if(valid === "<POS_INT>") {
+					return !isNaN(parseInt(osmTags[pdmKey])) && parseInt(osmTags[pdmKey]) > 0;
+				}
+				else {
+					return false;
+				}
+			}
+			// Classic string
+			else {
+				return osmTags[pdmKey] === valid;
+			}
+		}).length === 0;
+	}
+
 	// Load form with existing tags
 	function loadForm() {
 		editorFormDom.reset();
@@ -143,7 +166,13 @@ script.
 						// Check if all tags in this response match feature
 						let hasAllTags = true;
 						for(let k in v.tags) {
-							if(currentEditorData.tags[k] !== v.tags[k] && (v.tags[k] !== "" || currentEditorData.tags[k] !== undefined)) {
+							// This tag has several input allowed values
+							if(checkFeatureMatchesPatternTags(currentEditorData.tags, k, v.tags[k])) {
+								hasAllTags = false;
+								break;
+							}
+							// This tag has a single classic allowed value
+							else if(typeof v.tags[k] === "string" && currentEditorData.tags[k] !== v.tags[k] && (v.tags[k] !== "" || currentEditorData.tags[k] !== undefined)) {
 								hasAllTags = false;
 								break;
 							}
@@ -292,13 +321,19 @@ script.
 		);
 
 		let multiselectTags = {};
+		let tagsToEventuallyUpdate = {};
 		[...new FormData(e.target)].filter(kv => kv[0] && kv[0].startsWith("_") && kv[1] && kv[1].toString().trim() !== "").forEach(e => {
 			Object.entries(JSON.parse(e[1])).forEach(mste => {
 				if(mste[0] && mste[0].toString().trim() !== "" && (!mste[1] || mste[1].trim() === "")) {
 					emptyTags[mste[0]] = "";
 				}
 				else {
-					multiselectTags[mste[0]] = mste[1];
+					if(typeof mste[1] === "string") {
+						multiselectTags[mste[0]] = mste[1];
+					}
+					else if(typeof mste[1] === "object") {
+						tagsToEventuallyUpdate = mste[1];
+					}
 				}
 			});
 		});
@@ -308,7 +343,12 @@ script.
 			if(input.type == "checkbox") {
 				Object.entries(JSON.parse(input.value)).forEach(cbt => {
 					if(input.checked) {
-						multiselectTags[cbt[0]] = cbt[1];
+						if(typeof cbt[1] === "string") {
+							multiselectTags[cbt[0]] = cbt[1];
+						}
+						else if(typeof cbt[1] === "object") {
+							tagsToEventuallyUpdate[cbt[0]] = cbt[1];
+						}
 					}
 					else {
 						emptyTags[cbt[0]] = "";
@@ -322,6 +362,13 @@ script.
 			fixedTags, formData, multiselectTags,
 			currentEditorData.usedZoom < 16 ? { fixme: "Position approximative" } : {}
 		);
+
+		// Add default values for tags to eventually update if new feature is created
+		if(currentEditorData && currentEditorData.mode === "add") {
+			Object.entries(tagsToEventuallyUpdate).forEach(tteu => {
+				tagsToApply[tteu[0]] = tteu[1].user_defined;
+			});
+		}
 
 		// Remove from tagsToApply the emptyTags
 		Object.keys(emptyTags).forEach(k => delete tagsToApply[k]);
@@ -388,7 +435,8 @@ script.
 						.then(onceDone);
 					}
 					else if(currentEditorData.mode === "edit") {
-						return osmApi.fetchElement(currentEditorData.osmid).then(element => {
+						//return osmApi.fetchElement(currentEditorData.osmid).then(element => {
+						return osmApi.fetchElement("node/4332411974").then(element => {
 							// Update coordinates
 							if(currentEditorData.coordinates) {
 								element = osmApi.setCoordinates(element, currentEditorData.coordinates.lat, currentEditorData.coordinates.lng);
@@ -397,10 +445,23 @@ script.
 							// Remove empty tags
 							if(Object.keys(emptyTags).length > 0) {
 								Object.keys(emptyTags).forEach(k => { element = osmApi.removeTag(element, k); });
+								console.log("removed", emptyTags);
 							}
 
 							// Set new tags
 							element = osmApi.setTags(element, tagsToApply);
+
+							// Update if necessary tags to eventually update
+							const osmTags = osmApi.getTags(element);
+							Object.entries(tagsToEventuallyUpdate).forEach(tteu => {
+								const osmExistingValue = osmTags[tteu[0]];
+								console.log(tteu, osmTags[tteu[0]], checkFeatureMatchesPatternTags(osmTags, tteu[0], tteu[1]));
+								// TODO check why new values aren't added
+								if(!checkFeatureMatchesPatternTags(osmTags, tteu[0], tteu[1])) {
+									element = osmApi.setTag(element, tteu[0], tteu[1].user_defined);
+									console.log("updated");
+								}
+							});
 
 							// Send to OSM
 							return osmApi.sendElement(element, changesetId)

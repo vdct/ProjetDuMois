@@ -140,7 +140,7 @@ script.
 			else {
 				return osmTags[pdmKey] === valid;
 			}
-		}).length === 0;
+		}).length > 0;
 	}
 
 	// Load form with existing tags
@@ -167,7 +167,7 @@ script.
 						let hasAllTags = true;
 						for(let k in v.tags) {
 							// This tag has several input allowed values
-							if(checkFeatureMatchesPatternTags(currentEditorData.tags, k, v.tags[k])) {
+							if(typeof v.tags[k] === "object" && !checkFeatureMatchesPatternTags(currentEditorData.tags, k, v.tags[k])) {
 								hasAllTags = false;
 								break;
 							}
@@ -435,8 +435,7 @@ script.
 						.then(onceDone);
 					}
 					else if(currentEditorData.mode === "edit") {
-						//return osmApi.fetchElement(currentEditorData.osmid).then(element => {
-						return osmApi.fetchElement("node/4332411974").then(element => {
+						return osmApi.fetchElement(currentEditorData.osmid).then(element => {
 							// Update coordinates
 							if(currentEditorData.coordinates) {
 								element = osmApi.setCoordinates(element, currentEditorData.coordinates.lat, currentEditorData.coordinates.lng);
@@ -452,14 +451,10 @@ script.
 							element = osmApi.setTags(element, tagsToApply);
 
 							// Update if necessary tags to eventually update
-							const osmTags = osmApi.getTags(element);
 							Object.entries(tagsToEventuallyUpdate).forEach(tteu => {
-								const osmExistingValue = osmTags[tteu[0]];
-								console.log(tteu, osmTags[tteu[0]], checkFeatureMatchesPatternTags(osmTags, tteu[0], tteu[1]));
-								// TODO check why new values aren't added
-								if(!checkFeatureMatchesPatternTags(osmTags, tteu[0], tteu[1])) {
+								const osmExistingValue = currentEditorData.tags[tteu[0]];
+								if(!checkFeatureMatchesPatternTags(currentEditorData.tags, tteu[0], tteu[1])) {
 									element = osmApi.setTag(element, tteu[0], tteu[1].user_defined);
-									console.log("updated");
 								}
 							});
 

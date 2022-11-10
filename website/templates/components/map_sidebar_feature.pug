@@ -182,24 +182,32 @@ script.
 					}
 					else if(field.tag.startsWith("_")) {
 						// Check if value is found in tags
-						let foundValue;
+						let foundValues = [];
 						for(let v of field.values) {
 							let tagsMatch = true;
 							for(let k in v.tags) {
-								if(tags[k] !== v.tags[k]) {
-									tagsMatch = false;
-									break;
+								if(typeof v.tags[k] === "object") {
+									if(!checkFeatureMatchesPatternTags(tags, k, v.tags[k])) {
+										tagsMatch = false;
+										break;
+									}
+								}
+								else {
+									if(tags[k] !== v.tags[k]) {
+										tagsMatch = false;
+										break;
+									}
 								}
 							}
 
 							if(tagsMatch) {
-								foundValue = v.l;
-								break;
+								foundValues.push(v);
+								editorTags = editorTags.concat(Object.keys(v.tags));
 							}
 						}
 
 						// If found, display
-						if(foundValue) {
+						if(foundValues.length > 0) {
 							const p = document.createElement("p");
 							p.classList.add("mb-1");
 
@@ -208,12 +216,42 @@ script.
 							title.appendChild(document.createTextNode(field.name));
 							p.appendChild(title);
 
-							const value = document.createElement("span");
-							value.classList.add("d-block");
-							value.appendChild(document.createTextNode(foundValue));
-							p.appendChild(value);
+							if(field.type === "icons") {
+								div.appendChild(p);
 
-							div.appendChild(p);
+								const container = document.createElement("div");
+								container.classList.add("container");
+
+								const iconRow = document.createElement("div");
+								iconRow.classList.add("row", "mx-n4", "mb-n2", "align-items-center");
+
+								for(let fv of foundValues) {
+									const fvDiv = document.createElement("div");
+									fvDiv.classList.add("px-2", "mb-2", "col-4", "text-center");
+
+									const fvLbl = document.createElement("small");
+									fvLbl.appendChild(document.createTextNode(fv.label));
+									fvDiv.appendChild(fvLbl);
+
+									const fvImg = document.createElement("img");
+									fvImg.classList.add("img-fluid");
+									fvImg.style.height = "42px";
+									fvImg.src = `/images/form/${fv.icon}.png`;
+									fvDiv.appendChild(fvImg);
+
+									iconRow.appendChild(fvDiv);
+								}
+
+								container.appendChild(iconRow);
+								div.appendChild(container);
+							}
+							else {
+								const value = document.createElement("span");
+								value.classList.add("d-block");
+								value.appendChild(document.createTextNode(foundValues.map(fv => fv.l || fv.label).join(", ")));
+								p.appendChild(value);
+								div.appendChild(p);
+							}
 						}
 						else {
 							toComplete.push(field.name);

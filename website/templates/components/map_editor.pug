@@ -444,7 +444,6 @@ script.
 							// Remove empty tags
 							if(Object.keys(emptyTags).length > 0) {
 								Object.keys(emptyTags).forEach(k => { element = osmApi.removeTag(element, k); });
-								console.log("removed", emptyTags);
 							}
 
 							// Set new tags

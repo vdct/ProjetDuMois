@@ -334,6 +334,18 @@ For example:
 { "type": "nsi", "name": "Brand", "path": "brands/shop/bakery", "locationSet": "fr" }
 ```
 
+#### Icons group
+
+Icon select fields allow simple selecting of several similar attributes, for example available sockets at a charging station or kind of waste accepted in a recycling container. Icons must be available in the `/website/images/form` folder, as PNG image. Tags associated to an icon are applied on feature if icon is selected.
+
+```json
+{ "type": "icons", "name": "Available sockets", "tag": "_socket", "values": [
+  { "icon": "socket_typee", "label": "TE", "tags": { "socket:typee": "yes" } },
+  { "icon": "socket_type2", "label": "T2", "tags": { "socket:type2": "yes" } },
+  { "icon": "socket_type2_combo", "label": "T2 Combo", "tags": { "socket:type2_combo": "yes" } },
+  { "icon": "socket_chademo", "label": "Chademo", "tags": { "socket:chademo": "yes" } }
+] }
+```
 
 ### Feature counts and statistics
 

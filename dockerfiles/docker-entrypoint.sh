@@ -15,22 +15,28 @@ case $command in
     psql -d $DB_URL -f ./db/00_init.sql
     ;;
 "init")
-    npm run project:update $otherArgs
-    ./db/09_project_update_tmp.sh $otherArgs
+    npm run pbf:update $otherArgs
+    ./db/11_pbf_update_tmp.sh
     npm run features:update $otherArgs
     ./db/21_features_update_tmp.sh init
+    npm run project:update $otherArgs
+    ./db/31_project_update_tmp.sh $otherArgs
     ;;
 "run")
-    npm run project:update $otherArgs
+    npm run projects:update $otherArgs
     npm run start
     ;;
-"update_project")
-    npm run project:update $otherArgs
-    ./db/09_project_update_tmp.sh $otherArgs
+"update_pbf")
+    npm run pbf:update $otherArgs
+    ./db/11_pbf_update_tmp.sh
     ;;
 "update_features")
     npm run features:update $otherArgs
     ./db/21_features_update_tmp.sh $otherArgs
+    ;;
+"update_projects")
+    npm run projects:update $otherArgs
+    ./db/31_projects_update_tmp.sh $otherArgs
     ;;
 "uninstall")
     npm run features:update $otherArgs

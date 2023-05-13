@@ -349,13 +349,14 @@ Icon select fields allow simple selecting of several similar attributes, for exa
 
 ### Feature counts and statistics
 
-Project statistics are made by `./db/09_project_update_tmp.sh` script. This script fills `pdm_feature_counts` SQL table with missing daily data according to last OSH file timestamp and current day.
+Project statistics are made by `./db/31_projects_update_tmp.sh` script. This script fills `pdm_feature_counts` SQL table with missing daily data according to last OSH file timestamp and current day.
 
-It is possible to force full recount for a project by deleting OSH timestamp file and launch again the script:
+It is possible to force full recount for a project by deleting OSH timestamp file, retreive again PBF/PBH files and launch again the script:
 
 ```bash
 rm ${WORK_DIR}/osh_timestamp
-./db/09_project_update_tmp.sh
+./db/11_pbf_update_tmp.sh
+./db/31_projects_update_tmp.sh
 ```
 
 #### Points and contributions
@@ -383,6 +384,15 @@ Configuration of points is in `info.json`:
 
 Once PDM has been properly configured, you should choose between Docker or standalone to build it.
 Refers to Database section in run chapter to make ProjetDuMois fully runable.
+
+### git submodules
+
+ProjetDuMois relies on some git submodules. Please mind using the following to retreive them prior to build
+
+```sh
+git submodule init
+git submodule update
+```
 
 ### Docker build
 
@@ -428,8 +438,9 @@ docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work
 
 Don't forger to add following lines into your crontab for periodic updates, for example daily updates:
 ```bash
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_project
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_pbf
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
 ```
 
 ### Standalone
@@ -439,11 +450,11 @@ Database relies on PostgreSQL. To install the schema before first run:
 psql -d pdm -f db/00_init.sql
 ```
 
-The following script has to be launched daily to retrieve the contribution statistics (notes, objects added, badges obtained):
+The following script is to run to retreive and update PBF/PBH files:
 
 ```bash
-npm run project:update
-./db/09_project_update_tmp.sh
+npm run pbf:update
+./db/11_pbf_update_tmp.sh
 ```
 
 The following script is to run after first initialization of database to create list of OSM features:
@@ -453,11 +464,11 @@ npm run features:update
 ./db/21_features_update_tmp.sh init
 ```
 
-The following script has to be run every hour to update the objects coming from OpenStreetMap to be displayed on the map:
+The following script has to be launched daily to retrieve the contribution statistics (notes, objects added, badges obtained):
 
 ```bash
-npm run features:update
-./db/21_features_update_tmp.sh
+npm run projects:update
+./db/31_projects_update_tmp.sh
 ```
 
 ## Website
@@ -479,7 +490,7 @@ Docker image includes websites and background updating tasks.
 You can run it with:
 
 ```bash
-docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest
+docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
 
 ### Docker compose

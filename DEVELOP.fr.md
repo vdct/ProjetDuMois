@@ -339,13 +339,14 @@ Exemple d'utilisation :
 
 ### Décomptes et statistiques
 
-Les statistiques projet sont établies par le script `./db/09_project_update_tmp.sh`. Le script complète la table SQL pdm_feature_counts avec les jours manquant entre le timestamp OSH et le jour courant.
+Les statistiques projet sont établies par le script `./db/31_projects_update_tmp.sh`. Le script complète la table SQL pdm_feature_counts avec les jours manquant entre le timestamp OSH et le jour courant.
 
-Il est possible de forcer le recomptage de l'intégralité d'un projet en supprimant le fichier de timestamp OSH et en relançant le script
+Il est possible de forcer le recomptage de l'intégralité d'un projet en supprimant le fichier de timestamp OSH, récupération des fichiers PBF/PBH et en relançant le script
 
 ```bash
 rm ${WORK_DIR}/osh_timestamp
-./db/09_project_update_tmp.sh
+./db/11_pbf_update_tmp.sh
+./db/31_projects_update_tmp.sh
 ```
 
 #### Points et contributions
@@ -373,6 +374,15 @@ Les montant de points attribués sont configurés dans `info.json` :
 
 Choisissez ensuite entre une instance Docker ou locale pour poursuivre.
 Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois exploitable.
+
+### Submodules git
+
+ProjetDuMois dépend de quelques sous-modules git. Pensez à executer les commandes suivantes avant le build :
+
+```sh
+git submodule init
+git submodule update
+```
 
 ### Construction Docker
 
@@ -418,7 +428,8 @@ docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work
 
 N'oubliez pas d'ajouter les lignes suivantes dans vos crontab pour mettre à jour les projets périodiquement, idéalement quotidiennement.
 ```bash
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_project
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_pbf
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
 ```
 
@@ -430,11 +441,11 @@ La base de données s'appuie sur PostgreSQL. Pour installer la base :
 psql -d pdm -f db/00_init.sql
 ```
 
-Le script suivant est à lancer quotidiennement pour récupérer les statistiques de contribution (notes, objets ajoutés, badges obtenus) :
+Le script suivant est à lancer pour récupérer et mettre à jour les fichiers PBF/PBH :
 
 ```bash
-npm run project:update
-./db/09_project_update_tmp.sh
+npm run pbf:update
+./db/11_pbf_update_tmp.sh
 ```
 
 Le script suivant est à lancer à la première initialisation de la base de données pour créer la liste des objets venant d'OpenStreetMap :
@@ -444,11 +455,11 @@ npm run features:update
 ./db/21_features_update_tmp.sh init
 ```
 
-Le script suivant est à lancer chaque heure pour mettre à jour les objets venant d'OpenStreetMap à afficher sur la carte :
+Le script suivant est à lancer quotidiennement pour récupérer les statistiques de contribution (notes, objets ajoutés, badges obtenus) :
 
 ```bash
-npm run features:update
-./db/21_features_update_tmp.sh
+npm run projects:update
+./db/31_projects_update_tmp.sh
 ```
 
 ## Site web
@@ -470,7 +481,7 @@ L'image Docker inclue le nécessaire pour servir le site web et executer les tâ
 Vous pouvez la lancer avec:
 
 ```bash
-docker run -p 3000:3000 [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest
+docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
 
 ### Docker compose

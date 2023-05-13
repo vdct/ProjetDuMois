@@ -7,17 +7,14 @@ const booleanContains = require('@turf/boolean-contains').default;
 const {Pool, Client} = require('pg')
 
 /*
- * Generates 09_project_update_tmp.sh script
- * in order to update project statistics and data daily
+ * Generates 31_projects_update_tmp.sh script
+ * in order to update projects statistics and data daily
  */
 
 // Constants
 let projectsFold = foldProjects(projects);
 
-const OSH_POLY = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace("-internal.osh.pbf", ".poly");
 const OSH_UPDATED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
-const OSH_UPDATED_NEW = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.new.osh.pbf");
-const OSM_PBF_NOW = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
 const OSH_FILTERED = CONFIG.WORK_DIR + '/filtered.osh.pbf';
 const OSH_USEFULL = CONFIG.WORK_DIR + '/usefull.osh.pbf';
 const IMPOSM_ENABLED = CONFIG.DB_USE_IMPOSM_UPDATE;
@@ -27,16 +24,14 @@ if (IMPOSM_ENABLED == null){
 
 const OSC2CSV = __dirname+'/osc2csv.xslt';
 const OSC_USEFULL = CONFIG.WORK_DIR + '/extract_filtered.osc.gz';
-const OSC_UPDATES = CONFIG.WORK_DIR + '/changes.osc.gz';
 
 const CSV_CHANGES = CONFIG.WORK_DIR + '/change.csv';
 const CSV_NOTES = (project) => `${CONFIG.WORK_DIR}/notes_${project}.csv`;
 const CSV_NOTES_CONTRIBS = (project) => `${CONFIG.WORK_DIR}/user_notes_${project}.csv`;
 const CSV_NOTES_USERS = (project) => `${CONFIG.WORK_DIR}/usernames_notes_${project}.csv`;
 
-const COOKIES = CONFIG.WORK_DIR + '/cookie.txt';
 const PSQL = `psql -d ${process.env.DB_URL}`;
-const OUTPUT_SCRIPT = __dirname+'/09_project_update_tmp.sh';
+const OUTPUT_SCRIPT = __dirname+'/31_projects_update_tmp.sh';
 const HAS_BOUNDARY = `${PSQL} -c "SELECT * FROM pdm_boundary LIMIT 1" > /dev/null 2>&1 `;
 
 const runForAll = process.argv.slice(2).pop() === "all";
@@ -148,24 +143,30 @@ pgPool.query("TRUNCATE TABLE pdm_projects_points", (err, res) => {
 
 let projectsQry = "INSERT INTO pdm_projects (project, start_date, end_date) VALUES ";
 let projectPointsQry = "INSERT INTO pdm_projects_points (project, contrib, points) VALUES ";
+let projectPointsLength = 0;
+let projectLength = 0;
 
 Object.values(projects).forEach(project => {
 	projectsQry += `('${project.id}', '${project.start_date}', '${project.end_date}'),`;
+	projectLength++;
 
 	Object.entries(project.statistics.points).forEach(([contrib,value]) => {
 		projectPointsQry += `('${project.id}','${contrib}', ${value}),`;
+		projectPointsLength++;
 	});
 });
 
-pgPool.query(projectsQry.substr(0, projectsQry.length-1), (err, res) => {
+pgPool.query(projectsQry.substring(0, projectsQry.length-1), (err, res) => {
 	if (err){
-		throw new Error(`Erreur SQL: ${err}`);
+		throw new Error(`Erreur installation projets: ${err}`);
 	}
+	console.log(projectLength+" project(s) installed");
 });
-pgPool.query(projectPointsQry.substr(0, projectPointsQry.length-1), (err, res) => {
+pgPool.query(projectPointsQry.substring(0, projectPointsQry.length-1), (err, res) => {
 	if (err){
-		throw new Error(`Erreur SQL: ${err}`);
+		throw new Error(`Erreur installation points projet: ${err}`);
 	}
+	console.log(projectPointsLength+" project(s) point(s) installed");
 });
 
 // Script text
@@ -176,7 +177,7 @@ echo ""`;
 var script = `#!/bin/bash
 
 # Script for updating current projects
-# Generated automatically by npm run project:update
+# Generated automatically by npm run projects:update
 
 set -e
 
@@ -193,61 +194,15 @@ if [[ $nbPoints < 1 ]]; then
 fi
 ${separator}
 
-echo "== Create work directory"
-mkdir -p "${CONFIG.WORK_DIR}"
-${separator}
-
-if [ -f "${OSH_UPDATED}" ]; then
-	echo "== Reuse existing history file"
-	prev_osh="${OSH_UPDATED}"
-	if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
-		prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
-		echo "Timestamp: $prev_timestamp"
-	else
-		echo "No timestamp found"
-	fi
-
+echo "== Reuse existing history file"
+if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
+	prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
+	echo "Timestamp: $prev_timestamp"
 else
-	echo "== Get cookies for authorized download of OSH PBF file"
-	python3 ${__dirname}/../lib/sendfile_osm_oauth_protector/oauth_cookie_client.py \\
-		--osm-host ${CONFIG.OSM_URL} \\
-		-u "${CONFIG.OSM_USER}" -p "${CONFIG.OSM_PASS}" \\
-		-c ${CONFIG.OSH_PBF_URL.split("/").slice(0, 3).join("/")}/get_cookie \\
-		-o "${COOKIES}"
-
-	echo "== Download OSH PBF file"
-	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" -O "${OSH_UPDATED}" "${CONFIG.OSH_PBF_URL}"
-	wget -N --no-cookies --header "Cookie: $(cat ${COOKIES} | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" "${CONFIG.OSH_PBF_URL.replace("-internal.osh.pbf", ".poly")}"
-	rm -f "${COOKIES}"
-	prev_osh="${OSH_UPDATED}"
-	prev_timestamp=""
-fi
-${separator}
-
-if [[ "$mode" != "fast" ]]; then
-	echo "== Update OSH PBF file with replication files"
-	osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v "$prev_osh" $prev_timestamp "${OSC_UPDATES}"
-	osmium apply-changes -H "$prev_osh" "${OSC_UPDATES}" -O -o "${OSH_UPDATED_NEW}"
-	osmium extract -p "${OSH_POLY}" --with-history -s complete_ways "${OSH_UPDATED_NEW}" -O -o "${OSH_UPDATED}"
-	rm -f "${OSC_UPDATES}"
-	rm -f "${OSH_UPDATED_NEW}"
-else
-	echo "== Skipped update of OSH PBF file"
+	echo "No timestamp found"
 fi
 ${separator}
 `;
-
-if (IMPOSM_ENABLED){
-	script += `
-if [[ "$mode" != "fast" ]]; then
-	echo "== Write current state of OSM data as OSM.PBF"
-	osmium time-filter "${OSH_UPDATED}" -O -o "${OSM_PBF_NOW}"
-else
-	echo "== Skipped creation of current OSM.PBF file"
-fi
-${separator}
-`;
-}
 
 Object.values(projects).forEach(project => {
 	let oshInput = OSH_UPDATED;
@@ -262,7 +217,7 @@ Object.values(projects).forEach(project => {
 cur_timestamp=$(date -Idate --utc)
 cnt_timestamp=$(date -Idate --utc -d ${project.start_date})
 prj_timestamp=$(date -Idate --utc -d ${project.start_date})
-if [[ -z \$cnt_timestamp && -n "\$prev_timestamp" ]]; then
+if [[ -n "\$prev_timestamp" ]]; then
 	cnt_timestamp=$(date -Idate --utc -d \$prev_timestamp)
 fi
 if [[ -z \$cnt_timestamp || \$prj_timestamp>=\$cnt_timestamp ]]; then
@@ -302,9 +257,9 @@ ${PSQL} -c "TRUNCATE TABLE pdm_changes_tmp"
 
 ${PSQL} -c "\\COPY pdm_changes_tmp (project, action, osmid, version, ts, username, userid, tags) FROM '${CSV_CHANGES}' CSV"
 
-${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/13_changes_populate.sql"
+${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/33_changes_populate.sql"
 if ${HAS_BOUNDARY}; then
-	${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/13_changes_boundary.sql"
+	${PSQL} -v project_id="'${project.id}'" -v project_table="pdm_project_${project.id.split("_").pop()}" -f "${__dirname}/33_changes_boundary.sql"
 fi
 ${PSQL} -c "DROP TABLE pdm_changes_tmp"
 
@@ -329,11 +284,15 @@ if ${HAS_BOUNDARY}; then
 	${PSQL} -c "DELETE FROM pdm_feature_counts_per_boundary WHERE project='${project.id}' AND ts BETWEEN '\${cnt_timestamp}T00:00:00Z' AND '\${cur_timestamp}T00:00:00Z'"
 fi
 
-echo "Counting from \$cnt_timestamp"
+echo "Counting from \$cnt_timestamp to \${cur_timestamp}"
 days="${days.join(" ")}"
 days=($\{days##*( )\})
 for day in "\${days[@]}"; do
-	echo "Processing $day"
+	if [[ $(date -Idate --utc -d \${cnt_timestamp}T23:59:59Z) > $(date -Idate --utc -d \${day}T00:00:00Z) ]]; then
+		continue
+	fi
+	
+	echo "Processing \${day}"
 	osmium time-filter "${oshUsefull}" \${day}T23:59:59Z --no-progress -O -o ${osmStats} -f osm.pbf
 	`;
 	let tagFilterLastPart = tagFilterParts.pop();
@@ -363,8 +322,14 @@ rm -f "${osmStats}"
 	${separator}
 
 	echo "== Generate user contributions between \${cnt_timestamp} and \${cur_timestamp}"
-	${PSQL} -v project_id="'${project.id}'" -v start_date="'\${cnt_timestamp}T00:00:00Z'" -v end_date="'\${cur_timestamp}T00:00:00Z'" -f "${__dirname}/12_projects_contribs.sql"
+	${PSQL} -v project_id="'${project.id}'" -v start_date="'\${cnt_timestamp}T00:00:00Z'" -v end_date="'\${cur_timestamp}T00:00:00Z'" -f "${__dirname}/32_projects_contribs.sql"
 	${separator}
+
+	if [ -f '${__dirname}/../projects/${project.id}/extract.sh' ]; then
+		echo "== Extract script"
+		${__dirname}/../projects/${project.id}/extract.sh
+		echo ""
+	fi
 	`;
 
 	// Notes count (optional)
@@ -378,9 +343,10 @@ ${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) 
 ${PSQL} -c "CREATE TABLE pdm_user_names_notes(userid BIGINT, username VARCHAR)"
 ${PSQL} -c "\\COPY pdm_user_names_notes FROM '${CSV_NOTES_USERS(project.id)}' CSV"
 ${PSQL} -c "INSERT INTO pdm_user_names SELECT userid, username FROM pdm_user_names_notes ON CONFLICT (userid) DO NOTHING; DROP TABLE pdm_user_names_notes;"
-rm -f "${CSV_NOTES(project.id)}" "${CSV_NOTES_CONTRIBS(project.id)}" "${CSV_NOTES_USERS(project.id)}"`;
-	}
+rm -f "${CSV_NOTES(project.id)}" "${CSV_NOTES_CONTRIBS(project.id)}" "${CSV_NOTES_USERS(project.id)}"
+	${separator}`;
 
+	}
 });
 
 script += `
@@ -390,11 +356,6 @@ if ${HAS_BOUNDARY}; then
 	${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_tiles"
 fi
 ${separator}
-
-rm -f "${CONFIG.WORK_DIR}/osh_timestamp"
-curtime=$(date -d '3 hours ago' -Iseconds --utc)
-echo \${curtime/"+00:00"/"Z"} > ${CONFIG.WORK_DIR}/osh_timestamp
-echo "Done"
 `;
 
 fs.writeFile(OUTPUT_SCRIPT, script, { mode: 0o766 }, err => {

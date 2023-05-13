@@ -9,6 +9,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
+      - POSTGRES_DB=pdm
       - POSTGRES_PASSWORD=pgpassword
       
   pdm:
@@ -23,7 +24,7 @@ services:
     volumes:
       - pdm-data:/data/files/pdm
     environment:
-      - DB_URL=postgres://user:password@pgsqldb:5432/database
+      - DB_URL=postgres://postgres:pgpassword@pgsqldb:5432/pdm
     command: "run"
 
 volumes:

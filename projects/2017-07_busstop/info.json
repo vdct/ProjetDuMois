@@ -1,0 +1,144 @@
+{
+	"id": "2017-07_busstop",
+	"title": "Arrêts de bus",
+	"start_date": "2017-07-01",
+	"end_date": "2017-08-01",
+	"summary": "Mappons des arrêts de bus",
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Bus",
+		"osmblog": "https://nlehuby.5apps.com/bien-cartographier-les-bus.html"
+	},
+	"database": {
+		"osmium_tag_filter": "n/highway=bus_stop",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": {
+				"highway": ["bus_stop"]
+			}
+		}
+	},
+	"datasources": [
+		{
+			"source": "osmose",
+			"item": "8040",
+			"class": "31,41,51,81,91,101,111,121,131,141",
+			"country": "france*",
+			"name": "Arrêt de bus à ajouter",
+			"description": "Cet arrêt de bus est manquant dans OSM. Vérifiez sa position et ses infos, puis ajoutez-le à OSM.",
+			"buttons": {
+				"add": "Intégrer cet arrêt de bus"
+			}
+		},
+		{
+			"source": "osm",
+			"name": "Arrêt de bus dans OSM",
+			"description": "Cet arrêt de bus existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		},
+		{
+			"source": "notes",
+			"name": "Arrêts de bus à intégrer",
+			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
+			"terms": ["busFR", "transportsIDF"]
+		},
+		{
+			"source": "background",
+			"tiles": "mapillary",
+			"name": "Photos de rue",
+			"icon": "picture"
+		  },
+		{
+			"source": "background",
+			"tiles": ["https://wxs.ign.fr/pratique/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fjpeg"],
+			"name": "Vue aérienne",
+			"icon": "aerial",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
+		},
+		{
+			"source": "stats"
+		}
+	],
+	"statistics": {
+		"count": true,
+		"feature_name": "arrêts de bus",
+		"osmose_tasks": "arrêts de bus complétés/intégrés",
+		"points": {
+			"add": 2,
+			"edit": 2
+		}
+	},
+	"editors": {
+		"all": {
+			"comment": "Intégration arrêts de bus",
+			"hashtags": "busFR"
+		},
+		"pdm": {
+			"fields": [{
+					"type": "hidden",
+					"tags": {
+						"highway": "bus_stop",
+						"public_transport": "platform",
+						"bus": "yes",
+						"shelter": "*",
+						"ref:FR:STIF": "*",
+						"ref:FR:TransGironde": "*",
+						"ref:FR:STAN": "*",
+						"ref:FR:SIBRA": "*",
+						"ref:FR:RLA": "*",
+						"ref:FR:SILLAGES": "*",
+						"ref:FR:ZOU_06": "*",
+						"ref:FR:ZEST": "*",
+						"ref:FR:STAR": "*"
+					}
+				},
+				{
+					"type": "text",
+					"name": "Nom",
+					"tag": "name",
+					"optional": true
+				},
+				{
+					"type": "3states",
+					"name": "Abri",
+					"tag": "shelter"
+				},
+				{
+					"type": "3states",
+					"name": "Éclairage",
+					"tag": "lit"
+				},
+				{
+					"type": "select",
+					"name": "Accessible aux fauteuils roulants",
+					"tag": "wheelchair",
+					"values": [{
+							"v": "yes",
+							"l": "Complètement"
+						},
+						{
+							"v": "limited",
+							"l": "Partiellement"
+						},
+						{
+							"v": "no",
+							"l": "Pas du tout"
+						}
+					]
+				},
+				{
+					"type": "textarea",
+					"name": "Autres informations",
+					"tag": "note",
+					"description": "Infos pratiques...",
+					"optional": true
+				}
+			],
+			"title": {
+				"add": "Ajouter un arrêt de bus manquant",
+				"edit": "Compléter cet arrêt de bus"
+			}
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	}
+}

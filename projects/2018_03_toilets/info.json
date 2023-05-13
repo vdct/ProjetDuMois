@@ -1,0 +1,122 @@
+{
+	"id": "2018-03_Toilets",
+	"title": "Toilettes",
+	"start_date": "2018-03-01",
+	"end_date": "2018-04-01",
+	"summary": "Mappons des toilettes",
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/toilettes_accessibles"
+	},
+	"database": {
+		"osmium_tag_filter": "nwr/amenity=toilets",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": {
+				"amenity": ["toilets"]
+			}
+		}
+	},
+	"datasources": [{
+			"source": "osmose",
+			"item": "8180",
+			"country": "france*",
+			"name": "Toilettes à ajouter",
+			"description": "Ces toilettes sont manquants dans OSM. Vérifiez la position et les infos, puis ajoutez-les à OSM.",
+			"buttons": {
+				"add": "Intégrer des toilettes"
+			}
+		},
+		{
+			"source": "osm",
+			"name": "Toilettes dans OSM",
+			"description": "Ces toilettes existent déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		},
+		{
+			"source": "background",
+			"tiles": "mapillary",
+			"name": "Photos de rue",
+			"icon": "picture"
+		},
+		{
+			"source": "background",
+			"tiles": ["https://wxs.ign.fr/pratique/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fjpeg"],
+			"name": "Vue aérienne",
+			"icon": "aerial",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
+		},
+		{
+			"source": "stats"
+		}
+	],
+	"statistics": {
+		"count": true,
+		"feature_name": "toilettes",
+		"osmose_tasks": "toilettes complétés/intégrés",
+		"points": {
+			"add": 2,
+			"edit": 2
+		}
+	},
+	"editors": {
+		"all": {
+			"comment": "Intégration toilettes",
+			"hashtags": "busFR"
+		},
+		"pdm": {
+			"fields": [{
+					"type": "hidden",
+					"tags": {
+						"amenity": "toilets",
+						"access": "*",
+						"name": "*",
+						"operator": "*",
+						"toilets:position": "*",
+						"ref": "*"
+					}
+				},
+				{
+					"type": "3states",
+					"name": "Payant",
+					"tag": "fee"
+				},
+				{
+					"type": "3states",
+					"name": "Table à langer",
+					"tag": "changing_table"
+				},
+				{
+					"type": "select",
+					"name": "Accessible aux fauteuils roulants",
+					"tag": "wheelchair",
+					"values": [{
+							"v": "yes",
+							"l": "Complètement"
+						},
+						{
+							"v": "limited",
+							"l": "Partiellement"
+						},
+						{
+							"v": "no",
+							"l": "Pas du tout"
+						}
+					]
+				},
+				{
+					"type": "textarea",
+					"name": "Autres informations",
+					"tag": "note",
+					"description": "Horaires, infos pratiques...",
+					"optional": true
+				}
+			],
+			"title": {
+				"add": "Ajouter des toilettes manquants",
+				"edit": "Compléter des toilettes"
+			}
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	}
+}

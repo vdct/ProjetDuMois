@@ -217,10 +217,14 @@ if [ "$mode" == "init" ]; then
 
 	echo "Post SQL..."
 	${postSQLFull}
-	psql -d ${process.env.DB_URL} -f "${__dirname}/22_features_post_init.sql"
+	psql -d ${process.env.DB_URL} -f "${__dirname}/22_features_post_init.sql"`;
+if (postUpdateSQLFull.length > 0){
+	script += `
 else
 	echo "Post Update SQL..."
-	${postUpdateSQLFull}
+	${postUpdateSQLFull}`;
+}
+script += `
 fi
 `;
 }

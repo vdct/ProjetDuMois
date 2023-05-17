@@ -38,6 +38,14 @@ case $command in
     npm run projects:update $otherArgs
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
+"update_daily")
+    npm run pbf:update $otherArgs
+    ./db/11_pbf_update_tmp.sh
+    npm run features:update $otherArgs
+    ./db/21_features_update_tmp.sh $otherArgs
+    npm run projects:update $otherArgs
+    ./db/31_projects_update_tmp.sh $otherArgs
+    ;;
 "uninstall")
     npm run features:update $otherArgs
 

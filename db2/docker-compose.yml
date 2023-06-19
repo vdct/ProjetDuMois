@@ -1,0 +1,78 @@
+version: '3.4'
+
+volumes:
+  osm-postgis-data:
+  settings-data:
+  import_done:
+  import_queue:
+  import_runners:
+  cache:
+
+services:
+  db:
+    image: kartoza/postgis:${POSTGRES_VERSION}
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASS=${POSTGRES_PASS}
+      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+      - ALLOW_IP_RANGE=${ALLOW_IP_RANGE}
+      - FORCE_SSL=${FORCE_SSL}
+    volumes:
+      - osm-postgis-data:/var/lib/postgresql
+      - settings-data:/home/settings
+    healthcheck:
+      test: "pg_isready -d ${POSTGRES_DBNAME}"
+
+  #~ imposm:
+    #~ image: panieravide/projetdumois:imposm-latest
+    #~ volumes:
+      #~ - settings-data:/home/settings
+      #~ - import_done:/home/import_done
+      #~ - import_queue:/home/import_queue
+      #~ - import_runners:/home/import_runners
+      #~ - cache:/home/cache
+    #~ depends_on:
+      #~ db:
+        #~ condition: service_healthy
+    #~ environment:
+      #~ - POSTGRES_USER=${POSTGRES_USER}
+      #~ - POSTGRES_PASS=${POSTGRES_PASS}
+      #~ - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+      #~ - POSTGRES_PORT=${POSTGRES_PORT}
+      #~ - POSTGRES_HOST=${POSTGRES_HOST}
+      #~ - TIME=${TIME}
+      #~ - SETTINGS=${SETTINGS}
+      #~ - CACHE=${CACHE}
+      #~ - IMPORT_DONE=${IMPORT_DONE}
+      #~ - IMPORT_QUEUE=${IMPORT_QUEUE}
+      #~ - SRID=${SRID}
+      #~ - OPTIMIZE=${OPTIMIZE}
+      #~ - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
+      #~ - DBSCHEMA_IMPORT=${DBSCHEMA_IMPORT}
+      #~ - DBSCHEMA_BACKUP=${DBSCHEMA_BACKUP}
+      #~ - QGIS_STYLE=${QGIS_STYLE}
+      #~ - CLIP=${CLIP}
+      #~ - SSL_MODE=${SSL_MODE}
+
+  osmupdate:
+    image: panieravide/projetdumois:osmupdate-latest
+    volumes:
+      - settings-data:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - import_runners:/home/import_runners
+      - cache:/home/cache
+    #~ depends_on:
+      #~ db:
+        #~ condition: service_healthy
+    environment:
+      - MAX_DAYS=${MAX_DAYS}
+      - DIFF=${DIFF}
+      - MAX_MERGE=${MAX_MERGE}
+      - COMPRESSION_LEVEL=${COMPRESSION_LEVEL}
+      - BASE_URL=${BASE_URL}
+      - IMPORT_QUEUE=${IMPORT_QUEUE}
+      - IMPORT_RUNNERS=${IMPORT_RUNNERS}
+      - IMPORT_DONE=${IMPORT_DONE}
+      - TIME=${TIME}
+      - SETTINGS=${SETTINGS}

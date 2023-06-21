@@ -215,6 +215,8 @@ class Downloader(object):
                     self.info("No diff runners currently")
                 else:
                     self.info(f"Sending to runners: {', '.join(runners_path_current)}")
+
+                # TODO : send all files in queue to runners
                 for r_path in runners_path_current:
                     try:
                         copyfile(file_path, join(r_path, file_name))

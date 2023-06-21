@@ -1,0 +1,64 @@
+version: '3.4'
+
+services:
+  imposm-aed:
+    image: panieravide/projetdumois:imposm-latest
+    build: docker-imposm
+    volumes:
+      #- settings-data:/home/settings
+      - ./settings:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - import_runners:/home/import_runners
+      - cache:/home/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - RUNNER_NAME=aed
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASS=${POSTGRES_PASS}
+      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - TIME=${TIME}
+      - SETTINGS=${SETTINGS}
+      - CACHE=${CACHE}
+      - IMPORT_RUNNERS=${IMPORT_RUNNERS}
+      - IMPORT_QUEUE=${IMPORT_QUEUE}
+      - SRID=${SRID}
+      - OPTIMIZE=${OPTIMIZE}
+      - DBSCHEMA_PREFIX=${DBSCHEMA_PREFIX}
+      - CLIP=${CLIP}
+      - SSL_MODE=${SSL_MODE}
+
+  imposm-evcharging:
+    image: panieravide/projetdumois:imposm-latest
+    build: docker-imposm
+    volumes:
+      #- settings-data:/home/settings
+      - ./settings:/home/settings
+      - import_done:/home/import_done
+      - import_queue:/home/import_queue
+      - import_runners:/home/import_runners
+      - cache:/home/cache
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - RUNNER_NAME=evcharging
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASS=${POSTGRES_PASS}
+      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - TIME=${TIME}
+      - SETTINGS=${SETTINGS}
+      - CACHE=${CACHE}
+      - IMPORT_RUNNERS=${IMPORT_RUNNERS}
+      - IMPORT_QUEUE=${IMPORT_QUEUE}
+      - SRID=${SRID}
+      - OPTIMIZE=${OPTIMIZE}
+      - DBSCHEMA_PREFIX=${DBSCHEMA_PREFIX}
+      - CLIP=${CLIP}
+      - SSL_MODE=${SSL_MODE}

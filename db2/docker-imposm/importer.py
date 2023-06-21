@@ -19,8 +19,8 @@
  ***************************************************************************/
 """
 import sys
-from os import environ, listdir
-from os.path import join, exists, abspath, isabs
+from os import environ, listdir, mkdir
+from os.path import join, exists, abspath, isabs, isdir
 from shutil import move
 from subprocess import call
 from sys import exit, stderr
@@ -42,19 +42,17 @@ class Importer(object):
             'POSTGRES_PORT': '5432',
             'SETTINGS': 'settings',
             'CACHE': 'cache',
+            'IMPORT_RUNNERS': 'import_runners',
             'IMPORT_DONE': 'import_done',
-            'IMPORT_OSH_QUEUE': 'import_osh_queue',
-            'IMPORT_QUEUE': 'import_queue',
             'SRID': '4326',
             'OPTIMIZE': 'false',
-            'DBSCHEMA_PRODUCTION': 'public',
-            'DBSCHEMA_IMPORT': 'import',
-            'DBSCHEMA_BACKUP': 'backup',
+            'RUNNER_NAME': None,
             'CLIP': 'yes',
             'SSL_MODE': 'disable',
             'SSL_CERT': None,
             'SSL_ROOT_CERT': None,
-            'SSL_KEY': None
+            'SSL_KEY': None,
+            'DBSCHEMA_PREFIX': 'pdm',
         }
         self.osm_file = None
         self.mapping_file = None
@@ -62,6 +60,12 @@ class Importer(object):
         self.clip_json_file = None
         self.cursor = None
         self.postgis_uri = None
+        self.cache_dir = None
+        self.import_dir = None
+        self.dbschema_prod = None
+        self.dbschema_import = None
+        self.dbschema_backup = None
+        self.settings_runner_dir = None
 
     @staticmethod
     def info(message):
@@ -84,6 +88,20 @@ class Importer(object):
         This will run when the container is starting. If an error occurs, the
         container will stop.
         """
+
+        # Check if runner name is defined
+        if self.default['RUNNER_NAME'] is None or len(self.default['RUNNER_NAME'].strip()) == 0:
+            self.error("Runner name is not defined")
+        else:
+            self.info("Runner name: "+self.default['RUNNER_NAME'])
+            self.cache_dir = join(self.default['CACHE'], self.default['RUNNER_NAME'])
+            self.import_dir = join(self.default['CACHE'], self.default['RUNNER_NAME'])
+            self.settings_runner_dir = join(self.default['SETTINGS'], 'runner_'+self.default['RUNNER_NAME'])
+            self._create_runner_folders()
+            self.dbschema_prod = '_'.join([self.default['DBSCHEMA_PREFIX'], self.default['RUNNER_NAME'], 'production'])
+            self.dbschema_import = '_'.join([self.default['DBSCHEMA_PREFIX'], self.default['RUNNER_NAME'], 'import'])
+            self.dbschema_backup = '_'.join([self.default['DBSCHEMA_PREFIX'], self.default['RUNNER_NAME'], 'backup'])
+
         # Check valid SRID.
         if self.default['SRID'] not in ['4326', '3857']:
             msg = 'SRID not supported : %s' % self.default['SRID']
@@ -96,15 +114,9 @@ class Importer(object):
             self.error(msg)
         else:
             self.info('Clip: ' + self.default['CLIP'])
-        # Check valid QGIS_STYLE.
-        if self.default['QGIS_STYLE'] not in ['yes', 'no']:
-            msg = 'QGIS_STYLE not supported : %s' % self.default['QGIS_STYLE']
-            self.error(msg)
-        else:
-            self.info('QGIS style: ' + self.default['QGIS_STYLE'])
 
         # Check folders.
-        folders = ['IMPORT_QUEUE', 'IMPORT_DONE', 'SETTINGS', 'CACHE']
+        folders = ['IMPORT_DONE', 'SETTINGS']
         for folder in folders:
             if not isabs(self.default[folder]):
                 # Get the absolute path.
@@ -118,15 +130,8 @@ class Importer(object):
         # Test files
         for f in listdir(self.default['SETTINGS']):
 
-            if f.endswith('.pbf'):
+            if f.endswith('.osm.pbf'):
                 self.osm_file = join(self.default['SETTINGS'], f)
-
-            # JSON first then YML (YML is the new format)
-            if f.endswith('.json'):
-                self.mapping_file = join(self.default['SETTINGS'], f)
-
-            if f.endswith('.yml'):
-                self.mapping_file = join(self.default['SETTINGS'], f)
 
             if f == 'post-pbf-import.sql':
                 self.post_import_file = join(self.default['SETTINGS'], f)
@@ -134,8 +139,10 @@ class Importer(object):
             if f == 'clip.geojson':
                 self.clip_json_file = join(self.default['SETTINGS'], f)
 
-            if f == 'qgis_style.sql':
-                self.qgis_style = join(self.default['SETTINGS'], f)
+        for f in listdir(self.settings_runner_dir):
+
+            if f.endswith('.yml'):
+                self.mapping_file = join(self.settings_runner_dir, f)
 
         if not self.osm_file:
             msg = 'OSM file *.pbf is missing in %s' % self.default['SETTINGS']
@@ -158,18 +165,10 @@ class Importer(object):
         else:
             self.info('Geojson Initial Import Clip: ' + self.clip_json_file)
 
-        if not self.qgis_style and self.default['QGIS_STYLE'] == 'yes':
-            msg = 'qgis_style.sql is missing in %s and QGIS_STYLE = yes.' % self.default['SETTINGS']
-            self.error(msg)
-        elif self.qgis_style and self.default['QGIS_STYLE']:
-            self.info('QGIS Style file: ' + self.qgis_style)
-        else:
-            self.info('Not using QGIS default styles.')
-
         if not self.clip_json_file and self.default['CLIP'] == 'yes':
             msg = 'clip.geojson is missing and CLIP = yes.'
             self.error(msg)
-        elif self.clip_json_file and self.default['QGIS_STYLE']:
+        elif self.clip_json_file:
             self.info('Geojson for clipping: ' + self.clip_json_file)
         else:
             self.info('No *.geojson detected, so no clipping.')
@@ -269,17 +268,6 @@ class Importer(object):
         command += ['-f', self.post_import_file]
         call(command)
 
-    def import_qgis_styles(self):
-        """Import the QGIS styles into the database."""
-        self.info('Installing QGIS styles.')
-        command = ['psql']
-        command += ['-h', self.default['POSTGRES_HOST']]
-        command += ['-p', self.default['POSTGRES_PORT']]
-        command += ['-U', self.default['POSTGRES_USER']]
-        command += ['-d', self.default['POSTGRES_DBNAME']]
-        command += ['-f', self.qgis_style]
-        call(command)
-
     def locate_table(self, name, schema):
         """Check for tables in the DB table exists in the DB"""
         sql = """ SELECT EXISTS (SELECT 1 AS result from information_schema.tables
@@ -291,12 +279,10 @@ class Importer(object):
     def run(self):
         """First checker."""
 
-        osm_tables = self.locate_table("'osm_%'", self.default['DBSCHEMA_PRODUCTION'])
+        osm_tables = self.locate_table("'osm_%'", self.dbschema_prod)
 
         if osm_tables != 1:
-
             # It means that the DB is empty. Let's import the PBF file.
-
             if self.clip_json_file:
                 self._first_pbf_import(['-limitto', self.clip_json_file])
             else:
@@ -313,15 +299,32 @@ class Importer(object):
         else:
             self.info('No more update to the database. Leaving.')
 
+    def _create_runner_folders(self):
+        """Creates cache and import folders (if they don't exist yet) for this runner (based on its name)"""
+
+        if not isdir(self.cache_dir):
+            try:
+                mkdir(self.cache_dir)
+            except Exception as e:
+                self.error("Can't create runner cache dir: "+str(e))
+
+        if not isdir(self.import_dir):
+            try:
+                mkdir(self.import_dir)
+            except Exception as e:
+                self.error("Can't create runner import dir: "+str(e))
+
+        if not isdir(self.settings_runner_dir):
+            self.error(f"Runner settings dir {str(self.settings_runner_dir)} doesn't exist")
+
     def _first_pbf_import(self, args):
         """Run the first PBF import into the database."""
         command = ['imposm', 'import', '-diff', '-deployproduction']
-        command += ['-overwritecache', '-cachedir', self.default['CACHE']]
+        command += ['-overwritecache', '-cachedir', self.cache_dir]
         command += ['-srid', self.default['SRID']]
-        command += ['-dbschema-production',
-                    self.default['DBSCHEMA_PRODUCTION']]
-        command += ['-dbschema-import', self.default['DBSCHEMA_IMPORT']]
-        command += ['-dbschema-backup', self.default['DBSCHEMA_BACKUP']]
+        command += ['-dbschema-production', self.dbschema_prod]
+        command += ['-dbschema-import', self.dbschema_import]
+        command += ['-dbschema-backup', self.dbschema_backup]
         command += ['-diffdir', self.default['SETTINGS']]
         command += ['-mapping', self.mapping_file]
         command += ['-read', self.osm_file]
@@ -336,39 +339,36 @@ class Importer(object):
         else:
             self.info('Import PBF successful : %s' % self.osm_file)
 
-        if self.post_import_file or self.qgis_style:
+        if self.post_import_file:
             # Set the password for psql
             environ['PGPASSWORD'] = self.default['POSTGRES_PASS']
 
         if self.post_import_file:
             self.import_custom_sql()
 
-        if self.qgis_style:
-            self.import_qgis_styles()
-
     def _import_diff(self, args):
         # Finally launch the listening process.
         while True:
-            import_queue = sorted(listdir(self.default['IMPORT_QUEUE']))
+            import_queue = sorted(listdir(self.import_dir))
             if len(import_queue) > 0:
                 for diff in import_queue:
                     self.info('Importing diff %s' % diff)
                     command = ['imposm', 'diff']
-                    command += ['-cachedir', self.default['CACHE']]
-                    command += ['-dbschema-production', self.default['DBSCHEMA_PRODUCTION']]
-                    command += ['-dbschema-import', self.default['DBSCHEMA_IMPORT']]
-                    command += ['-dbschema-backup', self.default['DBSCHEMA_BACKUP']]
+                    command += ['-cachedir', self.cache_dir]
+                    command += ['-dbschema-production', self.dbschema_prod]
+                    command += ['-dbschema-import', self.dbschema_import]
+                    command += ['-dbschema-backup', self.dbschema_backup]
                     command += ['-srid', self.default['SRID']]
                     command += ['-diffdir', self.default['SETTINGS']]
                     command += ['-mapping', self.mapping_file]
                     command += ['-connection', self.postgis_uri]
                     command.extend(args)
-                    command += [join(self.default['IMPORT_QUEUE'], diff)]
+                    command += [join(self.import_dir, diff)]
 
                     self.info(command)
                     if call(command) == 0:
                         move(
-                            join(self.default['IMPORT_QUEUE'], diff),
+                            join(self.import_dir, diff),
                             join(self.default['IMPORT_DONE'], diff))
 
                         # Update the timestamp in the file.
@@ -378,7 +378,7 @@ class Importer(object):
                         msg = 'An error occured in imposm with a diff.'
                         self.error(msg)
 
-            if len(listdir(self.default['IMPORT_QUEUE'])) == 0:
+            if len(listdir(self.import_dir)) == 0:
                 self.info('Sleeping for %s seconds.' % self.default['TIME'])
                 sleep(float(self.default['TIME']))
 

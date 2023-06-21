@@ -21,7 +21,7 @@ services:
       - osm-postgis-data:/var/lib/postgresql
       - settings-data:/home/settings
     healthcheck:
-      test: "pg_isready -d ${POSTGRES_DBNAME}"
+      test: "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DBNAME} -h db"
 
   #~ imposm:
     #~ image: panieravide/projetdumois:imposm-latest
@@ -62,9 +62,9 @@ services:
       - import_queue:/home/import_queue
       - import_runners:/home/import_runners
       - cache:/home/cache
-    #~ depends_on:
-      #~ db:
-        #~ condition: service_healthy
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       - MAX_DAYS=${MAX_DAYS}
       - DIFF=${DIFF}

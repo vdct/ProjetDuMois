@@ -9,7 +9,7 @@ RUN go install github.com/omniscale/imposm3/cmd/imposm@latest
 
 WORKDIR /home
 ADD requirements.txt .
-RUN pip3 install -r requirements.txt
+RUN pip install --break-system-packages -r requirements.txt
 
 ADD importer.py .
 

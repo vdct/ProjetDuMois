@@ -42,7 +42,7 @@ class Downloader(object):
             'IMPORT_RUNNERS': 'import_runners',
             'IMPORT_DONE': 'import_done',
             'SETTINGS': 'settings',
-            'TIME': 120,
+            'RUNNER_OSMUPDATE_TIME': 120,
         }
         self.osm_file = None
         self.osh_file = None
@@ -62,7 +62,7 @@ class Downloader(object):
             if key in list(self.default.keys()):
                 self.default[key] = environ[key]
 
-        if self.default['TIME'] == '0':
+        if self.default['RUNNER_OSMUPDATE_TIME'] == '0':
             self.info('No more update to the database. Leaving.')
             quit()
 
@@ -88,7 +88,7 @@ class Downloader(object):
                 self.osh_file = join(self.default['SETTINGS'], f)
 
         while self.osh_file is None or not exists(self.osh_file):
-            sleep(float(self.default['TIME']))
+            sleep(float(self.default['RUNNER_OSMUPDATE_TIME']))
 
         self._check_latest_timestamp()
 
@@ -111,8 +111,8 @@ class Downloader(object):
 
         self.info(' '.join(command))
         if call(command) != 0 or not exists(osm_file):
-            self.info('An error occured in osmium. Trying again in %s seconds.' % self.default['TIME'])
-            sleep(float(self.default['TIME']))
+            self.info('An error occured in osmium. Trying again in %s seconds.' % self.default['RUNNER_OSMUPDATE_TIME'])
+            sleep(float(self.default['RUNNER_OSMUPDATE_TIME']))
         else:
             self.osm_file = osm_file
             self.info('Creating OSM.PBF successful : %s' % self.osm_file)
@@ -224,8 +224,8 @@ class Downloader(object):
                         self.error(f"Can't send diff {file_name} to runner {r_path}: {str(e)}")
 
                 # Everything was fine, let's sleeping.
-                self.info('Sleeping for %s seconds.' % self.default['TIME'])
-                sleep(float(self.default['TIME']))
+                self.info('Sleeping for %s seconds.' % self.default['RUNNER_OSMUPDATE_TIME'])
+                sleep(float(self.default['RUNNER_OSMUPDATE_TIME']))
 
 
 if __name__ == '__main__':

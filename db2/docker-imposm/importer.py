@@ -34,7 +34,7 @@ class Importer(object):
     def __init__(self):
         # Default values which can be overwritten by environment variable.
         self.default = {
-            'TIME': 120,
+            'RUNNER_IMPOSM_TIME': 120,
             'POSTGRES_USER': 'docker',
             'POSTGRES_PASS': 'docker',
             'POSTGRES_DBNAME': 'gis',
@@ -95,7 +95,7 @@ class Importer(object):
         else:
             self.info("Runner name: "+self.default['RUNNER_NAME'])
             self.cache_dir = join(self.default['CACHE'], self.default['RUNNER_NAME'])
-            self.import_dir = join(self.default['CACHE'], self.default['RUNNER_NAME'])
+            self.import_dir = join(self.default['IMPORT_RUNNERS'], self.default['RUNNER_NAME'])
             self.settings_runner_dir = join(self.default['SETTINGS'], 'runner_'+self.default['RUNNER_NAME'])
             self._create_runner_folders()
             self.dbschema_prod = '_'.join([self.default['DBSCHEMA_PREFIX'], self.default['RUNNER_NAME'], 'production'])
@@ -291,7 +291,7 @@ class Importer(object):
             self.info(
                 'The database is not empty. Let\'s import only diff files.')
 
-        if self.default['TIME'] != '0':
+        if self.default['RUNNER_IMPOSM_TIME'] != '0':
             if self.clip_json_file:
                 self._import_diff(['-limitto', self.clip_json_file])
             else:
@@ -379,8 +379,8 @@ class Importer(object):
                         self.error(msg)
 
             if len(listdir(self.import_dir)) == 0:
-                self.info('Sleeping for %s seconds.' % self.default['TIME'])
-                sleep(float(self.default['TIME']))
+                self.info('Sleeping for %s seconds.' % self.default['RUNNER_IMPOSM_TIME'])
+                sleep(float(self.default['RUNNER_IMPOSM_TIME']))
 
 
 if __name__ == '__main__':

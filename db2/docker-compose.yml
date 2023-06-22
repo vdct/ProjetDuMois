@@ -23,37 +23,6 @@ services:
     healthcheck:
       test: "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DBNAME} -h db"
 
-  #~ imposm:
-    #~ image: panieravide/projetdumois:imposm-latest
-    #~ volumes:
-      #~ - settings-data:/home/settings
-      #~ - import_done:/home/import_done
-      #~ - import_queue:/home/import_queue
-      #~ - import_runners:/home/import_runners
-      #~ - cache:/home/cache
-    #~ depends_on:
-      #~ db:
-        #~ condition: service_healthy
-    #~ environment:
-      #~ - POSTGRES_USER=${POSTGRES_USER}
-      #~ - POSTGRES_PASS=${POSTGRES_PASS}
-      #~ - POSTGRES_DBNAME=${POSTGRES_DBNAME}
-      #~ - POSTGRES_PORT=${POSTGRES_PORT}
-      #~ - POSTGRES_HOST=${POSTGRES_HOST}
-      #~ - RUNNER_OSMUPDATE_TIME=${RUNNER_OSMUPDATE_TIME}
-      #~ - SETTINGS=${SETTINGS}
-      #~ - CACHE=${CACHE}
-      #~ - IMPORT_DONE=${IMPORT_DONE}
-      #~ - IMPORT_QUEUE=${IMPORT_QUEUE}
-      #~ - SRID=${SRID}
-      #~ - OPTIMIZE=${OPTIMIZE}
-      #~ - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
-      #~ - DBSCHEMA_IMPORT=${DBSCHEMA_IMPORT}
-      #~ - DBSCHEMA_BACKUP=${DBSCHEMA_BACKUP}
-      #~ - QGIS_STYLE=${QGIS_STYLE}
-      #~ - CLIP=${CLIP}
-      #~ - SSL_MODE=${SSL_MODE}
-
   osmupdate:
     image: panieravide/projetdumois:osmupdate-latest
     volumes:
@@ -76,3 +45,17 @@ services:
       - IMPORT_DONE=${IMPORT_DONE}
       - RUNNER_IMPOSM_TIME=${RUNNER_IMPOSM_TIME}
       - SETTINGS=${SETTINGS}
+    restart: on-failure
+
+  pbfupdate:
+    image: panieravide/projetdumois:pbfupdate-latest
+    volumes:
+      - settings-data:/home/settings
+      - import_done:/home/import_done
+      - import_runners:/home/import_runners
+    environment:
+      - IMPORT_RUNNERS=${IMPORT_RUNNERS}
+      - IMPORT_DONE=${IMPORT_DONE}
+      - RUNNER_PBFUPDATE_TIME=${RUNNER_PBFUPDATE_TIME}
+      - SETTINGS=${SETTINGS}
+    restart: on-failure

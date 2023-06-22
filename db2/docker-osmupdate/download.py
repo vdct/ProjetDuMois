@@ -53,7 +53,8 @@ class Downloader(object):
 
     @staticmethod
     def error(message):
-        print(stderr.write(message))
+        stderr.write(message)
+        print(message)
         exit()
 
     def overwrite_environment(self):

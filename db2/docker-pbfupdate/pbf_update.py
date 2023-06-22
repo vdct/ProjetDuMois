@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import sys
-from os import environ, listdir, mkdir
+from os import environ, listdir, mkdir, remove
 from os.path import join, exists, abspath, isabs, isdir
 from shutil import move
 from subprocess import call
@@ -21,24 +21,28 @@ class PbfUpdater(object):
             'IMPORT_DONE': 'import_done',
             'RUNNER_NAME': 'pbfupdater',
         }
-        self.osm_file = None
         self.osh_file = None
         self.import_dir = None
+
 
     @staticmethod
     def info(message):
         print(message)
 
+
     @staticmethod
     def error(message):
-        print(stderr.write(message))
+        stderr.write(message)
+        print(message)
         exit()
+
 
     def overwrite_environment(self):
         """Overwrite default values from the environment."""
         for key in list(environ.keys()):
             if key in list(self.default.keys()):
                 self.default[key] = environ[key]
+
 
     def check_settings(self):
         """Perform various checking.
@@ -52,7 +56,7 @@ class PbfUpdater(object):
             self.error("Runner name is not defined")
         else:
             self.info("Runner name: "+self.default['RUNNER_NAME'])
-            self.import_dir = join(self.default['IMPORT_RUNNERS'], self.default['RUNNER_NAME'])
+            self.import_dir = join(abspath(self.default['IMPORT_RUNNERS']), self.default['RUNNER_NAME'])
             self._create_runner_folders()
 
         # Check folders.
@@ -67,66 +71,49 @@ class PbfUpdater(object):
                 msg = 'The folder %s does not exist.' % self.default[folder]
                 self.error(msg)
 
-        # Test files
-        for f in listdir(self.default['SETTINGS']):
+        # Check if OSH.PBF is available
+        while self.osh_file is None:
+            # Look in settings folder
+            for f in listdir(self.default['SETTINGS']):
+                if f.endswith('.osh.pbf') and not f.endswith('-new.osh.pbf'):
+                    self.osh_file = join(self.default['SETTINGS'], f)
 
-            if f.endswith('.osm.pbf'):
-                self.osm_file = join(self.default['SETTINGS'], f)
+            if self.osh_file is None:
+                self.info('OSH file *.pbf is not available in %s' % self.default['SETTINGS'])
+                self.info('Sleeping for %s seconds.' % self.default['RUNNER_PBFUPDATE_TIME'])
+                sleep(float(self.default['RUNNER_OSMUPDATE_TIME']))
 
-            if f.endswith('.osh.pbf'):
-                self.osh_file = join(self.default['SETTINGS'], f)
-
-        if not self.osm_file:
-            msg = 'OSM file *.pbf is missing in %s' % self.default['SETTINGS']
-            self.error(msg)
-        else:
-            self.info('OSM PBF file: ' + self.osm_file)
-
-        if not self.osh_file:
-            msg = 'OSH file *.pbf is missing in %s' % self.default['SETTINGS']
-            self.error(msg)
-        else:
-            self.info('OSH PBF file: ' + self.osh_file)
+        self.info('OSH PBF file: ' + self.osh_file)
 
         # In docker-compose, we should wait for the DB is ready.
         self.info('The checkup is OK.')
 
-    # ~ def create_timestamp(self):
-        # ~ """Create the timestamp with the undefined value until the real one."""
-        # ~ file_path = join(self.default['SETTINGS'], 'timestamp.txt')
-        # ~ timestamp_file = open(file_path, 'w')
-        # ~ timestamp_file.write('UNDEFINED\n')
-        # ~ timestamp_file.close()
-
-    # ~ def update_timestamp(self, database_timestamp):
-        # ~ """Update the current timestamp of the database."""
-        # ~ file_path = join(self.default['SETTINGS'], 'timestamp.txt')
-        # ~ timestamp_file = open(file_path, 'w')
-        # ~ timestamp_file.write('%s\n' % database_timestamp)
-        # ~ timestamp_file.close()
 
     def run(self):
         """First checker."""
 
-        # ~ osm_tables = self.locate_table("'osm_%'", self.dbschema_prod)
+        # Finally launch the listening process.
+        while True:
+            import_queue = sorted(listdir(self.import_dir))
 
-        # ~ if osm_tables != 1:
-            # ~ # It means that the DB is empty. Let's import the PBF file.
-            # ~ if self.clip_json_file:
-                # ~ self._first_pbf_import(['-limitto', self.clip_json_file])
-            # ~ else:
-                # ~ self._first_pbf_import([])
-        # ~ else:
-            # ~ self.info(
-                # ~ 'The database is not empty. Let\'s import only diff files.')
+            # Apply available diffs to OSH.PBF
+            if len(import_queue) > 0:
+                lastDiff = import_queue[len(import_queue)-1]
+                self.info(f"Importing diffs up to {lastDiff}")
+                self._update_osh_pbf(import_queue)
 
-        # ~ if self.default['RUNNER_PBFUPDATE_TIME'] != '0':
-            # ~ if self.clip_json_file:
-                # ~ self._import_diff(['-limitto', self.clip_json_file])
-            # ~ else:
-                # ~ self._import_diff([])
-        # ~ else:
-            # ~ self.info('No more update to the database. Leaving.')
+                # Moved processed diff to import_done folder
+                for diff in import_queue:
+                    move(
+                        join(self.import_dir, diff),
+                        join(self.default['IMPORT_DONE'], diff))
+
+                # Update OSM.PBF based on updated OSH.PBF
+                self._extract_osm_from_osh()
+
+            self.info('Sleeping for %s seconds.' % self.default['RUNNER_PBFUPDATE_TIME'])
+            sleep(float(self.default['RUNNER_PBFUPDATE_TIME']))
+
 
     def _create_runner_folders(self):
         """Creates import folders (if they don't exist yet) for this runner (based on its name)"""
@@ -137,81 +124,44 @@ class PbfUpdater(object):
             except Exception as e:
                 self.error("Can't create runner import dir: "+str(e))
 
-        if not isdir(self.settings_runner_dir):
-            self.error(f"Runner settings dir {str(self.settings_runner_dir)} doesn't exist")
 
-    def update_osh_pbf(self):
-        print("test")
+    def _update_osh_pbf(self, args):
+        # Command
+        new_osh_file = self.osh_file.replace('.osh.pbf', '-new.osh.pbf')
+        command = ['osmium', 'apply-changes', '-v', '--progress', '-H']
+        command.append(self.osh_file)
+        command.extend([ join(self.import_dir, p) for p in args ])
+        command += ['-O', '-o']
+        command.append(new_osh_file)
 
-    # ~ def _first_pbf_import(self, args):
-        # ~ """Run the first PBF import into the database."""
-        # ~ command = ['imposm', 'import', '-diff', '-deployproduction']
-        # ~ command += ['-overwritecache', '-cachedir', self.cache_dir]
-        # ~ command += ['-srid', self.default['SRID']]
-        # ~ command += ['-dbschema-production', self.dbschema_prod]
-        # ~ command += ['-dbschema-import', self.dbschema_import]
-        # ~ command += ['-dbschema-backup', self.dbschema_backup]
-        # ~ command += ['-diffdir', self.default['SETTINGS']]
-        # ~ command += ['-mapping', self.mapping_file]
-        # ~ command += ['-read', self.osm_file]
-        # ~ command += ['-write', '-connection', self.postgis_uri]
-        # ~ self.info('The database is empty. Let\'s import the PBF : %s' % self.osm_file)
+        self.info(command)
+        if not call(command) == 0:
+            self.error('Update of OSH.PBF file failed')
+        else:
+            remove(self.osh_file)
+            move(new_osh_file, self.osh_file)
+            self.info('OSH.PBF file successfully updated')
 
-        # ~ command.extend(args)
-        # ~ self.info(command)
-        # ~ if not call(command) == 0:
-            # ~ msg = 'An error occured in imposm with the original file.'
-            # ~ self.error(msg)
-        # ~ else:
-            # ~ self.info('Import PBF successful : %s' % self.osm_file)
 
-        # ~ if self.post_import_file:
-            # ~ # Set the password for psql
-            # ~ environ['PGPASSWORD'] = self.default['POSTGRES_PASS']
+    def _extract_osm_from_osh(self):
+        """Extracts the OSM.PBF file based on full-history OSH.PBF file"""
 
-        # ~ if self.post_import_file:
-            # ~ self.import_custom_sql()
+        # Command
+        osm_file = self.osh_file.replace('.osh.pbf', '.osm.pbf')
+        command = ['osmium', 'time-filter', '-v']
+        command.append(self.osh_file)
+        command += ['-O', '-o']
+        command.append(osm_file)
 
-    # ~ def _import_diff(self, args):
-        # ~ # Finally launch the listening process.
-        # ~ while True:
-            # ~ import_queue = sorted(listdir(self.import_dir))
-            # ~ if len(import_queue) > 0:
-                # ~ for diff in import_queue:
-                    # ~ self.info('Importing diff %s' % diff)
-                    # ~ command = ['imposm', 'diff']
-                    # ~ command += ['-cachedir', self.cache_dir]
-                    # ~ command += ['-dbschema-production', self.dbschema_prod]
-                    # ~ command += ['-dbschema-import', self.dbschema_import]
-                    # ~ command += ['-dbschema-backup', self.dbschema_backup]
-                    # ~ command += ['-srid', self.default['SRID']]
-                    # ~ command += ['-diffdir', self.default['SETTINGS']]
-                    # ~ command += ['-mapping', self.mapping_file]
-                    # ~ command += ['-connection', self.postgis_uri]
-                    # ~ command.extend(args)
-                    # ~ command += [join(self.import_dir, diff)]
-
-                    # ~ self.info(command)
-                    # ~ if call(command) == 0:
-                        # ~ move(
-                            # ~ join(self.import_dir, diff),
-                            # ~ join(self.default['IMPORT_DONE'], diff))
-
-                        # ~ # Update the timestamp in the file.
-                        # ~ database_timestamp = diff.split('.')[0].split('->-')[1]
-                        # ~ self.update_timestamp(database_timestamp)
-                    # ~ else:
-                        # ~ msg = 'An error occured in imposm with a diff.'
-                        # ~ self.error(msg)
-
-            # ~ if len(listdir(self.import_dir)) == 0:
-                # ~ self.info('Sleeping for %s seconds.' % self.default['RUNNER_PBFUPDATE_TIME'])
-                # ~ sleep(float(self.default['RUNNER_PBFUPDATE_TIME']))
+        self.info(' '.join(command))
+        if call(command) != 0 or not exists(osm_file):
+            self.error("Can't extract latest OSM.PBF from OSH.PBF")
+        else:
+            self.info('Creating OSM.PBF successful : %s' % osm_file)
 
 
 if __name__ == '__main__':
     updater = PbfUpdater()
     updater.overwrite_environment()
     updater.check_settings()
-    # ~ updater.create_timestamp()
     updater.run()

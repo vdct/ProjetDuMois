@@ -1,7 +1,7 @@
 version: '3.4'
 services:
-  #~ imposm:
-    #~ build: docker-imposm
-
   osmupdate:
     build: docker-osmupdate
+
+  pbfupdate:
+    build: docker-pbfupdate

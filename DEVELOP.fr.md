@@ -2,15 +2,15 @@
 
 ## Dépendances
 
-* NodeJS >= 12.9
-* Outils Bash : curl, awk, grep, sed, xsltproc, bc
-* PostgreSQL >= 10
-* Python 3
-* [Osmium](https://osmcode.org/osmium-tool/) > 1.10
-* [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
-* [Imposm](https://imposm.org/) >= 3
-* [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
-* Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
+- NodeJS >= 12.9
+- Outils Bash : curl, awk, grep, sed, xsltproc, bc
+- PostgreSQL >= 10
+- Python 3
+- [Osmium](https://osmcode.org/osmium-tool/) > 1.10
+- [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
+- [Imposm](https://imposm.org/) >= 3
+- [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
+- Dépendances de [sendfile_osm_oauth_protector](https://github.com/geofabrik/sendfile_osm_oauth_protector#requirements)
 
 ### Compilation osmium
 
@@ -20,13 +20,14 @@ Peu de distributions linux ont les dernières versions disponibles et vous aurez
 Voir les consignes sur le [README officiel](https://github.com/osmcode/osmium-tool/blob/master/README.md#building).
 
 Les paquets suivants pourront être utiles pour cela
-* build-essential
-* cmake
-* zlib1g-dev
-* libbz2-dev
-* liblz4-dev
-* libboost-dev
-* libboost-program-options-dev
+
+- build-essential
+- cmake
+- zlib1g-dev
+- libbz2-dev
+- liblz4-dev
+- libboost-dev
+- libboost-program-options-dev
 
 ## Débuter
 
@@ -40,24 +41,24 @@ git submodule update --init
 
 La configuration générale de l'outil est à renseigner dans `config.json`. Un modèle est proposé dans le fichier `config.example.json`. Les paramètres sont les suivants :
 
-* `OSM_USER` : nom d'utilisateur OpenStreetMap pour la récupération de l'historique des modifications avec métadonnées
-* `OSM_PASS` : mot de passe associé au compte utilisateur OSM
-* `OSM_API_KEY` : clé d'API OSM
-* `OSM_API_SECRET` : secret lié à la clé d'API OSM
-* `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
-* `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
-* `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
-* `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
-* `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
-* `OSMOSE_URL` : instance Osmose à utiliser (exemple `https://osmose.openstreetmap.fr`)
-* `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
-* `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
-* `MAPILLARY_API_KEY`: clé d'API Mapillary ([peut être créée ici](https://www.mapillary.com/dashboard/developers))
-* `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
-* `MAPBOX_STYLE` : URL d'un [style compatible avec Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
-* `PDM_TILES_URL` : URL d'accès au service *pg_tileserv*, qui met à disposition les couches dans votre base de données
-* `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
-* `MAINTENANCE_MODE`: option pour afficher une page spéciale sur le site indiquant qu'il est en cours de maintenance (valeur `true` pour activer)
+- `OSM_USER` : nom d'utilisateur OpenStreetMap pour la récupération de l'historique des modifications avec métadonnées
+- `OSM_PASS` : mot de passe associé au compte utilisateur OSM
+- `OSM_API_KEY` : clé d'API OSM
+- `OSM_API_SECRET` : secret lié à la clé d'API OSM
+- `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
+- `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
+- `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
+- `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
+- `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
+- `OSMOSE_URL` : instance Osmose à utiliser (exemple `https://osmose.openstreetmap.fr`)
+- `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
+- `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
+- `MAPILLARY_API_KEY`: clé d'API Mapillary ([peut être créée ici](https://www.mapillary.com/dashboard/developers))
+- `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
+- `MAPBOX_STYLE` : URL d'un [style compatible avec Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
+- `PDM_TILES_URL` : URL d'accès au service _pg_tileserv_, qui met à disposition les couches dans votre base de données
+- `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
+- `MAINTENANCE_MODE`: option pour afficher une page spéciale sur le site indiquant qu'il est en cours de maintenance (valeur `true` pour activer)
 
 ### Connexion à Postgresql
 
@@ -74,28 +75,28 @@ Reportez-vous au chapitre 33.1.1 du [guide postgresql](https://www.postgresql.or
 
 Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-répertoire doit contenir les fichiers suivants :
 
-* `info.json` : métadonnées du projet
-* `howto.md` : descriptif des tâches à réaliser au format Markdown (utiliser les niveaux de titres >= 3)
-* `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_changes, attribuant des classes de contribution à certains changements donnant droit à des points
+- `info.json` : métadonnées du projet
+- `howto.md` : descriptif des tâches à réaliser au format Markdown (utiliser les niveaux de titres >= 3)
+- `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_changes, attribuant des classes de contribution à certains changements donnant droit à des points
 
 Les propriétés dans `info.json` sont les suivantes :
 
-* `id` : identifiant de la mission (caractères autorisés : A-Z, 0-9, _ et -)
-* `title` : nom de la mission (assez court)
-* `start_date` : date de début de la mission (format AAAA-MM-JJ)
-* `end_date` : date de fin de la mission (format AAAA-MM-JJ)
-* `summary` : résumé de la mission
-* `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
-* `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). Il est possible d'enchaîner plusieurs filtres par & et en répétant l'indication de primitive à chaque niveau. Seul le dernier filtre est utilisé pour catégoriser les décomptes par osmium.
-* `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs, voir [la documentation Imposm](https://imposm.org/docs/imposm3/latest/mapping.html#tags) pour le format de ces champs)
-* `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
-* `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
-* `statistics` : configuration de l'affichage des statistiques sur la page du projet
-* `statistics.count` : activer le comptage des objets dans OSM
-* `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
-* `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
-* `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
-* `editors` : configuration spécifique à chaque éditeur OSM. Pour ProjetDuMois, les informations sont disponibles ci-dessous. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+- `id` : identifiant de la mission (caractères autorisés : A-Z, 0-9, \_ et -)
+- `title` : nom de la mission (assez court)
+- `start_date` : date de début de la mission (format AAAA-MM-JJ)
+- `end_date` : date de fin de la mission (format AAAA-MM-JJ)
+- `summary` : résumé de la mission
+- `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
+- `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). Il est possible d'enchaîner plusieurs filtres par & et en répétant l'indication de primitive à chaque niveau. Seul le dernier filtre est utilisé pour catégoriser les décomptes par osmium.
+- `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs, voir [la documentation Imposm](https://imposm.org/docs/imposm3/latest/mapping.html#tags) pour le format de ces champs)
+- `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
+- `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
+- `statistics` : configuration de l'affichage des statistiques sur la page du projet
+- `statistics.count` : activer le comptage des objets dans OSM
+- `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
+- `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
+- `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
+- `editors` : configuration spécifique à chaque éditeur OSM. Pour ProjetDuMois, les informations sont disponibles ci-dessous. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Temporalité des projets
 
@@ -128,6 +129,7 @@ tags HSTORE
 geom GEOMETRY(Geometry, 3857)
 centre GEOMETRY(Point, 3857)
 ```
+
 La colonne `centre` est comprise comme étant un point compris dans le périmètre de la limite (vous pouvez utiliser [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html)).
 
 Créer des indexes sur les colonnes `osm_id`, `tags`, `geom` et `centre` peut être utile suivant la population d'objets touchée par un projet donné.
@@ -142,39 +144,39 @@ Plusieurs sources de tuiles sont mobilisables, et sont à faire apparaître dans
 
 [Osmose](https://wiki.openstreetmap.org/wiki/Osmose) est un outil d'analyse qualité et d'aide à l'intégration de données ouvertes. Les propriétés à renseigner sont les suivantes :
 
-* `source` (obligatoire `osmose`): type de source
-* `item` : numéro d'item (code à quatre chiffres)
-* `class` (optionnel) : numéro de classe (code à plusieurs chiffres)
-* `country` (optionnel) : motif de nom de pays Osmose (exemple `france*`)
-* `name` : nom à faire apparaître à l'utilisateur
-* `subtitles` (optionnel) : objet clé > valeur pour remplacer les sous-titres des signalements Osmose (recherche par motif)
-* `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "done": "C'est fait", "false": "Rien ici" }`)
-* `minzoom` (défaut 7): Niveau de zoom minimum au delà duquel la couche est visible
-* `maxzoom` (défaut 18): Niveau de zoom maximal au delà duquel la couche n'est plus visible
-* `tiles` (défaut) : Liste d'URL TMS
+- `source` (obligatoire `osmose`): type de source
+- `item` : numéro d'item (code à quatre chiffres)
+- `class` (optionnel) : numéro de classe (code à plusieurs chiffres)
+- `country` (optionnel) : motif de nom de pays Osmose (exemple `france*`)
+- `name` : nom à faire apparaître à l'utilisateur
+- `subtitles` (optionnel) : objet clé > valeur pour remplacer les sous-titres des signalements Osmose (recherche par motif)
+- `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "done": "C'est fait", "false": "Rien ici" }`)
+- `minzoom` (défaut 7): Niveau de zoom minimum au delà duquel la couche est visible
+- `maxzoom` (défaut 18): Niveau de zoom maximal au delà duquel la couche n'est plus visible
+- `tiles` (défaut) : Liste d'URL TMS
 
 #### Notes OSM
 
 Les [notes OpenStreetMap](https://wiki.openstreetmap.org/wiki/Notes) sont une méthode simple pour envoyer des commentaires textuels par dessus la carte, et faciliter la contribution par des publics novices. Les propriétés à renseigner sont les suivantes :
 
-* `source` (obligatoire `notes`): type de source
-* `name` : nom à faire apparaître à l'utilisateur
-* `description` : texte descriptif indiquant la méthode de résolution d'une note
-* `terms` : liste des termes à rechercher dans les notes (au singulier)
-* `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "close": "C'est fait" }`)
-* `data` (défaut) : GeoJson de données de la couche
+- `source` (obligatoire `notes`): type de source
+- `name` : nom à faire apparaître à l'utilisateur
+- `description` : texte descriptif indiquant la méthode de résolution d'une note
+- `terms` : liste des termes à rechercher dans les notes (au singulier)
+- `buttons` : libellé à faire apparaître sur les boutons d'édition (exemple `{ "close": "C'est fait" }`)
+- `data` (défaut) : GeoJson de données de la couche
 
 #### Objets OpenStreetMap
 
 Les objets actuellement présents dans OpenStreetMap peuvent être affichés pour éviter les doublons et permettre leur édition. Les propriétés à renseigner sont les suivantes :
 
-* `source` (obligatoire `osm`): type de source
-* `name` : nom à faire apparaître à l'utilisateur
-* `description` : texte descriptif de l'objet affiché
-* `minzoom` (défaut 7) : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
-* `tiles` (défaut) : Liste d'URL TMS
-* `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
+- `source` (obligatoire `osm`): type de source
+- `name` : nom à faire apparaître à l'utilisateur
+- `description` : texte descriptif de l'objet affiché
+- `minzoom` (défaut 7) : Niveau de zoom minimum au delà duquel la couche est visible
+- `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+- `tiles` (défaut) : Liste d'URL TMS
+- `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database` de `info.json`.
 
@@ -182,13 +184,13 @@ Cette source ne peut apparaître qu'une seule fois, et correspond aux objets rec
 
 Des objets indirectement liés au projet mais pertinents pour la contribution peuvent également apparaître. Les propriétés à renseigner sont les suivantes :
 
-* `source` (obligatoire `osm-compare`) : type de source
-* `name` : nom à faire apparaître à l'utilisateur
-* `description` : texte descriptif de l'objet affiché
-* `minzoom` (défaut 9) : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
-* `tiles` (défaut) : Liste d'URL TMS
-* `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
+- `source` (obligatoire `osm-compare`) : type de source
+- `name` : nom à faire apparaître à l'utilisateur
+- `description` : texte descriptif de l'objet affiché
+- `minzoom` (défaut 9) : Niveau de zoom minimum au delà duquel la couche est visible
+- `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+- `tiles` (défaut) : Liste d'URL TMS
+- `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
 
@@ -196,13 +198,13 @@ Cette source ne peut apparaître qu'une seule fois, et correspond aux objets rec
 
 Ces couches affichent des objets non pris en compte dans le périmètre du projet. Ils sont affichés pour informer les contributeurs que quelque chose de différent existe déjà à cet endroit. Les propriétés à fournir sont les suivantes :
 
-* `source` (obligatoire `osm-extra`) : type de source
-* `name` : nom à faire apparaître à l'utilisateur
-* `description` : texte descriptif de l'objet affiché
-* `minzoom` (défaut 9) : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
-* `tiles` (défaut) : Liste d'URL TMS
-* `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
+- `source` (obligatoire `osm-extra`) : type de source
+- `name` : nom à faire apparaître à l'utilisateur
+- `description` : texte descriptif de l'objet affiché
+- `minzoom` (défaut 9) : Niveau de zoom minimum au delà duquel la couche est visible
+- `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+- `tiles` (défaut) : Liste d'URL TMS
+- `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
 Ces sources peuvent apparaitre autant de fois que nécessaire
 
@@ -210,14 +212,14 @@ Ces sources peuvent apparaitre autant de fois que nécessaire
 
 Des couches raster peuvent être ajoutées en fond de carte pour faciliter la contribution ou donner plus de contexte. Les propriétés suivantes doivent être définies :
 
-* `source` (obligatoire `background`): type de source
-* `icon` (défaut `other`): le symbole à afficher dans la légende (au choix `aerial`, `thematic`, `picture`, `other`)
-* `name` : nom à faire apparaître à l'utilisateur
-* `tiles` : Tableau d'URL TMS
-* `attribution` : Attribution à faire apparaitre sur la carte
-* `minzoom` (défaut 2) : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxzoom` (défaut 19) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
-* `tileSize` (défaut 256) : Taille d'une arrête de tuile en pixels
+- `source` (obligatoire `background`): type de source
+- `icon` (défaut `other`): le symbole à afficher dans la légende (au choix `aerial`, `thematic`, `picture`, `other`)
+- `name` : nom à faire apparaître à l'utilisateur
+- `tiles` : Tableau d'URL TMS
+- `attribution` : Attribution à faire apparaitre sur la carte
+- `minzoom` (défaut 2) : Niveau de zoom minimum au delà duquel la couche est visible
+- `maxzoom` (défaut 19) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+- `tileSize` (défaut 256) : Taille d'une arrête de tuile en pixels
 
 Ces sources doivent être déclarées dans l'ordre inverse d'apparition. La couche inférieure doit être donnée en premier.
 
@@ -225,11 +227,11 @@ Ces sources doivent être déclarées dans l'ordre inverse d'apparition. La couc
 
 Pour activer l'affichage de statistiques selon le découpage administratif, vous pouvez ajouter la couche ayant la définition suivante :
 
-* `source` (obligatoire `stats`): type de source
-* `minzoom` (défaut 2) : Niveau de zoom minimum au delà duquel la couche est visible
-* `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
-* `tiles` (défaut) : Tableau d'URL TMS
-* `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
+- `source` (obligatoire `stats`): type de source
+- `minzoom` (défaut 2) : Niveau de zoom minimum au delà duquel la couche est visible
+- `maxzoom` (défaut 14) : Niveau de zoom maximal au delà duquel la couche n'est plus visible
+- `tiles` (défaut) : Tableau d'URL TMS
+- `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
 ### Éditeur intégré de Projet du Mois
 
@@ -251,17 +253,17 @@ Les champs sont définis comme des objets JSON standards, ajouté au tableau `fi
 
 Chaque type, à l'exception de `hidden` supporte les champ communs suivants :
 
-* `name`: Libellé du champ tel qu'affiché à l'utilisateur
-* `help`: Lien hypertexte pointant vers toute ressource appropriée d'aide pour ce champ
-* `description`: Un text plus long que le libellé qui apporte les détails nécessaire à propos de champ
-* `optional`: Un champ booléen false/true rendant respectivement le champ obligatoire ou non.
+- `name`: Libellé du champ tel qu'affiché à l'utilisateur
+- `help`: Lien hypertexte pointant vers toute ressource appropriée d'aide pour ce champ
+- `description`: Un text plus long que le libellé qui apporte les détails nécessaire à propos de champ
+- `optional`: Un champ booléen false/true rendant respectivement le champ obligatoire ou non.
 
 #### Attributs statiques ou externes
 
 Il permet de définir des tags statiques ajoutés à tout objet créé avec l'éditeur. Il est possible dans la liste de tags d'ajouter une valeur `*` pour accepter toute valeur arrivant d'une source externe (par exemple les identifiants `ref:FR:SIRET` renseignés dans Osmose).
 
 ```json
-  { "type": "hidden", "tags": { "tag_1":"value_1", "tag_2":"value_2", "tag_3_externe": "*" } }
+{ "type": "hidden", "tags": { "tag_1": "value_1", "tag_2": "value_2", "tag_3_externe": "*" } }
 ```
 
 #### Champs classiques
@@ -280,7 +282,7 @@ Ils produisent tous trois un champ texte standard muni des fonctions de validati
 Une zone de texte plus ample pour saisir des valeurs plus conséquentes.
 
 ```json
-  { "type": "textarea", "name": "Libellé", "tag": "tag_key", "optional": false }
+{ "type": "textarea", "name": "Libellé", "tag": "tag_key", "optional": false }
 ```
 
 #### Listes de valeurs
@@ -288,29 +290,51 @@ Une zone de texte plus ample pour saisir des valeurs plus conséquentes.
 Une liste de valeurs avec des entrées personnalisées pointant sur une clé OSM définie.
 
 ```json
-{ "type": "select", "name": "Libellé", "tag": "tag_key", "optional": false, "values": [
-  { "v": "value_1", "l": "Value 1 label" },
-  { "v": "value_2", "l": "Value 2 label" }
-] }
+{
+  "type": "select",
+  "name": "Libellé",
+  "tag": "tag_key",
+  "optional": false,
+  "values": [
+    { "v": "value_1", "l": "Value 1 label" },
+    { "v": "value_2", "l": "Value 2 label" }
+  ]
+}
 ```
 
 On peut également faire en sorte que une valeur dans la liste renseigne plusieurs attributs OSM, par exemple :
 
 ```json
-{ "type": "select", "name": "Type", "tag": "_select1", "values": [
-	{ "l": "Gendarmerie", "tags": { "name": "Gendarmerie nationale", "operator": "Gendarmerie nationale", "police:FR": "gendarmerie" } },
-	{ "l": "Police nationale", "tags": { "name": "Police nationale", "operator": "Police nationale", "police:FR": "police" } },
-	{ "l": "Police municipale", "tags": { "name": "Police municipale", "police:FR": "police_municipale" } }
-] }
+{
+  "type": "select",
+  "name": "Type",
+  "tag": "_select1",
+  "values": [
+    {
+      "l": "Gendarmerie",
+      "tags": { "name": "Gendarmerie nationale", "operator": "Gendarmerie nationale", "police:FR": "gendarmerie" }
+    },
+    {
+      "l": "Police nationale",
+      "tags": { "name": "Police nationale", "operator": "Police nationale", "police:FR": "police" }
+    },
+    { "l": "Police municipale", "tags": { "name": "Police municipale", "police:FR": "police_municipale" } }
+  ]
+}
 ```
 
 Dans le cas où plusieurs attributs sont renseignés, il est possible de forcer la suppression de certains tags avec un texte vide, par exemple pour gérer le cas où les objets sont dans plusieurs catégories :
 
 ```json
-{ "type": "select", "name": "Type de commerce", "tag": "_select1", "values": [
-  { "l": "Agence d'assurance", "tags": { "shop": "", "office": "insurance" } },
-  { "l": "Agence de voyages", "tags": { "shop": "travel_agency", "office": "" } }
-] }
+{
+  "type": "select",
+  "name": "Type de commerce",
+  "tag": "_select1",
+  "values": [
+    { "l": "Agence d'assurance", "tags": { "shop": "", "office": "insurance" } },
+    { "l": "Agence de voyages", "tags": { "shop": "travel_agency", "office": "" } }
+  ]
+}
 ```
 
 #### Champs booléens
@@ -336,7 +360,6 @@ Exemple d'utilisation :
 { "type": "nsi", "name": "Marque", "path": "brands/shop/bakery", "locationSet": "fr" }
 ```
 
-
 ### Décomptes et statistiques
 
 Les statistiques projet sont établies par le script `./db/31_projects_update_tmp.sh`. Le script complète la table SQL pdm_feature_counts avec les jours manquant entre le timestamp OSH et le jour courant.
@@ -354,8 +377,9 @@ rm ${WORK_DIR}/osh_timestamp
 Certaines contribution peuvent donner lieu à l'attribution de points aux contributeurs responsables.
 La configuration des projets établit le lien entre des classes de contribution et les points associés. Il faut donc qualifier certains changement avec les bonnes classes.
 La plateforme attribue les classes communes suivantes :
-* `add`: Les changements concernant des objets version=1
-* `edit` : Les changements concernant des objets version>1
+
+- `add`: Les changements concernant des objets version=1
+- `edit` : Les changements concernant des objets version>1
 
 Il est possible d'attribuer des classes propres à chaque projet en créant un fichier `contribs.sql` à côté de `info.json`.
 Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_changes`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
@@ -364,9 +388,9 @@ Les montant de points attribués sont configurés dans `info.json` :
 
 ```json
 {
-    "statistics": {
-		"points": { "add": 3, "project1": 1 }
-    }
+  "statistics": {
+    "points": { "add": 3, "project1": 1 }
+  }
 }
 ```
 
@@ -394,7 +418,8 @@ docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
 ```
 
 Avec :
-* IMPOSM3_VERSION : Version d'imposm3 à intégrer à l'image Docker
+
+- IMPOSM3_VERSION : Version d'imposm3 à intégrer à l'image Docker
 
 ### Installation locale
 
@@ -412,6 +437,31 @@ La base de données utilise PostgreSQL. Pour créer la base, lancez la commande 
 psql -c "CREATE DATABASE pdm"
 ```
 
+### pg_tileserv
+
+#### Without Docker
+
+pg_tileserv étant requit pour afficher la données osm sur la carte, vous pouvez soit l'installer soit utiliser une image Docker.
+Pour l'installation `wget` et `unzip` sont nécessaires.
+
+```bash
+# télécharge la dernière version
+wget https://postgisftw.s3.amazonaws.com/pg_tileserv_latest_linux.zip
+# décompression / suprresion
+unzip pg_tileserv_latest_linux.zip -d /opt/pg_tileserv
+rm pg_tileserv_latest_linux.zip
+# url de la base de données à laquelle se connecter
+export DATABASE_URL=postgres://postgres:password@pdm-db:5432/pdm
+# lanchement de pg_tileserver
+cd /opt/pg_tileserv
+./pg_tileserv
+```
+
+#### Using Docker
+
+Vous pouvez aussi utiliser l'image incluse dans le docker-compose.yml ou, pour une image plus lègere utiliser le [Dockerfile alpine suivant](https://github.com/CrunchyData/pg_tileserv/blob/master/Dockerfile.alpine) afin de build vous même l'image.
+Vous pouvez aussi très bien installer pg_tileserv dans pdm via le Dockerfile pour builder l'image Docker pdm en l'incluant. Mais ceci n'est pas recommandé.
+
 ### Docker
 
 Le service s'installe avec les deux commandes suivantes :
@@ -422,16 +472,19 @@ docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e 
 ```
 
 Ensuite, lancez le serveur avec la commande :
+
 ```bash
 docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
 
 N'oubliez pas d'ajouter les lignes suivantes dans vos crontab pour mettre à jour les projets périodiquement, idéalement quotidiennement.
+
 ```bash
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_daily
 ```
 
 Des commandes dédiées sont néamoins disponibles pour relancer une update particuliere:
+
 ```bash
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_pbf
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
@@ -473,10 +526,10 @@ Le code de l'interface web se trouve dans le dossier `website`. Il s'agit d'un s
 
 Les modèles Pug sont dans le sous-dossier `templates`. Celui-ci est organisé selon la logique suivante :
 
-* Dans `templates`, le modèle général `layout.pug` et son fichier CSS
-* Dans `common`, les éléments génériques à toutes les pages (`<head>`, en-tête, pied de page)
-* Dans `components`, les composants principaux qui peuplent les pages (carte, bloc statistiques...)
-* Dans `pages`, chacune des pages du site (accueil, carte, page projet...)
+- Dans `templates`, le modèle général `layout.pug` et son fichier CSS
+- Dans `common`, les éléments génériques à toutes les pages (`<head>`, en-tête, pied de page)
+- Dans `components`, les composants principaux qui peuplent les pages (carte, bloc statistiques...)
+- Dans `pages`, chacune des pages du site (accueil, carte, page projet...)
 
 Le site est visible à l'adresse [localhost:3000](http://localhost:3000).
 
@@ -500,11 +553,13 @@ N'essayez pas de débuter la configuration d'une instance avec docker-compose, e
 Une fois que vous avez constaté que tout fonctionnait, lancez-vous avec docker-compose pour faciliter les executions futures.
 
 Pour démarrer :
+
 ```
 docker-compose up
 ```
 
 Pour arrêter :
+
 ```
 docker-compose down
 ```

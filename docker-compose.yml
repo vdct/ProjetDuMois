@@ -27,6 +27,18 @@ services:
       - DB_URL=postgres://postgres:pgpassword@pgsqldb:5432/pdm
     command: "run"
 
+  pdm-tileserv:
+    image: pramsey/pg_tileserv:latest
+    restart: always
+    depends_on:
+      - pgsqldb
+    networks:
+      - oim-internal
+    ports:
+      - "7800:7800"
+    environment:
+      - DATABASE_URL=postgres://postgres:pgpassword@pgsqldb:5432/pdm
+
 volumes:
   db-data:
   pdm-data:

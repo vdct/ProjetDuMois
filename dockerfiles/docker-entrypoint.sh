@@ -19,8 +19,8 @@ case $command in
     ./db/11_pbf_update_tmp.sh
     npm run features:update $otherArgs
     ./db/21_features_update_tmp.sh init
-    npm run project:update $otherArgs
-    ./db/31_project_update_tmp.sh $otherArgs
+    npm run projects:update $otherArgs
+    ./db/31_projects_update_tmp.sh $otherArgs
     ;;
 "run")
     npm run projects:update $otherArgs

@@ -115,11 +115,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 
-				sources[id] = Object.assign({
-					minzoom: sources[id]?.minzoom ? sources[id].minzoom : 2,
-					maxzoom: sources[id]?.maxzoom ? sources[id].maxzoom : 19,
-					tileSize: sources[id]?.tileSize ? sources[id].tileSize : 256
-				}, filterDatasource(ds));
+				sources[id] = Object.assign({}, filterDatasource(ds));
 
 				if(ds.tiles === "mapillary") {
 					sources[id].tiles = [ "https://tiles.mapillary.com/maps/vtp/mly1_computed_public/2/{z}/{x}/{y}?access_token="+CONFIG.MAPILLARY_API_KEY ];
@@ -148,6 +144,22 @@ exports.getMapStyle = (p) => {
 				}
 				else {
 					sources[id].type = "raster";
+
+					// Default minzoom values if not specified
+					if (!sources[id].minzoom) {
+						sources[id].minzoom = 2
+					}
+
+					// Default maxzoom values if not specified
+					if (!sources[id].maxzoom) {
+						sources[id].maxzoom = 19
+					}
+
+					// Default tileSize values if not specified
+					if (!sources[id].tileSize) {
+						sources[id].tileSize = 256
+					}
+
 					layers.push({
 						id: id,
 						source: id,

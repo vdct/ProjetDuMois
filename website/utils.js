@@ -116,8 +116,8 @@ exports.getMapStyle = (p) => {
 				const id = `${ds.source}_${dsid}`;
 
 				sources[id] = Object.assign({
-					minzoom: 2,
-					maxzoom: 19,
+					minzoom: sources[id]?.minzoom ? sources[id].minzoom : 2,
+					maxzoom: sources[id]?.maxzoom ? sources[id].maxzoom : 19,
 					tileSize: 256
 				}, filterDatasource(ds));
 
@@ -148,7 +148,6 @@ exports.getMapStyle = (p) => {
 				}
 				else {
 					sources[id].type = "raster";
-
 					layers.push({
 						id: id,
 						source: id,

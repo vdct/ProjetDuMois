@@ -118,7 +118,7 @@ exports.getMapStyle = (p) => {
 				sources[id] = Object.assign({
 					minzoom: sources[id]?.minzoom ? sources[id].minzoom : 2,
 					maxzoom: sources[id]?.maxzoom ? sources[id].maxzoom : 19,
-					tileSize: 256
+					tileSize: sources[id]?.tileSize ? sources[id].tileSize : 256
 				}, filterDatasource(ds));
 
 				if(ds.tiles === "mapillary") {

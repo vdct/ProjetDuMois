@@ -12,8 +12,6 @@ const {Pool, Client} = require('pg')
  */
 
 // Constants
-let projectsFold = foldProjects(projects);
-
 const OSH_UPDATED = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".latest.osh.pbf");
 const OSH_FILTERED = CONFIG.WORK_DIR + '/filtered.osh.pbf';
 const OSH_USEFULL = CONFIG.WORK_DIR + '/usefull.osh.pbf';
@@ -33,8 +31,6 @@ const CSV_NOTES_USERS = (project) => `${CONFIG.WORK_DIR}/usernames_notes_${proje
 const PSQL = `psql -d ${process.env.DB_URL}`;
 const OUTPUT_SCRIPT = __dirname+'/31_projects_update_tmp.sh';
 const HAS_BOUNDARY = `${PSQL} -c "SELECT * FROM pdm_boundary LIMIT 1" > /dev/null 2>&1 `;
-
-const runForAll = process.argv.slice(2).pop() === "all";
 
 const pgPool = new Pool({
 	connectionString: `${process.env.DB_URL}`
@@ -129,17 +125,8 @@ function processNotes(project) {
 }
 
 // Projects installation
+// Beware of async queries
 console.log("Projects installation");
-pgPool.query("TRUNCATE TABLE pdm_projects", (err, res) => {
-	if (err){
-		throw new Error(`Erreur SQL: ${err}`);
-	}
-});
-pgPool.query("TRUNCATE TABLE pdm_projects_points", (err, res) => {
-	if (err){
-		throw new Error(`Erreur SQL: ${err}`);
-	}
-});
 
 let projectsQry = "INSERT INTO pdm_projects (project, start_date, end_date) VALUES ";
 let projectPointsQry = "INSERT INTO pdm_projects_points (project, contrib, points) VALUES ";
@@ -156,13 +143,16 @@ Object.values(projects).forEach(project => {
 	});
 });
 
-pgPool.query(projectsQry.substring(0, projectsQry.length-1), (err, res) => {
+projectsQry = `${projectsQry.substring(0, projectsQry.length-1)} ON CONFLICT (project) DO UPDATE SET start_date=EXCLUDED.start_date, end_date=EXCLUDED.end_date`;
+pgPool.query(projectsQry, (err, res) => {
 	if (err){
 		throw new Error(`Erreur installation projets: ${err}`);
 	}
 	console.log(projectLength+" project(s) installed");
 });
-pgPool.query(projectPointsQry.substring(0, projectPointsQry.length-1), (err, res) => {
+
+projectPointsQry = `${projectPointsQry.substring(0, projectPointsQry.length-1)} ON CONFLICT (project, contrib) DO UPDATE SET points=EXCLUDED.points`;
+pgPool.query(projectPointsQry, (err, res) => {
 	if (err){
 		throw new Error(`Erreur installation points projet: ${err}`);
 	}
@@ -192,14 +182,11 @@ fi
 if [[ $nbPoints < 1 ]]; then
   echo "WARN: No declared points for projects contributions"
 fi
-${separator}
-
-echo "== Reuse existing history file"
 if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
-	prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
-	echo "Timestamp: $prev_timestamp"
+        osh_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
+        echo "OSH Timestamp: $osh_timestamp"
 else
-	echo "No timestamp found"
+        echo "No OSH timestamp found"
 fi
 ${separator}
 `;
@@ -214,6 +201,15 @@ Object.values(projects).forEach(project => {
 	let tagFilterParts = project.database.osmium_tag_filter.split("&");
 
 	script += `
+echo "== Begin process for project ${project.id}"
+prev_timestamp=$(${PSQL} -qtAc "SELECT to_char (lastupdate_date at time zone 'UTC', 'YYYY-MM-DD\\"T\\"HH24:MI:SS\\"Z\\"') from pdm_projects where project='${project.id}'")
+if [ -n "\$prev_timestamp" ]; then
+	echo "Starting from project last update: $prev_timestamp"
+else
+	echo "No project last update timestamp found"
+fi
+${separator}
+
 cur_timestamp=$(date -Idate --utc)
 cnt_timestamp=$(date -Idate --utc -d ${project.start_date})
 prj_timestamp=$(date -Idate --utc -d ${project.start_date})
@@ -224,7 +220,7 @@ if [[ -z \$cnt_timestamp || \$prj_timestamp>=\$cnt_timestamp ]]; then
 	cnt_timestamp=$prj_timestamp
 fi
 
-echo "== Begin process for project ${project.id}"
+
 if [ -f "${oshFiltered}" ]; then
 	echo "Remove existing filtered file"
 	rm -f "${oshFiltered}"
@@ -347,6 +343,12 @@ rm -f "${CSV_NOTES(project.id)}" "${CSV_NOTES_CONTRIBS(project.id)}" "${CSV_NOTE
 	${separator}`;
 
 	}
+
+script += `
+${PSQL} -c "UPDATE pdm_projects SET lastupdate_date='\${osh_timestamp}' WHERE project='${project.id}'"
+echo "   => Project update sucessful"
+${separator}
+`;
 });
 
 script += `

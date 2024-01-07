@@ -7,15 +7,17 @@ CREATE TABLE pdm_user_names(
 
 -- Projects
 CREATE TABLE pdm_projects(
-	project VARCHAR NOT NULL,
+	project VARCHAR PRIMARY KEY,
 	start_date TIMESTAMP NOT NULL,
-	end_date TIMESTAMP NULL
+	end_date TIMESTAMP NULL,
+	lastupdate_date TIMESTAMP NULL
 );
 
 CREATE TABLE pdm_projects_points (
-	project VARCHAR NOT NULL,
-	contrib VARCHAR NOT NULL,
-	points integer not null
+	project VARCHAR,
+	contrib VARCHAR,
+	points integer not null,
+	PRIMARY KEY (project, contrib)
 );
 
 -- User contributions through all projects

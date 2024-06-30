@@ -8,6 +8,8 @@
 	"NOMINATIM_URL": "https://nominatim.openstreetmap.org",
 	"MAPILLARY_URL": "https://www.mapillary.com",
 	"MAPILLARY_API_KEY": "yourtoken",
+	"MATOMO_HOST": "https://stats.domaine.fr/",
+	"MATOMO_SITE": "6",
 	"REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
 	"JOSM_REMOTE_URL": "http://localhost:8111",
 	"OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf",

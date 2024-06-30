@@ -31,8 +31,21 @@ script(src="/lib/osm-request/osmrequest.js")
 
 include ../components/user_button
 
-//- Auth handler (runs on client)
+//- Auth and Matomo handlers (runs on client)
 if CONFIG
+	if CONFIG.MATOMO_HOST
+		script.
+			var _paq = window._paq = window._paq || [];
+			_paq.push(['trackPageView']);
+			_paq.push(['enableLinkTracking']);
+			(function() {
+				var u="#{CONFIG.MATOMO_HOST}";
+				_paq.push(['setTrackerUrl', u+'matomo.php']);
+				_paq.push(['setSiteId', '#{CONFIG.MATOMO_SITE}']);
+				var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+				g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+			})();
+
 	script.
 		Chart.defaults.global.defaultFontSize = 15;
 

@@ -54,6 +54,8 @@ The general configuration of the tool is to be filled in `config.json`. There is
 - `NOMINATIM_URL`: instance of Nominatim to use (example `https://nominatim.openstreetmap.org`)
 - `MAPILLARY_URL`: Mapillary instance to use (example `https://www.mapillary.com`)
 - `MAPILLARY_API_KEY`: Mapillary API key ([could be created here](https://www.mapillary.com/dashboard/developers))
+- `MATOMO_HOST`: URL to the Matomo host you want to report analytics to, with trailing /. Remove to disable. (example `https://stats.home.com/`). 
+- `MATOMO_SITE`: ID of the Matomo website you want to report analytics (example `6`)
 - `REPOSITORY_URL`: URL of the software repository (example `https://github.com/vdct/ProjetDuMois`)
 - `MAPBOX_STYLE` : URL to [Mapbox GL compatible style](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (example `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 - `PDM_TILES_URL`: URL to access the _pg_tileserv_ service, which provides the layers in your database

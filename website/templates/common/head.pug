@@ -49,24 +49,38 @@ if CONFIG
 	script.
 		Chart.defaults.global.defaultFontSize = 15;
 
-		const osmApi = new OsmRequest({
-			endpoint: "#{CONFIG.OSM_URL}",
-			oauthConsumerKey: "#{CONFIG.OSM_API_KEY}",
-			oauthSecret: "#{CONFIG.OSM_API_SECRET}"
-		});
+		const conf = {
+		  scope: "read_prefs write_api write_notes openid",
+		  client_id: "#{CONFIG.OSM_CLIENT_ID}",
+		  redirect_uri: window.location.origin,
+		  url: "#{CONFIG.OSM_URL}",
+		  apiUrl: "#{CONFIG.OSM_API_URL}",
+		  auto: true,
+		  singlepage: true
+		};
+
+		const osmApi = new OsmRequest(conf);
 
 		const authOpts = {
-			url: "#{CONFIG.OSM_URL}",
-			oauth_consumer_key: "#{CONFIG.OSM_API_KEY}",
-			oauth_secret: "#{CONFIG.OSM_API_SECRET}",
-			landing: window.location.href.replace(window.location.search, ""),
-			singlepage: true
+		  url: conf.url,
+		  apiUrl: conf.apiUrl,
+		  client_id: conf.client_id,
+		  singlepage: conf.singlepage,
+		  redirect_uri: conf.redirect_uri,
+		  scope: conf.scope,
 		};
-		const auth = osmAuth(authOpts);
+
+		const auth = osmAuth.osmAuth(authOpts);
 		let authWait;
 
 		const params = new URLSearchParams((window.location.search || "?").substring(1));
 		const token = params.get("oauth_token") || localStorage.getItem("oauth_token") || null;
+
+		if (window.location.search.slice(1).split('&').some(p => p.startsWith('code='))) {
+			auth.authenticate(function() {
+				console.log("Auth success");
+			});
+		}
 
 		function checkAuth() {
 			if(auth.authenticated()) {
@@ -104,7 +118,7 @@ if CONFIG
 		}
 
 		function login() {
-			authOpts.landing = window.location.href + window.location.hash;
+			authOpts.redirect_uri = window.location.href;
 			auth.options(authOpts);
 
 			if(!auth.authenticated()) {

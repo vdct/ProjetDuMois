@@ -48,7 +48,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
 - `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 - `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
-- `API_OSM_URL` : instance API OpenStreetMap à utiliser (exemple `https://api.openstreetmap.org`)
+- `OSM_API_URL` : instance API OpenStreetMap à utiliser (exemple `https://api.openstreetmap.org`)
 - `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
 - `OSMOSE_URL` : instance Osmose à utiliser (exemple `https://osmose.openstreetmap.fr`)
 - `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)

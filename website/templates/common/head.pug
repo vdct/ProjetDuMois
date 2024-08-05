@@ -50,11 +50,11 @@ if CONFIG
 		Chart.defaults.global.defaultFontSize = 15;
 
 		const conf = {
-		  scope: "read_prefs write_api openid",
+		  scope: "read_prefs write_api write_notes openid",
 		  client_id: "#{CONFIG.OSM_CLIENT_ID}",
-		  redirect_uri: window.location.origin + window.location.pathname,
+		  redirect_uri: window.location.origin,
 		  url: "#{CONFIG.OSM_URL}",
-		  apiUrl: "#{CONFIG.API_OSM_URL}",
+		  apiUrl: "#{CONFIG.OSM_API_URL}",
 		  auto: true,
 		  singlepage: true
 		};
@@ -62,15 +62,15 @@ if CONFIG
 		const osmApi = new OsmRequest(conf);
 
 		const authOpts = {
-		  url: "#{CONFIG.OSM_URL}",
-		  apiUrl: "#{CONFIG.API_OSM_URL}",
-		  client_id: "#{CONFIG.OSM_CLIENT_ID}",
-		  singlepage: true,
-		  redirect_uri: window.location.origin + window.location.pathname,
-		  scope: "read_prefs write_api openid"
+		  url: conf.url,
+		  apiUrl: conf.apiUrl,
+		  client_id: conf.client_id,
+		  singlepage: conf.singlepage,
+		  redirect_uri: conf.redirect_uri,
+		  scope: conf.scope,
 		};
 
-		const auth = osmAuth(authOpts);
+		const auth = osmAuth.osmAuth(authOpts);
 		let authWait;
 
 		const params = new URLSearchParams((window.location.search || "?").substring(1));
@@ -118,7 +118,7 @@ if CONFIG
 		}
 
 		function login() {
-			authOpts.landing = window.location.href + window.location.hash;
+			authOpts.redirect_uri = window.location.href;
 			auth.options(authOpts);
 
 			if(!auth.authenticated()) {

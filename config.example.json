@@ -1,6 +1,6 @@
 {
   "OSM_URL": "https://www.openstreetmap.org",
-  "API_OSM_URL": "https://api.openstreetmap.org",
+  "OSM_API_URL": "https://api.openstreetmap.org",
   "OSM_USER": "user",
   "OSM_PASS": "pass",
   "OSM_CLIENT_ID": "id",

@@ -696,7 +696,7 @@ const authorized = {
     "mapillary.js": "dist/mapillary.js",
     "mapillary.css": "dist/mapillary.css",
   },
-  "osm-auth": { "osmauth.js": "osmauth.min.js" },
+  "osm-auth": { "osmauth.js": "dist/osm-auth.iife.js" },
   "osm-request": { "osmrequest.js": "dist/OsmRequest.js" },
   pic4carto: { "pic4carto.js": "dist/P4C.min.js" },
   "swiped-events": { "swiped-events.js": "dist/swiped-events.min.js" },

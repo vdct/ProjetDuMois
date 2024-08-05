@@ -1,24 +1,32 @@
 {
-	"OSM_URL": "https://www.openstreetmap.org",
-	"OSM_USER": "user",
-	"OSM_PASS": "pass",
-	"OSM_API_KEY": "key",
-	"OSM_API_SECRET": "secret",
-	"OSMOSE_URL": "https://osmose.openstreetmap.fr",
-	"NOMINATIM_URL": "https://nominatim.openstreetmap.org",
-	"MAPILLARY_URL": "https://www.mapillary.com",
-	"MAPILLARY_API_KEY": "yourtoken",
-	"MATOMO_HOST": "https://stats.domaine.fr/",
-	"MATOMO_SITE": "6",
-	"REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
-	"JOSM_REMOTE_URL": "http://localhost:8111",
-	"OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf",
-	"MAPBOX_STYLE": "https://tile-vect.openstreetmap.fr/styles/liberty/style.json",
-	"PDM_TILES_URL": "http://localhost:7800",
-	"DB_USE_IMPOSM_UPDATE": true,
-	"WORK_DIR": "/tmp/pdm",
-	"GEOJSON_BOUNDS": {
-		"type": "Polygon",
-		"coordinates": [ [ [ 55.02777, -21.55017 ], [ 56.08795, -21.55017 ], [ 56.08795, -20.73556 ], [ 55.02777, -20.73556 ], [ 55.02777, -21.55017 ] ] ]
-	}
+  "OSM_URL": "https://www.openstreetmap.org",
+  "API_OSM_URL": "https://api.openstreetmap.org",
+  "OSM_USER": "user",
+  "OSM_PASS": "pass",
+  "OSM_CLIENT_ID": "id",
+  "OSMOSE_URL": "https://osmose.openstreetmap.fr",
+  "NOMINATIM_URL": "https://nominatim.openstreetmap.org",
+  "MAPILLARY_URL": "https://www.mapillary.com",
+  "MAPILLARY_API_KEY": "yourtoken",
+  "MATOMO_HOST": "https://stats.domaine.fr/",
+  "MATOMO_SITE": "6",
+  "REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
+  "JOSM_REMOTE_URL": "http://localhost:8111",
+  "OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf",
+  "MAPBOX_STYLE": "https://tile-vect.openstreetmap.fr/styles/liberty/style.json",
+  "PDM_TILES_URL": "http://localhost:7800",
+  "DB_USE_IMPOSM_UPDATE": true,
+  "WORK_DIR": "/tmp/pdm",
+  "GEOJSON_BOUNDS": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [55.02777, -21.55017],
+        [56.08795, -21.55017],
+        [56.08795, -20.73556],
+        [55.02777, -20.73556],
+        [55.02777, -21.55017]
+      ]
+    ]
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "projetdumoisfr",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "ProjetDuMois.fr est un tableau de bord pour encourager les contributions aux Projets du mois d'OpenStreetMap en France.",
   "main": "website/index.js",
   "scripts": {
@@ -38,8 +38,8 @@
     "mapillary-js": "^4.0.0",
     "marked": "^1.1.0",
     "node-fetch": "^2.6.7",
-    "osm-auth": "^1.0.2",
-    "osm-request": "^1.2.10",
+    "osm-auth": "^2.5.0",
+    "osm-request": "^2.0.0",
     "pg": "^8.5.1",
     "pic4carto": "^2.1.12",
     "pug": "^3.0.1",

@@ -57,7 +57,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `MATOMO_HOST`: URL vers l'hôte Matomo auquel nous souhaitons envoyer les statistiques terminant par un /. Supprimez pour désactiver. (exemple `https://stats.maison.fr/`)
 - `MATOMO_SITE`: Identifiant du site web Matomo auquel se rapportent les statistiques (exemple `6`)
 - `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
-- `MAPBOX_STYLE` : URL d'un [style compatible avec Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/style-spec/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
+- `VECT_STYLE` : URL d'un [style compatible avec Maplibre GL](https://maplibre.org/maplibre-gl-js/docs/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 - `PDM_TILES_URL` : URL d'accès au service _pg_tileserv_, qui met à disposition les couches dans votre base de données
 - `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
 - `MAINTENANCE_MODE`: option pour afficher une page spéciale sur le site indiquant qu'il est en cours de maintenance (valeur `true` pour activer)

@@ -417,7 +417,7 @@ script.
 						editorNoteDom.classList.add("d-none");
 						editorWaitDom.classList.add("d-none");
 						editorDoneDom.classList.remove("d-none");
-						new mapboxgl.Marker({ color: "#2E7D32" }).setLngLat(currentEditorData.coordinates || currentEditorData.originalCoordinates).addTo(map);
+						new maplibregl.Marker({ color: "#2E7D32" }).setLngLat(currentEditorData.coordinates || currentEditorData.originalCoordinates).addTo(map);
 
 						if(currentEditorData.onInternalEdit) {
 							currentEditorData.onInternalEdit();

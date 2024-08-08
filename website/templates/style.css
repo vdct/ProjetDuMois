@@ -387,7 +387,7 @@ a.navbar-brand:hover {
 	}
 }
 
-.mapboxgl-ctrl-group button,
+.maplibregl-ctrl-group button,
 .map-ctrl-btn {
 	width: 32px;
 	height: 32px;

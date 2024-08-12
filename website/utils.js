@@ -77,7 +77,7 @@ exports.queryParams = (obj) => {
 
 // Map style JSON
 exports.getMapStyle = (p) => {
-	return fetch(CONFIG.MAPBOX_STYLE)
+	return fetch(CONFIG.VECT_STYLE)
 	.then(res => res.ok ? res.json() : getFallbackStyle())
 	.then(style => {
 		const legend = [];
@@ -327,7 +327,7 @@ exports.getMapStyle = (p) => {
 
 // Map style JSON for statistics
 exports.getMapStatsStyle = (p, maxPerLevel) => {
-	return fetch(CONFIG.MAPBOX_STYLE)
+	return fetch(CONFIG.VECT_STYLE)
 	.then(res => res.ok ? res.json() : getFallbackStyle())
 	.then(style => {
 		let sources = {};

@@ -297,7 +297,7 @@ script.
 
 			if(res.mapStyle) {
 				const isMobile = window.innerWidth < 576;
-				const mapStats = new mapboxgl.Map({
+				const mapStats = new maplibregl.Map({
 					container: 'map-stats',
 					pitchWithRotate: false,
 					dragRotate: false,
@@ -309,15 +309,15 @@ script.
 				});
 
 				const basePopupSize = isMobile ? 250 : 400;
-				const popupHover = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, anchor: "left" });
-				const popupClick = new mapboxgl.Popup({ closeOnClick: false, className: 'map-stats-popup', maxWidth: basePopupSize+'px' });
-				const fsctrl = new mapboxgl.FullscreenControl();
+				const popupHover = new maplibregl.Popup({ closeButton: false, closeOnClick: false, anchor: "left" });
+				const popupClick = new maplibregl.Popup({ closeOnClick: false, className: 'map-stats-popup', maxWidth: basePopupSize+'px' });
+				const fsctrl = new maplibregl.FullscreenControl();
 
 				if(isMobile) {
 					const interactions = ["scrollZoom", "dragPan", "doubleClickZoom", "touchZoomRotate"];
 					interactions.forEach(it => mapStats[it].disable());
 
-					const fsctrl = new mapboxgl.FullscreenControl();
+					const fsctrl = new maplibregl.FullscreenControl();
 					window.addEventListener(fsctrl._fullscreenchange, () => {
 						if(fsctrl._isFullscreen()) {
 							interactions.forEach(it => mapStats[it].enable());

@@ -689,8 +689,8 @@ const authorized = {
     "chart.css": "dist/Chart.min.css",
   },
   "mapbox-gl": {
-    "mapbox-gl.js": "dist/mapbox-gl.js",
-    "mapbox-gl.css": "dist/mapbox-gl.css",
+    "mapbox-gl.js": "dist/maplibre-gl.js",
+    "mapbox-gl.css": "dist/maplibre-gl.css",
   },
   "mapillary-js": {
     "mapillary.js": "dist/mapillary.js",

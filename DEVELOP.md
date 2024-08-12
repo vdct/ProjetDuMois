@@ -43,12 +43,12 @@ The general configuration of the tool is to be filled in `config.json`. There is
 
 - `OSM_USER`: OpenStreetMap username for retrieving the modification history with metadata
 - `OSM_PASS`: password associated with the OSM user account
-- `OSM_API_KEY`: OSM API key
-- `OSM_API_SECRET`: secret linked to the OSM API key
+- `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap
 - `OSH_PBF_URL`: URL of the OSH.PBF file (history and metadata, example `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
 - `DB_USE_IMPOSM_UPDATE` : enable or disabled Imposm3 integration (to use an existing database which would be maintained by other means, by default `true`)
 - `WORK_DIR`: download and temporary storage folder (must have capacity to store the OSH PBF file, example `/tmp/pdm`)
 - `OSM_URL`: OpenStreetMap instance to use (example `https://www.openstreetmap.org`)
+- `OSM_API_URL` : API OpenStreetMap instance to use (example `https://www.api.openstreetmap.org`)
 - `JOSM_REMOTE_URL`: address of the JOSM server to reach (example `http://localhost:8111`)
 - `OSMOSE_URL`: Osmose instance to use (example `https://osmose.openstreetmap.fr`)
 - `NOMINATIM_URL`: instance of Nominatim to use (example `https://nominatim.openstreetmap.org`)

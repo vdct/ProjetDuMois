@@ -35,7 +35,7 @@ ProjetDuMois.fr is made possible by its _super team_ of volunteers:
 
 ## Licence
 
-Copyright 2020 projetdumois.fr team
+Copyright 2024 projetdumois.fr team
 
 Some pictures (badges) are extracted from the [MissingMaps](https://github.com/MissingMaps/users) repository under a [BSD-3 licence](https://github.com/MissingMaps/users/blob/master/LICENSE).
 
@@ -89,7 +89,7 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 
 ## Licence
 
-Copyright 2020 L'équipe de projetdumois.fr
+Copyright 2024 L'équipe de projetdumois.fr
 
 Certaines images (badges) sont extraites du dépôt [MissingMaps](https://github.com/MissingMaps/users) sous [licence BSD-3](https://github.com/MissingMaps/users/blob/master/LICENSE).
 

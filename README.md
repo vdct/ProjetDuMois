@@ -90,7 +90,7 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 
 [Retrouvez-nous sur Twitter](https://twitter.com/projetdumois) !
 
-## List des projets
+## Liste des projets
 - https://enedis.openstreetmap.fr
 - https://commerces.openstreetmap.fr
 

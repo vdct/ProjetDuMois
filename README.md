@@ -33,6 +33,10 @@ ProjetDuMois.fr is made possible by its _super team_ of volunteers:
 
 [Find us on Twitter](https://twitter.com/projetdumois) (we speak French and English)
 
+## List of projects
+- https://enedis.openstreetmap.fr
+- https://commerces.openstreetmap.fr
+
 ## Licence
 
 Copyright 2024 projetdumois.fr team
@@ -85,6 +89,10 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 ![Twitter logo](/website/images/twitter.png)
 
 [Retrouvez-nous sur Twitter](https://twitter.com/projetdumois) !
+
+## List des projets
+- https://enedis.openstreetmap.fr
+- https://commerces.openstreetmap.fr
 
 
 ## Licence

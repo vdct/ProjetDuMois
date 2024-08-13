@@ -33,7 +33,7 @@ ProjetDuMois.fr is made possible by its _super team_ of volunteers:
 
 [Find us on Twitter](https://twitter.com/projetdumois) (we speak French and English)
 
-## List of projects
+## List of instances
 - https://enedis.openstreetmap.fr
 - https://commerces.openstreetmap.fr
 
@@ -90,7 +90,7 @@ ProjetDuMois.fr est rendu possible grâce à sa _super équipe_ de bénévoles :
 
 [Retrouvez-nous sur Twitter](https://twitter.com/projetdumois) !
 
-## Liste des projets
+## Liste des instances
 - https://enedis.openstreetmap.fr
 - https://commerces.openstreetmap.fr
 

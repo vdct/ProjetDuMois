@@ -78,6 +78,6 @@
 		}
 	},
 	"opendata": [
-		{ "title": "Carte des infrastructures dont postes électriques", "via": "OpenInfraMap", "url": "https://openinframap.org/#15/45.9120/6.1275/Power" }
+		{ "title": "Carte des infrastructures dont postes électriques", "via": "OpenInfraMap", "url": "https://openinframap.org/#15/45.9120/6.1275" }
 	]
 }

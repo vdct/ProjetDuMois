@@ -1,9 +1,10 @@
-FROM node:14.18.0-bullseye-slim
+FROM node:18.17.0-bullseye-slim
 
 ENV DB_URL=postgres://localhost:5432/osm
 ENV PORT=3000
 ARG IMPOSM3_VERSION=0.11.0
 
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN groupadd --gid 10001 -r osm \
     && useradd --uid 10001 -d /home/osm -m -r -s /bin/false -g osm osm \
     && mkdir -p /data/files/pdm /opt/pdm /opt/imposm3 \

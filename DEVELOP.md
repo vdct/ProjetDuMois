@@ -2,9 +2,9 @@
 
 ## Dependencies
 
-- NodeJS >= 12.9
+- NodeJS >= 18
 - Bash tools : curl, awk, grep, sed, xsltproc, bc
-- PostgreSQL >= 10
+- PostgreSQL >= 13
 - Python 3 (and `requests` module)
 - [Osmium](https://osmcode.org/osmium-tool/) > 1.10
 - [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)

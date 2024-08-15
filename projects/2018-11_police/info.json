@@ -72,7 +72,7 @@
 		}
 	},
 	"opendata": [
-		{ "title": "Brigades de gendarmerie et commissariats de police", "via": "MagOSM", "url": "http://open.isogeo.com/s/6da366a3991f4d42aa9d2a8f58a73af1/pHUOzxi2EayRSGnbHCbdZOXzQGN80/r/ff7980650742460aaba2075d6cc69e58" },
+		{ "title": "Brigades de gendarmerie et commissariats de police", "via": "MagOSM", "url": "https://open.isogeo.com/s/6da366a3991f4d42aa9d2a8f58a73af1/pHUOzxi2EayRSGnbHCbdZOXzQGN80/r/ff7980650742460aaba2075d6cc69e58" },
 		{ "title": "Centres d'information et de recrutement de gendarmerie", "via": "uMap", "url": "https://umap.openstreetmap.fr/fr/map/centres-dinformation-et-de-recrutement-de-gendarme_269037#6/47.264/5.911" }
 	]
 }

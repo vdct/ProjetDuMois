@@ -2,10 +2,10 @@
 
 ## Dépendances
 
-- NodeJS >= 12.9
+- NodeJS >= 18
 - Outils Bash : curl, awk, grep, sed, xsltproc, bc
-- PostgreSQL >= 10
-- Python 3
+- PostgreSQL >= 13
+- Python 3 (et le module `requests`)
 - [Osmium](https://osmcode.org/osmium-tool/) > 1.10
 - [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 - [Imposm](https://imposm.org/) >= 3
@@ -577,3 +577,5 @@ export DB_URL="postgres://user:password@host:5432/database" # Database URL
 export PORT=3000 # Nodejs port (defaults to 3000)
 npm run start
 ```
+
+Le site est accessible à cette url [localhost:3000](http://localhost:3000).

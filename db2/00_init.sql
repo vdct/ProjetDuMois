@@ -20,6 +20,15 @@ CREATE TABLE pdm_projects_points (
 	PRIMARY KEY (project, contrib)
 );
 
+-- Processed diff files per project
+CREATE TABLE pdm_read_diff(
+	project VARCHAR PRIMARY KEY REFERENCES pdm_projects(project),
+	min_sequence_nb BIGINT,
+	min_ts TIMESTAMPTZ,
+	max_sequence_nb BIGINT,
+	max_ts TIMESTAMPTZ
+);
+
 -- User contributions through all projects
 CREATE TABLE pdm_changes(
 	project VARCHAR NOT NULL,
@@ -61,7 +70,7 @@ DROP TABLE IF EXISTS pdm_user_badges;
 -- Features overall counts
 CREATE TABLE pdm_feature_counts(
 	project VARCHAR NOT NULL,
-	ts TIMESTAMP NOT NULL,
+	ts DATE NOT NULL,
 	amount INT NOT NULL,
 
 	CONSTRAINT pdm_feature_counts_pk PRIMARY KEY(project,ts)
@@ -74,38 +83,11 @@ CREATE TABLE pdm_note_counts(
 	project VARCHAR NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	open INT NOT NULL,
-	closed INT NOT NULL
+	closed INT NOT NULL,
+	PRIMARY KEY (project, ts)
 );
 
 CREATE INDEX ON pdm_note_counts(project);
-
--- Statistics per project and administrative boundary
--- boundary can be null until we'll able to get geometry of deleted features
-CREATE TABLE pdm_features_boundary (
-	project VARCHAR NOT NULL,
-	osmid VARCHAR NOT NULL,
-	boundary BIGINT,
-	start_ts TIMESTAMP NOT NULL,
-	end_ts TIMESTAMP,
-
-	UNIQUE(project,osmid,boundary)
-);
-
-CREATE INDEX ON pdm_features_boundary USING btree(project);
-CREATE INDEX ON pdm_features_boundary USING btree(osmid);
-CREATE INDEX ON pdm_features_boundary USING btree(boundary);
-
-CREATE TABLE pdm_feature_counts_per_boundary(
-	project VARCHAR NOT NULL,
-	boundary BIGINT NOT NULL,
-	ts TIMESTAMP NOT NULL,
-	amount INT NOT NULL,
-
-	CONSTRAINT pdm_feature_counts_per_boundary_pk PRIMARY KEY(project, boundary, ts)
-);
-
-CREATE INDEX ON pdm_feature_counts_per_boundary using btree (project);
-CREATE INDEX ON pdm_feature_counts_per_boundary using btree (boundary);
 
 -- Extensions for Imposm
 CREATE EXTENSION IF NOT EXISTS postgis;

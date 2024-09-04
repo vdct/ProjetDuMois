@@ -1,0 +1,4 @@
+pyyaml
+psycopg[binary]
+requests
+lxml

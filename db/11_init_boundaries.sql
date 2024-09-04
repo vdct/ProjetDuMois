@@ -1,4 +1,13 @@
+-- Boundary view
+DROP MATERIALIZED VIEW IF EXISTS pdm_boundary;
+CREATE MATERIALIZED VIEW pdm_boundary AS
+SELECT *, ST_Centroid(geom)::GEOMETRY(Point, 3857) AS centre
+FROM pdm_boundary_osm;
+
+CREATE INDEX pdm_boundary_osm_id_idx ON pdm_boundary(osm_id);
+
 -- Boundary subdivide
+DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_subdivide;
 CREATE MATERIALIZED VIEW pdm_boundary_subdivide AS
 SELECT id, osm_id, name, admin_level, tags, ST_Subdivide(geom, 450) AS geom
 FROM pdm_boundary;
@@ -7,6 +16,7 @@ CREATE INDEX ON pdm_boundary_subdivide using gist(geom);
 CREATE INDEX ON pdm_boundary_subdivide using btree(osm_id);
 
 -- Boundary stats for tiles
+DROP MATERIALIZED VIEW IF EXISTS pdm_boundary_tiles;
 CREATE MATERIALIZED VIEW pdm_boundary_tiles AS
 WITH minc AS (
 	SELECT DISTINCT ON (project, boundary) project, boundary, amount

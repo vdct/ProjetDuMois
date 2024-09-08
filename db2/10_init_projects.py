@@ -1,7 +1,7 @@
 from utils import (
 	CONFIG, PROJECTS, getCodePath, getWorkPath,
 	dbCursor, runCmd, download, createMergedView,
-	deployView
+	deployView, exportBounds,
 )
 import yaml
 import json
@@ -86,11 +86,6 @@ if CONFIG.get("DB_USE_IMPOSM_UPDATE", True):
 	with open(IMPOSM_YML, "w", encoding="utf-8") as f:
 		yaml.dump(yamlData, f, default_flow_style=False, allow_unicode=True)
 	
-	# Write GeoJSON bounds for Imposm
-	IMPOSM_BOUNDS = getWorkPath("bounds.geojson")
-	with open(IMPOSM_BOUNDS, "w", encoding="utf-8") as f:
-		json.dump({ "type": "Feature", "geometry": CONFIG.get("GEOJSON_BOUNDS", {}) }, f)
-	
 	# Write imposm config file
 	IMPOSM_CONFIG = getWorkPath("imposm_config.json")
 	with open(IMPOSM_CONFIG, "w", encoding="utf-8") as f:
@@ -99,7 +94,7 @@ if CONFIG.get("DB_USE_IMPOSM_UPDATE", True):
 			"connection": f"{os.getenv('DB_URL')}?prefix=pdm",
 			"mapping": IMPOSM_YML,
 			"diffdir": getWorkPath("imposm_diff"),
-			"limitto": IMPOSM_BOUNDS,
+			"limitto": exportBounds(),
 			"replication_url": CONFIG.get("OSM_REPLICATION_URL"),
 			"replication_interval": "1m",
 		}, f, indent=2)

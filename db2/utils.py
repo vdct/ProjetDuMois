@@ -40,6 +40,13 @@ for project_id in [ Path(f.path).stem for f in os.scandir(getCodePath("projects"
 			print(f"Malformed info.json file for project {project_id}: {e}")
 
 
+def exportBounds():
+	bounds = getWorkPath("bounds.geojson")
+	with open(bounds, "w", encoding="utf-8") as f:
+		json.dump({ "type": "Feature", "geometry": CONFIG.get("GEOJSON_BOUNDS", {}) }, f)
+	return bounds
+
+
 ######################################
 # Database
 #

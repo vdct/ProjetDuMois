@@ -3,10 +3,10 @@
 
 from utils import (
 	CONFIG, PROJECTS, getWorkPath, getCodePath,
-	download, runCmd, dbCursor, runCmdTxt
+	download, runCmd, dbCursor, runCmdTxt, exportBounds
 )
 import os
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 
 # Get a cookie to allow full-history download
@@ -41,25 +41,95 @@ oshDatesRaw = runCmdTxt([
 ])
 oshDatesRaw = [ t.split(": ")[1] for t in oshDatesRaw.split("\n") if "First:" in t or "Last:" in t ]
 oshDates = (
-	datetime.fromisoformat(oshDatesRaw[0]).date().isoformat(),
-	datetime.fromisoformat(oshDatesRaw[1]).date().isoformat(),
+	datetime.fromisoformat(oshDatesRaw[0]).date(),
+	datetime.fromisoformat(oshDatesRaw[1]).date(),
 )
 print(f"    - OSH time span: {oshDates[0]} to {oshDates[1]}")
 
 print("  - Extracting dates from database")
+dbCounts = []
 with dbCursor() as cur:
+	# List stats already in DB
 	dbCounts = cur.execute("""
 		SELECT p.project, p.start_date::date AS start_date, array_agg(c.ts) AS counted_dates
 		FROM pdm_projects p
 		LEFT JOIN pdm_feature_counts c ON p.project = c.project
 		GROUP BY p.project
 	""").fetchall()
-	pCounts = {}
-	minDate = None
-	for dbc in dbCounts:
-		pCounts[dbc["project"]] = (dbc["start_date"], dbc["counted_dates"])
-		if minDate is None or dbc["start_date"] < minDate:
-			minDate = dbc["start_date"]
 
-	print(minDate, pCounts)
-	# TODO : for each date, give list of project to count
+pCounts = {}
+minDate = None
+for dbc in dbCounts:
+	pCounts[dbc["project"]] = (dbc["start_date"], dbc["counted_dates"])
+	if minDate is None or dbc["start_date"] < minDate:
+		minDate = dbc["start_date"]
+
+# List all available days in range projectsMinDate -> oshMaxDate
+print("  - Counting features in OSH file")
+OSM_COUNT_FILE = getWorkPath("counting.osm.pbf")
+updatableDays = [(minDate + timedelta(days=i)) for i in range((oshDates[1] - minDate).days + 1)]
+for ud in updatableDays:
+	concernedProjects = []
+	for pid, [pmind, pdates] in pCounts.items():
+		if ud >= pmind and ud not in pdates:
+			concernedProjects.append(pid)
+	
+	# Generate filtered OSH by time
+	if len(concernedProjects) > 0:
+		print(f"    - {ud}: updating projects {', '.join(concernedProjects)}")
+		print("      - Time extract from OSH")
+		runCmd([
+			"osmium", "time-filter",
+			"-O", "-o", OSM_COUNT_FILE,
+			OSH_PBF_FILE,
+			f"{ud.isoformat()}T23:59:59Z"
+		])
+
+		# Find all tags to count
+		print("      - Counting tags")
+		tagsToCount = []
+		for pid, pinfo in PROJECTS.items():
+			if pid in concernedProjects:
+				pfilter = pinfo["database"]["imposm"]
+				filtTag = next(iter(pfilter["mapping"].items()))
+				tag = filtTag[0]
+				if len(filtTag[1]) == 1 and filtTag[1][0] != "__any__":
+					tag += "=" + ",".join(filtTag[1])
+				tagsToCount.append(tag)
+		
+		# Count through Osmium -> generate list of key=val count
+		tagsCountRaw = runCmdTxt([
+			"osmium", "tags-count",
+			OSM_COUNT_FILE
+		] + tagsToCount)
+		tagsCount = {}
+		for tc in tagsCountRaw.split("\n"):
+			if len(tc.strip()) > 0:
+				vals = tc.split("\t")
+				key = vals[1][1:-1]
+				value = vals[2][1:-1] if len(vals) == 3 else "*"
+				tagsCount[f"{key}={value}"] = vals[0]
+		
+		# Update DB with found counts
+		print("      - Saving in database")
+		with dbCursor() as cur:
+			for pid, pinfo in PROJECTS.items():
+				if pid in concernedProjects:
+					count = 0
+					pfilter = pinfo["database"]["imposm"]
+					filtTag = next(iter(pfilter["mapping"].items()))
+					key = filtTag[0]
+					if len(filtTag[1]) == 1 and filtTag[1][0] != "__any__":
+						for v in filtTag[1]:
+							count += int(tagsCount.get(f"{key}={v}", "0"))
+					else:
+						count = int(tagsCount.get(f"{key}=*", "0"))
+					
+					cur.execute(
+						"INSERT INTO pdm_feature_counts(project, ts, amount) VALUES(%s, %s, %s)",
+						[pid, ud, count]
+					)
+
+		
+# Cleanup
+os.unlink(OSM_COUNT_FILE)

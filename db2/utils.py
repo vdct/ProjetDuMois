@@ -117,7 +117,15 @@ def runCmd(cmd):
 		raise Exception(f"Command {cmd[0]} not found") from e
 
 
-def download(url, output, label):
+def runCmdTxt(cmd):
+	"""Launch a system command and get its output as text result"""
+	result = subprocess.run(cmd, capture_output=True, text=True)
+	if result.stderr:
+		raise Exception(f"Command {cmd[0]} raised an issue: {result.stderr}")
+	return result.stdout
+
+
+def download(url, output, label, headers={}):
 	"""Downloads a remote file only if it has changed"""
 	if os.path.exists(output):
 		print(f"Checking if {label} needs to be downloaded")
@@ -125,35 +133,38 @@ def download(url, output, label):
 		last_modified_time = os.path.getmtime(output)
 		import email.utils as eut
 		last_modified_str = eut.formatdate(last_modified_time, usegmt=True)
-		response = requests.head(url)
+		response = requests.head(url, headers=headers)
 		last_modified_remote = response.headers.get('Last-Modified')
 		etag_remote = response.headers.get('ETag')
 
 		# Conditional download
-		headers = {}
+		dlHeaders = {} | headers
 		if last_modified_remote:
-			headers['If-Modified-Since'] = last_modified_str
+			dlHeaders['If-Modified-Since'] = last_modified_str
 		if etag_remote:
-			headers['If-None-Match'] = etag_remote
+			dlHeaders['If-None-Match'] = etag_remote
 		print(f"Downloading {label}")
-		response = requests.get(url, headers=headers)
-
-		if response.status_code == 304:
-			print(f"Skipped download of {label} as it hasn't changed")
-		elif response.status_code == 200:
-			with open(output, 'wb') as f:
-				f.write(response.content)
-			print(f"Successfully downloaded {label}")
-		else:
-			raise Exception(f"Error {response.status_code} when downloading {label}: {response.text}")
+		with requests.get(url, stream=True, headers=dlHeaders) as response:
+			if response.status_code == 304:
+				print(f"Skipped download of {label} as it hasn't changed")
+			elif response.status_code == 200:
+				with open(output, 'wb') as f:
+					for chunk in response.iter_content(chunk_size=8192):
+						if chunk:
+							f.write(chunk)
+				print(f"Successfully downloaded {label}")
+			else:
+				raise Exception(f"Error {response.status_code} when downloading {label}: {response.text}")
 	else:
 		print(f"Downloading {label}")
-		response = requests.get(url)
-		if response.status_code >= 400:
-			raise Exception(f"Error {response.status_code} when downloading {label}: {response.text}")
-		with open(output, 'wb') as f:
-			f.write(response.content)
-		print(f"Successfully downloaded {label}")
+		with requests.get(url, stream=True, headers=headers) as response:
+			if response.status_code >= 400:
+				raise Exception(f"Error {response.status_code} when downloading {label}: {response.text}")
+			with open(output, 'wb') as f:
+				for chunk in response.iter_content(chunk_size=8192):
+					if chunk:
+						f.write(chunk)
+			print(f"Successfully downloaded {label}")
 
 
 ######################################

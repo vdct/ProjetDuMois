@@ -303,7 +303,7 @@ app.get("/projects/:id/stats", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, open, closed
+			SELECT to_char(ts, 'YYYY-MM-DD') as ts, open, closed
 			FROM pdm_note_counts
 			WHERE project = $1
 			ORDER BY ts ASC
@@ -316,14 +316,18 @@ app.get("/projects/:id/stats", (req, res) => {
               ? [
                   {
                     label: "Ouvertes",
-                    data: results.rows.map((r) => ({ t: r.ts, y: r.open })),
+                    data: results.rows
+                      .filter(r => daysToKeep(r.ts))
+                      .map((r) => ({ t: r.ts, y: r.open })),
                     fill: false,
                     borderColor: "#c62828",
                     lineTension: 0,
                   },
                   {
                     label: "Résolues",
-                    data: results.rows.map((r) => ({ t: r.ts, y: r.closed })),
+                    data: results.rows
+                      .filter(r => daysToKeep(r.ts))
+                      .map((r) => ({ t: r.ts, y: r.closed })),
                     fill: false,
                     borderColor: "#388E3C",
                     lineTension: 0,

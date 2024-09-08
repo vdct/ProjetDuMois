@@ -81,7 +81,7 @@ CREATE INDEX ON pdm_feature_counts(project);
 -- Note counts
 CREATE TABLE pdm_note_counts(
 	project VARCHAR NOT NULL,
-	ts TIMESTAMP NOT NULL,
+	ts DATE NOT NULL,
 	open INT NOT NULL,
 	closed INT NOT NULL,
 	PRIMARY KEY (project, ts)

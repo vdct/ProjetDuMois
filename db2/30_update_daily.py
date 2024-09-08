@@ -2,7 +2,7 @@ from utils import CONFIG, PROJECTS, dbCursor
 from datetime import date, datetime, timedelta
 from urllib.parse import quote
 import requests
-from psycopg.sql import SQL, Identifier
+from psycopg.sql import SQL, Identifier, Literal
 from psycopg.errors import UndefinedTable
 
 
@@ -30,7 +30,7 @@ with dbCursor() as cur:
 
 			# Check which dates are in DB
 			dbDays = cur.execute("SELECT ts FROM pdm_note_counts WHERE project = %s ORDER BY ts", [pid]).fetchall()
-			dbDays = [ t["ts"].date().isoformat() for t in dbDays ]
+			dbDays = [ t["ts"].isoformat() for t in dbDays ]
 			pstart = date.fromisoformat(pinfo["start_date"])
 			yesterday = date.today() - timedelta(days=1)
 			if pstart <= yesterday:
@@ -176,15 +176,15 @@ with dbCursor() as cur:
 						AND ST_Within(f.geom, b.geom);
 
 					INSERT INTO pdm_feature_counts_per_boundary(project, boundary, ts, amount)
-					SELECT %(pid)s, boundary, current_date - 1, count(*) as amount
+					SELECT {pid}, boundary, current_date - 1, count(*) as amount
 					FROM pdm_features_boundary
-					WHERE project=%(pid)s
+					WHERE project={pid}
 						AND (start_ts IS NULL OR start_ts <= current_date)
 						AND (end_ts IS NULL OR end_ts >= current_date)
 					GROUP BY project, boundary
 					ON CONFLICT (project,boundary,ts) DO UPDATE SET amount=EXCLUDED.amount
 				""").format(
-					pid=pid,
+					pid=Literal(pid),
 					table=Identifier(f"pdm_project_{pinfo["short_id"]}"),
 				))
 

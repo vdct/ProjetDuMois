@@ -50,13 +50,13 @@ exports.foldProjects = (projects) => {
 	const prjs = { past: [], current: [], next: [] };
 	Object.values(projects).forEach(project => {
 		// Check dates
-		if(new Date(project.start_date).getTime() <= Date.now() && Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime()) {
+		if(new Date(project.start_date).getTime() <= Date.now() && (project.end_date == null || Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime())) {
 			prjs.current.push(project);
 		}
 		else if(Date.now() <= new Date(project.start_date).getTime()) {
 			prjs.next.push(project);
 		}
-		else if(new Date(project.end_date+"T23:59:59Z").getTime() < Date.now()) {
+		else if(project.end_date != null && new Date(project.end_date+"T23:59:59Z").getTime() < Date.now()) {
 			prjs.past.push({
 				id: project.id,
 				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
@@ -406,7 +406,7 @@ exports.getBadgesDetails = (projects, badgesRows) => {
 			};
 		}
 
-		if(row.project === "meta" || row.acquired || new Date(projects[row.project].start_date).getTime() <= Date.now() && Date.now() <= new Date(projects[row.project].end_date).getTime()) {
+		if(row.project === "meta" || row.acquired || new Date(projects[row.project].start_date).getTime() <= Date.now() && (projects[row.project].end_date == null || Date.now() <= new Date(projects[row.project].end_date).getTime())) {
 			badges[row.project].badges.push(row);
 		}
 	});

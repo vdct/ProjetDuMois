@@ -15,10 +15,10 @@ case $command in
     psql -d $DB_URL -f ./db/00_init.sql
     ;;
 "init")
-    npm run pbf:update $otherArgs
-    ./db/11_pbf_update_tmp.sh
     npm run features:update $otherArgs
-    ./db/21_features_update_tmp.sh init
+    ./db/11_features_update_tmp.sh init
+    npm run changes:update $otherArgs
+    ./db/21_changes_update_tmp.sh init
     npm run projects:update $otherArgs
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
@@ -26,23 +26,23 @@ case $command in
     npm run projects:update $otherArgs
     npm run start
     ;;
-"update_pbf")
-    npm run pbf:update $otherArgs
-    ./db/11_pbf_update_tmp.sh
-    ;;
 "update_features")
     npm run features:update $otherArgs
-    ./db/21_features_update_tmp.sh $otherArgs
+    ./db/11_features_update_tmp.sh
+    ;;
+"update_changes")
+    npm run changes:update $otherArgs
+    ./db/21_changes_update_tmp.sh $otherArgs
     ;;
 "update_projects")
     npm run projects:update $otherArgs
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
 "update_daily")
-    npm run pbf:update $otherArgs
-    ./db/11_pbf_update_tmp.sh
     npm run features:update $otherArgs
-    ./db/21_features_update_tmp.sh $otherArgs
+    ./db/11_features_update_tmp.sh
+    npm run changes:update $otherArgs
+    ./db/21_changes_update_tmp.sh $otherArgs
     npm run projects:update $otherArgs
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;

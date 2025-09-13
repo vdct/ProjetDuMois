@@ -45,6 +45,8 @@ The general configuration of the tool is to be filled in `config.json`. There is
 - `OSM_PASS`: password associated with the OSM user account
 - `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap
 - `OSH_PBF_URL`: URL of the OSH.PBF file (history and metadata, example `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
+- `OSM_PBF_URL`: URL of the OSM.PBF file (current state, example `https://download.geofabrik.de/europe/france-latest.osm.pbf`)
+- `POLY_URL`: URL of a polygon file holding the perimeter in which projects are considered (example `https://download.geofabrik.de/europe/france.poly`)
 - `DB_USE_IMPOSM_UPDATE` : enable or disabled Imposm3 integration (to use an existing database which would be maintained by other means, by default `true`)
 - `WORK_DIR`: download and temporary storage folder (must have capacity to store the OSH PBF file, example `/tmp/pdm`)
 - `OSM_URL`: OpenStreetMap instance to use (example `https://www.openstreetmap.org`)
@@ -80,6 +82,7 @@ Each project is defined via a subdirectory of `projects'. Each subdirectory must
 - `info.json` : project metadata
 - `howto.md`: description of tasks to be performed in Markdown format (use title levels >= 3)
 - `contribs.sql` : SQL script containing UPDATE request on `pdm_changes` table, to set contribution classes to certain type of OSM changes and associate points
+- `extract.sh` : Optional script that produces a csv export to be available for download on the web interface.
 
 The properties in `info.json` are as follows:
 
@@ -89,7 +92,7 @@ The properties in `info.json` are as follows:
 - `end_date`: end date of the mission (format YYYYY-MM-DD)
 - `summary`: summary of the mission
 - `links`: definition of the URLs for links to third party pages (OSM wiki)
-- `database.osmium_tag_filter` : Osmium filter on the tags to be applied to keep only the relevant OSM objects (for example `nwr/*:covid19`, [syntax described here](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). It is possible to list many filters using `&` character and same syntax. Only latest defined filter will be used for Osmium feature counts.
+- `database.osmium_tag_filter` : Osmium filter on the tags to be applied to keep only the relevant OSM objects (for example `nwr/*:covid19`, [syntax described here](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). It is possible to list many filters using `&` character and same syntax.
 - `database.imposm`: configuration for importing updated OSM data (`types` for geometry types to be taken into account, `mapping` for attributes, see [the Imposm documentation](https://imposm.org/docs/imposm3/latest/mapping.html#tags) for the format of these fields)
 - `database.compare`: configuration for the search of OpenStreetMap objects to compare, follows the format of `database.imposm` with an additional property `radius` (reconciliation radius in meters)
 - `datasources`: list of data sources that appear on the page (see below)
@@ -100,9 +103,47 @@ The properties in `info.json` are as follows:
 - `statistics.points`: configuration of the points obtained according to the type of contribution (in relation with `contribs.sql`)
 - `editors`: specific configuration to each OSM editor. ProjetDuMois is described below, for iD, it is possible to use [the parameters listed here](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
-### Projects timing
+### Projects timeline
 
-It is possible to define projects occuring during overlapping time periods. The `project:update` script will only update currently active projects.
+Each project comes with its own timeline definition. It will influence several processings to keep change log up to date along time.  
+Script `project:update` will automatically chose the most appropriate data source to feed the necessary update for each project:
+- OSH files which provide all features with they history, over a given geographical area. They are released each month.
+- Daily diffs which expose changes that occured during a given day worldwide.
+
+ProjetDuMois allows whether daily update and complete rebuild of a terminated project history over the whole time period. This second option is particularly useful in case of significant change in the software or in the project extent.
+A project can be configured without end date, with `end_date: null`, to enable endless updates.
+
+![Supported projects timelines](./projects_process.svg)
+- 1st case: An old project with an end date which completely fits in the OSH file availbility. It doesn't need updates but can be reinit on demand.
+- 2nd case: An old project without end date, too old to be updated with diffs files and requires to be reinited to reach current date.
+- 3rd case: An old project without end date, recently updated and for which daily diffs update are applicable until current date.
+- 4th case: An old project with an end date in the future, on which daily diffs updates are applicable until current date.
+- 5th case: A recently began project with an end date in the future, on which daily diffs updates are applicable until current date.
+- 6th case: A project to began in the future, which doesn't require any processing currently.
+
+### Fatures counts
+
+Fatures counts are done over change log fed by update and filtered by each project's own configuration. Counting features is enabled with the help of `statistics.count` flag.  
+Computing suh statistics not only requires existence dates of each version but their validity regarding the project's filter as well.
+
+Each possible configuration can be summarised in this chart: 
+![Counting features along time](./projects_counts.svg)
+Some features may have a complex timeline, gaining and losing tags and validity regarding a given project several times.
+
+Dates on which features are counted are selected by the processing script following a precise logic. The span on which the script is used impacts the way those dates are selected. Starting from the current date, we keep the following:
+- Each day at midnight until last count update or 1st day of the current month
+- First day of each month until the last count update or begining of the project
+
+Running the count script each day will lead to 364 values at the end of a complete year.
+
+W currently support the following counts:
+- Total amount of features that valides the project's filter on a given date.
+
+### Filtering features
+
+ProjetDuMois makes use of Osmium and Imposm to filter necessary features according to each project's configuration, with the help of `database.osmium_tag_filter` and `database.imposm` keys.
+
+Documented syntax of filters is available in [Osmium documentation online](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html). However, due to the need to apply those filters at severel steps of the processing, including outside of Osmium logic, filters that would use `!=` operator aren't currently supported.
 
 ### Disable imposm3 usage
 
@@ -429,12 +470,13 @@ You can build a node.js based ProjetDuMois server including necessary features t
 It doesn't includes a PgSQL server. You can use [CampToCamp Postgres image](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
 
 ```bash
-docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+docker build [--build-arg IMPOSM3_VERSION=0.11.0] [--build-arg CONFIG=./config.json] -t pdm/server:latest .
 ```
 
 Where:
 
 - IMPOSM3_VERSION: Version of imposm3 to use in the docker image
+- CONFIG : Path towards the config file to be used (defaults to `./config.json`)
 
 ### Standalone instance
 
@@ -446,10 +488,12 @@ npm install
 
 ### Database
 
-The database relies on PostgreSQL. To create the database :
+The database relies on PostgreSQL. To create the database, as a superuser :
 
 ```bash
 psql -c "CREATE DATABASE pdm"
+psql -c "CREATE EXTENSION IF NOT EXISTS postgis"
+psql -c "CREATE EXTENSION IF NOT EXISTS hstore"
 ```
 
 ### pg_tileserv
@@ -485,7 +529,7 @@ Database is installed and inited simply with:
 docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest install
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
 ```
-
+Second command will init each project in the database. It can lead to significant process times depending on chosen perimeter.
 And then run the server with:
 
 ```bash
@@ -501,10 +545,11 @@ docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e 
 Individual updates are also available for punctual calls:
 
 ```bash
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_pbf
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
 ```
+See below for the related documentation.
 
 ### Standalone
 
@@ -514,19 +559,25 @@ Database relies on PostgreSQL. To install the schema before first run:
 psql -d pdm -f db/00_init.sql
 ```
 
-The following script is to run to retreive and update PBF/PBH files:
+The following script is to run to retreive and update changes:
 
 ```bash
-npm run pbf:update
-./db/11_pbf_update_tmp.sh
+npm run features:update
+./db/11_features_update_tmp.sh
 ```
+It supports two modes:
+* init, downloads an OSM.pbf file and use imposm to import it in database
+* update, to refresh materialized views.
 
 The following script is to run after first initialization of database to create list of OSM features:
 
 ```bash
 npm run features:update
-./db/21_features_update_tmp.sh init
+./db/21_features_update_tmp.sh {init,update}
 ```
+It supports two modes:
+* init, to fill each project changelog on the whole period between their start and now
+* update, to fill each project changelog on the whole period since their last update and now
 
 The following script has to be launched daily to retrieve the contribution statistics (notes, objects added, badges obtained):
 

@@ -3,6 +3,7 @@ FROM node:18.17.0-bullseye-slim
 ENV DB_URL=postgres://localhost:5432/osm
 ENV PORT=3000
 ARG IMPOSM3_VERSION=0.11.0
+ARG CONFIG=./config.json
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN groupadd --gid 10001 -r osm \
@@ -45,7 +46,7 @@ RUN chmod +x ./docker-entrypoint.sh \
     && chown -R osm:osm /data/files/pdm \
     && chmod -R 755 /data/files/pdm
 
-COPY --chown=osm:osm ./config.json ./config.json
+COPY --chown=osm:osm ${CONFIG} ./config.json
 
 USER osm
 

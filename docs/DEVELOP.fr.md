@@ -45,6 +45,8 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `OSM_PASS` : mot de passe associé au compte utilisateur OSM
 - `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap
 - `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
+- `OSM_PBF_URL`: URL du fichier OSM.PBF (etat courant de la base, exemple `https://download.geofabrik.de/europe/france-latest.osm.pbf`)
+- `POLY_URL`: URL d'un fichier de polygone dans lequel les projets existent (exemple `https://download.geofabrik.de/europe/france.poly`)
 - `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
 - `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 - `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
@@ -80,6 +82,7 @@ Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-ré
 - `info.json` : métadonnées du projet
 - `howto.md` : descriptif des tâches à réaliser au format Markdown (utiliser les niveaux de titres >= 3)
 - `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_changes, attribuant des classes de contribution à certains changements donnant droit à des points
+- `extract.sh` : Script optionnel qui produit un fichier csv des données actuelles produites par le projet, proposé au téléchargement dans l'interface.
 
 Les propriétés dans `info.json` sont les suivantes :
 
@@ -89,12 +92,12 @@ Les propriétés dans `info.json` sont les suivantes :
 - `end_date` : date de fin de la mission (format AAAA-MM-JJ)
 - `summary` : résumé de la mission
 - `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
-- `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). Il est possible d'enchaîner plusieurs filtres par & et en répétant l'indication de primitive à chaque niveau. Seul le dernier filtre est utilisé pour catégoriser les décomptes par osmium.
+- `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). Il est possible d'enchaîner plusieurs filtres par & et en répétant l'indication de primitive à chaque niveau. L'opérateur != n'est pour l'instant pas pris en compte.
 - `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs, voir [la documentation Imposm](https://imposm.org/docs/imposm3/latest/mapping.html#tags) pour le format de ces champs)
 - `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
 - `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
 - `statistics` : configuration de l'affichage des statistiques sur la page du projet
-- `statistics.count` : activer le comptage des objets dans OSM
+- `statistics.count` : activer le comptage des objets du projet
 - `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
 - `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
 - `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
@@ -102,7 +105,46 @@ Les propriétés dans `info.json` sont les suivantes :
 
 ### Temporalité des projets
 
-Il est possible de définir des projets se déroulant aux mêmes dates. Le script `project:update` ne rafraichira que les projets en cours.
+Chaque projet est muni de sa propre période temporelle d'existence qui influence les traitements à faire pour maintenir le journal des changements à jour.  
+Le script `project:update` va automatiquement choisir entre deux sources de données selon 5 configurations différentes :
+- Les fichiers OSH contenant l'ensemble de l'historique de tous les objets sur une zone géographique donnée. Ils sont mis à jour chaque mois.
+- Les fichiers différentiels journaliers qui contiennent l'ensemble des modifications réalisées chaque jour dans le monde.
+
+ProjetDuMois permet la mise à jour au fil de l'eau et la reconstruction complète de l'historique d'un projet terminé. La seconde possibilité est particulièrement utile en cas de changement de périmètre ou d'amélioration des techniques de comptage.  
+Un projet peut ne pas avoir de date de fin, en utilisant `end_date: null` dans sa configuration, pour un suivi sans limite de temps.
+
+![Ligne de temps des projets](./projects_process.svg)
+- Cas 1 : un projet suffisament ancien se tenant complètement dans la période temporelle du fichier OSH de sa zone, n'ayant pas besoin de mises à jour mais pouvant être réinitialisé à la demande.
+- Cas 2 : un projet ancien sans date de fin, trop rarement mis à jour et nécessitant une réinitialisation pour retrouver un état actuel.
+- Cas 3 : un projet ancien sans date de fin, mise à jour au cours des 30 derniers jours et éligible à un complément via les fichiers de diff journaliers jusqu'à la date actuelle.
+- Cas 4 : un projet ancien se terminant dans le futur, qui utilisera donc les données OSH puis les diffs journaliers jusqu'à la date courante.
+- Cas 5 : un projet commencé récemment et se terminant dans le futur, régulièrement mis à jour et éligible à la mise à jour via les fichiers diffs.
+- Cas 6 : un projet non commencé, n'entrainant pour l'instant aucun traitement.
+
+### Dénombrement des objets
+
+Le dénombrement des objets est opéré sur le journal des modifications de chaque objet sélectionné par le filtre du projet. Il est activé via le drapeau `statistics.count` dans la configuration du projet.  
+Ces opérations nécessitent non seulement de connaître les dates d'existence de chaque version mais aussi l'adhérence de chacune au filtre du projet.  
+
+Il est possible de résumer les différentes configurations et leurs effets selon le schéma suivant :
+![Dénombrements au fil du temps](./projects_counts.svg)
+Certains objets ont une vie complexe et peuvent perdre et retrouver une validité dans le projet à plusieurs reprises.
+
+La plateforme établit elle-même les dates des décomptes à chaque fois que le script est executé par rapport à la date de dernière mise à jour des décomptes de chaque projet.  
+Ces dates sont sélectionnées selon les hypothèses suivantes :
+- Tous les jours à minuit jusqu'à la date de dernière mise à jour des décomptes ou du début du mois en cours
+- Chaque premier de chaque mois jusqu'à la date de dernière mise à jour des décomptes ou le début du projet
+
+En executant le script de calcul chaque jour, on obtiendra donc 364 valeurs à la fin d'une année complète de traitement.
+
+Les dénombrements suivants sont réalisés de manière systématique :
+- Nombre d'objets existants et validant le filtre du projet à une date donnée
+
+### Filtrer les objets
+
+ProjetDuMois s'appuie sur Osmium et Imposm pour filtrer les objets concernés par les projets configurés, au moyen des clés de configuration `database.osmium_tag_filter` et `database.imposm`.
+
+La documentation de la syntaxe des filtres Osmium est décrite dans [la documentation de l'outil](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html). Néanmoins, en raison de la nécessité d'appliquer ces filtres à plusieurs l'endroits dans le processus de sélection, y compris en dehors d'osmium, les filtres mobilisant l'opérateur `!=` ne sont pas supportés.
 
 ### Se passer d'imposm3
 
@@ -398,7 +440,7 @@ Les montant de points attribués sont configurés dans `info.json` :
 
 ## Installation
 
-Choisissez ensuite entre une instance Docker ou locale pour poursuivre.
+L'installation peut se faire en utilisant docker ou bien directement sur l'hôte.
 Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois exploitable.
 
 ### Submodules git
@@ -416,14 +458,17 @@ Il est possible de construire un serveur node.js unique pourvu des fonctionnalit
 L'image Docker n'inclue cependant pas de serveur postgresql et vous pourrez utiliser [l'image de CampToCamp](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
 
 ```bash
-docker build [--build-arg IMPOSM3_VERSION=0.11.0] -t pdm/server:latest .
+docker build [--build-arg IMPOSM3_VERSION=0.11.0] [--build-arg CONFIG=./config.json] -t pdm/server:latest .
 ```
 
 Avec :
 
 - IMPOSM3_VERSION : Version d'imposm3 à intégrer à l'image Docker
+- CONFIG : Chemin vers le fichier de configuration principal à utiliser (Par défaut `./config.json`)
 
 ### Installation locale
+
+Assurez-vous d'avoir une version de npm fonctionnelle avant de lancer la commande suivante :
 
 ```bash
 npm install
@@ -433,15 +478,17 @@ npm install
 
 ### Base de données
 
-La base de données utilise PostgreSQL. Pour créer la base, lancez la commande :
+La base de données utilise PostgreSQL. Pour créer la base, lancez la commande en tant que super-utilisateur :
 
 ```bash
 psql -c "CREATE DATABASE pdm"
+psql -c "CREATE EXTENSION IF NOT EXISTS postgis"
+psql -c "CREATE EXTENSION IF NOT EXISTS hstore"
 ```
 
 ### pg_tileserv
 
-#### Without Docker
+#### Sans Docker
 
 pg_tileserv étant requit pour afficher la données osm sur la carte, vous pouvez soit l'installer soit utiliser une image Docker.
 Pour l'installation `wget` et `unzip` sont nécessaires.
@@ -459,7 +506,7 @@ cd /opt/pg_tileserv
 ./pg_tileserv
 ```
 
-#### Using Docker
+#### Avec Docker
 
 Vous pouvez aussi utiliser l'image incluse dans le docker-compose.yml ou, pour une image plus lègere utiliser le [Dockerfile alpine suivant](https://github.com/CrunchyData/pg_tileserv/blob/master/Dockerfile.alpine) afin de build vous même l'image.
 Vous pouvez aussi très bien installer pg_tileserv dans pdm via le Dockerfile pour builder l'image Docker pdm en l'incluant. Mais ceci n'est pas recommandé.
@@ -472,6 +519,7 @@ Le service s'installe avec les deux commandes suivantes :
 docker run --rm [--network=your-network] -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest install
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest init
 ```
+La deuxième commande va initialiser chaque projet dans la base de données et peut donner lieu à des temps de traitement importants selon le périmètre configuré.
 
 Ensuite, lancez le serveur avec la commande :
 
@@ -488,12 +536,13 @@ docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e 
 Des commandes dédiées sont néamoins disponibles pour relancer une update particuliere:
 
 ```bash
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_pbf
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
 ```
+Voir ci-dessous pour la portée de chacune.
 
-### Locale
+### Instance locale
 
 La base de données s'appuie sur PostgreSQL. Pour installer la base :
 
@@ -501,19 +550,28 @@ La base de données s'appuie sur PostgreSQL. Pour installer la base :
 psql -d pdm -f db/00_init.sql
 ```
 
-Le script suivant est à lancer pour récupérer et mettre à jour les fichiers PBF/PBH :
-
-```bash
-npm run pbf:update
-./db/11_pbf_update_tmp.sh
-```
-
-Le script suivant est à lancer à la première initialisation de la base de données pour créer la liste des objets venant d'OpenStreetMap :
+Le script suivant est à lancer pour permettre l'import imposm :
 
 ```bash
 npm run features:update
-./db/21_features_update_tmp.sh init
+./db/11_features_update_tmp.sh {init,update}
 ```
+
+Il comporte deux modes :
+* init, télécharge un fichier OSM.pbf et lance un import complet imposm
+* update, rafraichit des vues matérielles (probablement à supprimer)
+
+
+Le script suivant permet de mettre à jour quotidiennement le journal des changes:  
+
+```bash
+npm run changes:update
+./db/21_changes_update_tmp.sh {init, update}
+```
+
+Il comporte deux modes :
+* init, initialise le journal des projets passés et en cours sur l'ensemble de la période de leur date de départ à aujourd'hui
+* update, met à jour au fil de l'eau l'ensemble des projets depuis leur date de mise à jour respective
 
 Le script suivant est à lancer quotidiennement pour récupérer les statistiques de contribution (notes, objets ajoutés, badges obtenus) :
 

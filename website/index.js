@@ -153,7 +153,7 @@ app.get("/projects/:id", (req, res) => {
     all.past.length > 0 &&
     all.past.find(
       (p) =>
-        p.id === req.params.id &&
+        p.id === req.params.id && p.end_date != null && 
         new Date(p.end_date + "T23:59:59Z").getTime() >=
           Date.now() - 30 * 24 * 60 * 60 * 1000,
     ) !== undefined;

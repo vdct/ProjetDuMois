@@ -85,7 +85,10 @@
 		<xsl:value-of select="@uid" />
 		<xsl:text>,"{</xsl:text>
 		<xsl:apply-templates select="tag" />
-		<xsl:text>}"</xsl:text>
+		<xsl:text>}",</xsl:text>
+		<xsl:value-of select="@lat" />
+		<xsl:text>,</xsl:text>
+		<xsl:value-of select="@lon" />
 	</xsl:template>
 
 	<!-- Tags handling -->

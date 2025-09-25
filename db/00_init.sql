@@ -33,8 +33,7 @@ CREATE TABLE pdm_changes(
 	tags JSONB,
 	geom geometry default null,
 	contrib VARCHAR DEFAULT NULL,
-	tagsfilter boolean
-
+	tagsfilter boolean,
 	CONSTRAINT pdm_changes_pk PRIMARY KEY(project,osmid,version)
 );
 

@@ -16,8 +16,9 @@ const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
 const OUTPUT_SCRIPT_FS = __dirname+'/11_features_update_tmp.sh';
 const UNINSTALL_SCRIPT_FS = __dirname+'/91_project_uninstall_tmp.sql';
+let OSM_PBF_FS;
 if (IMPOSM_ENABLED && CONFIG.hasOwnProperty("OSM_PBF_URL")){
-	const OSM_PBF_FS = CONFIG.WORK_DIR + '/' + CONFIG.OSM_PBF_URL.split("/").pop();
+	OSM_PBF_FS = CONFIG.WORK_DIR + '/' + CONFIG.OSM_PBF_URL.split("/").pop();
 }
 
 // Generate Imposm YAML config file
@@ -184,7 +185,7 @@ if [ "$mode" == "init" ]; then
 
 	echo "Post SQL..."
 	${postSQLFull}
-	psql -d ${process.env.DB_URL} -f "${__dirname}/22_features_post_init.sql"
+	psql -d ${process.env.DB_URL} -f "${__dirname}/12_features_post_init.sql"
 fi
 `;
 }

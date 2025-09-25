@@ -3,7 +3,7 @@
 ## Dependencies
 
 - NodeJS >= 18
-- Bash tools : curl, awk, grep, sed, xsltproc, bc
+- Bash tools : curl, awk, grep, sed, bc
 - PostgreSQL >= 13
 - Python 3 (and `requests` module)
 - [Osmium](https://osmcode.org/osmium-tool/) > 1.10
@@ -121,9 +121,9 @@ A project can be configured without end date, with `end_date: null`, to enable e
 - 5th case: A recently began project with an end date in the future, on which daily diffs updates are applicable until current date.
 - 6th case: A project to began in the future, which doesn't require any processing currently.
 
-### Fatures counts
+### Features counts
 
-Fatures counts are done over change log fed by update and filtered by each project's own configuration. Counting features is enabled with the help of `statistics.count` flag.  
+Features counts are done over change log fed by update and filtered by each project's own configuration. Counting features is enabled with the help of `statistics.count` flag.  
 Computing suh statistics not only requires existence dates of each version but their validity regarding the project's filter as well.
 
 Each possible configuration can be summarised in this chart: 

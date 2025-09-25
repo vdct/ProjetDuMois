@@ -3,7 +3,7 @@
 ## Dépendances
 
 - NodeJS >= 18
-- Outils Bash : curl, awk, grep, sed, xsltproc, bc
+- Outils Bash : curl, awk, grep, sed, bc
 - PostgreSQL >= 13
 - Python 3 (et le module `requests`)
 - [Osmium](https://osmcode.org/osmium-tool/) > 1.10

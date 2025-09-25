@@ -4,23 +4,21 @@ const projects = require('../website/projects');
 const yaml = require('js-yaml');
 
 /*
- * Generates 21_features_update_tmp.sh
+ * Generates 11_features_update_tmp.sh
  * in order to update minutely/hourly OSM features
  */
 
 // Constants
-const OSM_PBF_LATEST = CONFIG.WORK_DIR + '/' + CONFIG.OSH_PBF_URL.split("/").pop().replace(".osh.pbf", ".osm.pbf");
-const OSM_PBF_LATEST_UNSTABLE = OSM_PBF_LATEST.replace(".osm.pbf", ".new.osm.pbf");
-const OSM_PBF_LATEST_UNSTABLE_FILTERED = OSM_PBF_LATEST.replace(".osm.pbf", ".new-local.osm.pbf");
-const OSM_POLY = OSM_PBF_LATEST.replace("-internal.osm.pbf", ".poly");
 const IMPOSM_ENABLED = CONFIG.hasOwnProperty("DB_USE_IMPOSM_UPDATE") ? CONFIG.DB_USE_IMPOSM_UPDATE : true;
-const IMPOSM_YML = CONFIG.WORK_DIR + '/imposm.yml';
+
+const IMPOSM_YML_FS = CONFIG.WORK_DIR + '/imposm.yml';
 const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
-const OSC_FULL = CONFIG.WORK_DIR + '/changes_features.osc.gz';
-const OSC_LOCAL = CONFIG.WORK_DIR + '/changes_features.local.osc.gz';
-const OUTPUT_SCRIPT = __dirname+'/21_features_update_tmp.sh';
-const UNINSTALL_SCRIPT = __dirname+'/91_project_uninstall_tmp.sql';
+const OUTPUT_SCRIPT_FS = __dirname+'/11_features_update_tmp.sh';
+const UNINSTALL_SCRIPT_FS = __dirname+'/91_project_uninstall_tmp.sql';
+if (IMPOSM_ENABLED && CONFIG.hasOwnProperty("OSM_PBF_URL")){
+	const OSM_PBF_FS = CONFIG.WORK_DIR + '/' + CONFIG.OSM_PBF_URL.split("/").pop();
+}
 
 // Generate Imposm YAML config file
 const yamlData = {
@@ -120,7 +118,7 @@ Object.entries(projects).forEach(e => {
 });
 
 if (IMPOSM_ENABLED){
-	fs.writeFile(IMPOSM_YML, yaml.safeDump(yamlData), err => {
+	fs.writeFile(IMPOSM_YML_FS, yaml.safeDump(yamlData), err => {
 		if(err) {
 			throw new Error(err);
 		}
@@ -147,37 +145,31 @@ var script = `#!/bin/bash
 set -e
 
 mode="$1"
-if [ "$mode" == "" ]; then
+if [[ -z "$mode" ]]; then
 	mode="update"
 fi
 `;
 
+if (IMPOSM_ENABLED && CONFIG.hasOwnProperty("OSM_PBF_URL")){
+	script += `
+if [ ! -f "${OSM_PBF_FS}" ]; then
+	echo "== Download latest pbf file"
+	wget --progress=dot:giga -N --no-cookies -P "${CONFIG.WORK_DIR}" -O "${OSM_PBF_FS}" "${CONFIG.OSM_PBF_URL}"
+fi
+`;
+}
+
+script += `
+${separator}
+`;
+
 if (IMPOSM_ENABLED){
 	script += `
-echo "==== Get latest changes"
-prev_timestamp=""
-if [ -f ${CONFIG.WORK_DIR}/osh_timestamp ]; then
-	prev_timestamp=$(cat ${CONFIG.WORK_DIR}/osh_timestamp)
-fi
-
-osmupdate --keep-tempfiles --trust-tempfiles --hour \\
-	-t="${CONFIG.WORK_DIR}/osmupdate/" \\
-	-v "${OSM_PBF_LATEST}" $prev_timestamp \\
-	"${OSC_FULL}"
-osmium apply-changes "${OSM_PBF_LATEST}" \\
-	"${OSC_FULL}" \\
-	-O -o "${OSM_PBF_LATEST_UNSTABLE}"
-osmium extract -p "${OSM_POLY}" -s smart -S types=boundary,multipolygon "${OSM_PBF_LATEST_UNSTABLE}" -O -o "${OSM_PBF_LATEST_UNSTABLE_FILTERED}"
-rm -f "${OSM_PBF_LATEST_UNSTABLE}" "${OSC_FULL}"
-${separator}
-
 if [ "$mode" == "init" ]; then
 	echo "==== Initial import with Imposm"
-	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
-	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
 	mkdir -p "${IMPOSM_CACHE_DIR}"
-	imposm import -mapping "${IMPOSM_YML}" \\
-		-read "${OSM_PBF_LATEST}" \\
+	imposm import -mapping "${IMPOSM_YML_FS}" \\
+		-read "${OSM_PBF_FS}" \\
 		-overwritecache -cachedir "${IMPOSM_CACHE_DIR}" \\
 		-diff -diffdir "${IMPOSM_DIFF_DIR}"
 
@@ -186,26 +178,13 @@ if [ "$mode" == "init" ]; then
 
 	imposm import -write \\
 		-connection "${process.env.DB_URL}?prefix=pdm_" \\
-		-mapping "${IMPOSM_YML}" \\
+		-mapping "${IMPOSM_YML_FS}" \\
 		-cachedir "${IMPOSM_CACHE_DIR}" \\
 		-dbschema-import public -diff
 
 	echo "Post SQL..."
 	${postSQLFull}
 	psql -d ${process.env.DB_URL} -f "${__dirname}/22_features_post_init.sql"
-else
-	echo "==== Apply latest changes to database"
-	osmium derive-changes "${OSM_PBF_LATEST}" "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" -O -o "${OSC_LOCAL}"
-	imposm diff -mapping "${IMPOSM_YML}" \\
-		-cachedir "${IMPOSM_CACHE_DIR}" \\
-		-dbschema-production public \\
-		-connection "${process.env.DB_URL}?prefix=pdm_" \\
-		"${OSC_LOCAL}"
-
-	echo "Post Update SQL..."
-	${postUpdateSQLFull}
-	rm -f "${OSM_PBF_LATEST}" "${OSC_LOCAL}"
-	mv "${OSM_PBF_LATEST_UNSTABLE_FILTERED}" "${OSM_PBF_LATEST}"
 fi
 `;
 }
@@ -217,7 +196,7 @@ if [ "$mode" == "init" ]; then
 
 	echo "Post SQL..."
 	${postSQLFull}
-	psql -d ${process.env.DB_URL} -f "${__dirname}/22_features_post_init.sql"`;
+	psql -d ${process.env.DB_URL} -f "${__dirname}/12_features_post_init.sql"`;
 if (postUpdateSQLFull.length > 0){
 	script += `
 else
@@ -232,15 +211,19 @@ script += `${separator}
 
 echo "Done"
 `;
+if (IMPOSM_ENABLED){
+	script += `echo "You can now run imposm normally"
+	`;
+}
 
 // Script de mise à jour
-fs.writeFile(OUTPUT_SCRIPT, script, { mode: 0o766 }, err => {
+fs.writeFile(OUTPUT_SCRIPT_FS, script, { mode: 0o766 }, err => {
 	if(err) { throw new Error(err); }
 	console.log("Update script done");
 });
 
 // Ecriture du script d'uninstall des projets
-fs.writeFile(UNINSTALL_SCRIPT, sqlToScript(preSQL), { mode: 0o766 }, err => {
+fs.writeFile(UNINSTALL_SCRIPT_FS, sqlToScript(preSQL), { mode: 0o766 }, err => {
 	if(err) { throw new Error(err); }
 	console.log("Uninstall script done");
 });

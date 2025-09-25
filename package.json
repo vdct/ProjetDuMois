@@ -7,8 +7,8 @@
     "build:turf": "browserify node_modules/@turf/boolean-contains/index.js -s turf > website/static/turf.js",
     "start": "node --icu-data-dir=node_modules/full-icu website/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pbf:update": "rm -f db/11_pbf_update_tmp.sh && node db/10_pbf_update.js",
-    "features:update": "rm -f db/21_features_update_tmp.sh && node db/20_features_update.js",
+    "features:update": "rm -f db/11_features_update_tmp.sh && node db/10_features_update.js",
+    "changes:update": "rm -f db/21_changes_update_tmp.sh && node db/20_changes_update.js",
     "projects:update": "rm -f db/31_projects_update_tmp.sh && node db/30_projects_update.js"
   },
   "repository": {

@@ -10,7 +10,8 @@ CREATE TABLE pdm_projects(
 	project VARCHAR PRIMARY KEY,
 	start_date TIMESTAMP NOT NULL,
 	end_date TIMESTAMP NULL,
-	lastupdate_date TIMESTAMP NULL
+	changes_lastupdate_date TIMESTAMP NULL,
+	counts_lastupdate_date TIMESTAMP NULL
 );
 
 CREATE TABLE pdm_projects_points (
@@ -30,7 +31,9 @@ CREATE TABLE pdm_changes(
 	username VARCHAR,
 	userid BIGINT,
 	tags JSONB,
+	geom geometry default null,
 	contrib VARCHAR DEFAULT NULL,
+	tagsfilter boolean
 
 	CONSTRAINT pdm_changes_pk PRIMARY KEY(project,osmid,version)
 );
@@ -40,6 +43,38 @@ CREATE INDEX ON pdm_changes(action);
 CREATE INDEX ON pdm_changes(osmid);
 CREATE INDEX ON pdm_changes(version);
 CREATE INDEX ON pdm_changes(ts);
+CREATE INDEX ON pdm_changes using gist(geom);
+
+CREATE MATERIALIZED VIEW pdm_features_changes as 
+	SELECT c1.project,
+    c1.action,
+    c1.osmid,
+    c1.version,
+    c1.ts as ts_start,
+    c2.ts as ts_end,
+    c1.username,
+    c1.userid,
+    c1.tags,
+    c1.contrib,
+	c1.tagsfilter
+    FROM pdm_changes c1 
+    LEFT JOIN pdm_changes c2
+		ON c1.project=c2.project and c1.osmid=c2.osmid and c1.version=c2.version-1;
+
+-- Associate a given feature/version to a boundary
+-- boundary can be null until we'll able to get geometry of deleted features
+CREATE TABLE pdm_features_boundary (
+	project VARCHAR NOT NULL,
+	osmid VARCHAR NOT NULL,
+	version INT NOT NULL,
+	boundary BIGINT,
+
+	UNIQUE(project,osmid,version,boundary)
+);
+
+CREATE INDEX ON pdm_features_boundary USING btree(project);
+CREATE INDEX ON pdm_features_boundary USING btree(osmid);
+CREATE INDEX ON pdm_features_boundary USING btree(boundary);
 
 -- Users contributions
 -- No osmid, then no primary key on this table (several contribs can occur at the same ts)
@@ -79,22 +114,6 @@ CREATE TABLE pdm_note_counts(
 
 CREATE INDEX ON pdm_note_counts(project);
 
--- Statistics per project and administrative boundary
--- boundary can be null until we'll able to get geometry of deleted features
-CREATE TABLE pdm_features_boundary (
-	project VARCHAR NOT NULL,
-	osmid VARCHAR NOT NULL,
-	boundary BIGINT,
-	start_ts TIMESTAMP NOT NULL,
-	end_ts TIMESTAMP,
-
-	UNIQUE(project,osmid,boundary)
-);
-
-CREATE INDEX ON pdm_features_boundary USING btree(project);
-CREATE INDEX ON pdm_features_boundary USING btree(osmid);
-CREATE INDEX ON pdm_features_boundary USING btree(boundary);
-
 CREATE TABLE pdm_feature_counts_per_boundary(
 	project VARCHAR NOT NULL,
 	boundary BIGINT NOT NULL,
@@ -106,10 +125,6 @@ CREATE TABLE pdm_feature_counts_per_boundary(
 
 CREATE INDEX ON pdm_feature_counts_per_boundary using btree (project);
 CREATE INDEX ON pdm_feature_counts_per_boundary using btree (boundary);
-
--- Extensions for Imposm
-CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS hstore;
 
 -- Leaderboard view
 CREATE OR REPLACE VIEW pdm_leaderboard AS

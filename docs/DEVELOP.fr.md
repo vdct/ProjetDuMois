@@ -116,7 +116,7 @@ Un projet peut ne pas avoir de date de fin, en utilisant `end_date: null` dans s
 ![Ligne de temps des projets](./projects_process.svg)
 - Cas 1 : un projet suffisament ancien se tenant complètement dans la période temporelle du fichier OSH de sa zone, n'ayant pas besoin de mises à jour mais pouvant être réinitialisé à la demande.
 - Cas 2 : un projet ancien sans date de fin, trop rarement mis à jour et nécessitant une réinitialisation pour retrouver un état actuel.
-- Cas 3 : un projet ancien sans date de fin, mise à jour au cours des 30 derniers jours et éligible à un complément via les fichiers de diff journaliers jusqu'à la date actuelle.
+- Cas 3 : un projet ancien sans date de fin, mis à jour au cours des 30 derniers jours et éligible à un complément via les fichiers de diff journaliers jusqu'à la date actuelle.
 - Cas 4 : un projet ancien se terminant dans le futur, qui utilisera donc les données OSH puis les diffs journaliers jusqu'à la date courante.
 - Cas 5 : un projet commencé récemment et se terminant dans le futur, régulièrement mis à jour et éligible à la mise à jour via les fichiers diffs.
 - Cas 6 : un projet non commencé, n'entrainant pour l'instant aucun traitement.
@@ -135,7 +135,7 @@ Ces dates sont sélectionnées selon les hypothèses suivantes :
 - Tous les jours à minuit jusqu'à la date de dernière mise à jour des décomptes ou du début du mois en cours
 - Chaque premier de chaque mois jusqu'à la date de dernière mise à jour des décomptes ou le début du projet
 
-En executant le script de calcul chaque jour, on obtiendra donc 364 valeurs à la fin d'une année complète de traitement.
+En exécutant le script de calcul chaque jour, on obtiendra donc 364 valeurs à la fin d'une année complète de traitement.
 
 Les dénombrements suivants sont réalisés de manière systématique :
 - Nombre d'objets existants et validant le filtre du projet à une date donnée

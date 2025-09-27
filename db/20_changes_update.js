@@ -122,13 +122,13 @@ fi
 nbProjects=\$(${PSQL} -tAc "select count(*) from pdm_projects" | sed 's/[^0-9]*//g' )
 nbPoints=\$(${PSQL} -tAc "select count(*) from pdm_projects_points" | sed 's/[^0-9]*//g' )
 
-if [[ \$nbProjects < 1 ]]; then
+if (( \$nbProjects < 1 )); then
     echo "WARN: No known projects in SQL projects table"
     exit 3;
 else
     echo "\$nbProjects projects known"
 fi
-if [[ $nbPoints < 1 ]]; then
+if (( $nbPoints < 1 )); then
     echo "WARN: No declared points for projects contributions"
 else
     echo "\$nbPoints points known"
@@ -152,6 +152,7 @@ if [[ "\$mode" = "init" ]]; then
         wget --progress=dot:giga -N --no-cookies --header "Cookie: $(cat "${COOKIES_FS}" | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" -O "${OSH_PBF_FS}" "${CONFIG.OSH_PBF_URL}"
         rm -f "${COOKIES_FS}"
 
+        echo "== Read OSH file information..."
         osh_ts=\$(osmium fileinfo -e -g data.timestamp.last "${OSH_PBF_FS}")
         rm -f "${OSH_TS_FS}"
         echo \$osh_ts > "${OSH_TS_FS}"
@@ -193,15 +194,18 @@ Object.values(projects).forEach(project => {
     read -r -a process_qry <<< \$process_data
     process_start_ts=\${process_qry[0]}
     process_start_time=\$(date -d "\$process_start_ts" +%s)
-    process_end_time=\$(date -d "\${process_qry[1]}" +%s)
+    project_end_ts=\${process_qry[1]}
+    project_end_time=\$(date -d "\$project_end_ts" +%s)
+    process_end_ts=\$osh_ts
+    process_end_time=\$osh_time
     project_lastupdate_ts=\${process_qry[2]}
 
     if [[ \$current_time < \$process_start_time ]]; then
         echo "Project ${project.id} begins in future and can't be inited"
-    elif [ -n \$project_lastupdate_ts ]; then
+    elif [[ ! -z \$project_lastupdate_ts ]]; then
         echo "Project ${project.id} is already inited up to \$project_lastupdate_ts. Remove changes_lastupdate_date and rerun."
     else
-        if [ \$osh_time -gt \$project_end_time ]; then
+        if [[ ! -z $project_end_time && \$osh_time > \$project_end_time ]]; then
             echo "Project ends before OSH time"
             process_end_ts=\$(date -d "@\$project_end_time" +"%Y-%m-%dT00:00:00Z")
         fi
@@ -235,7 +239,7 @@ Object.values(projects).forEach(project => {
 
         ${macroChangesCsv (project, csvProject)}
 
-        ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${process_end_ts}' WHERE project='${project.id}'"
+        ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${process_end_ts}', counts_lastupdate_date=NULL WHERE project='${project.id}'"
         process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
         echo "== Project ${project.id} successfully initied in \$process_duration seconds"
         ${separator} 
@@ -259,7 +263,7 @@ process_end_ts=\${process_qry[1]}
 process_end_time=\$(date -d "\$process_end_ts" +%s)
 process_delta=\${process_qry[2]}
 
-if [[ \$process_delta < 1 ]]; then
+if (( \$process_delta < 1 )); then
     echo "Nothing is suitable to update. Projects older than 30 days should be inited again."
 else
     echo "Start processing from: \$process_start_ts to \$process_end_ts"
@@ -301,9 +305,9 @@ Object.values(projects).forEach(project => {
     project_end_ts=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(end_date, CURRENT_TIMESTAMP) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"HH24:MI:SS\\"Z\\"') from pdm_projects where project='${project.id}'")
     project_end_time=\$(date -d "\$project_end_ts" +%s)
 
-    if [[ \$process_start_time > \$project_end_time ]]; then
+    if (( \$process_start_time > \$project_end_time )); then
         echo "Project ${project.id} is over and won't be updated"
-    elif [[ \$project_start_ts < \$process_start_time ]]; then
+    elif (( \$process_start_time < \$process_start_time )); then
         echo "Project ${project.id} is too old and should be inited with a fresh OSH again"
     else
         if [ -f "${oscProject}" ]; then

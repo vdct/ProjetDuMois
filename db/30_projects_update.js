@@ -119,6 +119,10 @@ var script = `#!/bin/bash
 # Generated automatically by npm run projects:update
 
 set -e
+mode="$1"
+if [[ -z "$mode" ]]; then
+    mode="update"
+fi
 
 if [ ! -d "${CONFIG.WORK_DIR}" ]; then
     echo "== Create work directory"
@@ -130,12 +134,12 @@ echo "== Prerequisites"
 nbProjects=$(${PSQL} -tAc "select count(*) from pdm_projects" | sed 's/[^0-9]*//g' )
 nbPoints=$(${PSQL} -tAc "select count(*) from pdm_projects_points" | sed 's/[^0-9]*//g' )
 
-if [[ $nbProjects < 1 ]]; then
+if (( \$nbProjects < 1 )); then
     echo "WARN: No known projects in SQL projects table"
 else
     echo "\$nbProjects projects known"
 fi
-if [[ $nbPoints < 1 ]]; then
+if (( \$nbPoints < 1 )); then
     echo "WARN: No declared points for projects contributions"
 else
     echo "\$nbPoints points known"
@@ -146,6 +150,23 @@ ${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_features_changes;"
 
 ${separator}
 
+if [[ "\$mode" = "init" ]]; then
+    echo "== Initial counts for projects"
+    process_start_t0=$(date -d now +%s)
+    `;
+    Object.values(projects).forEach(project => {
+        if (project.statistics.count){
+            script += `
+                ${PSQL} -v project_id="'${project.id}'" -f "${__dirname}/34_projects_init.sql"
+            `;
+        }
+    });
+    script += `
+    process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
+    echo "Init done in \$process_duration seconds. Continuing with counts"
+    ${separator}
+fi
+
 current_ts=$(date -d now +"%Y-%m-%dT00:00:00Z" --utc)
 current_time=$(date -d "\$current_ts" +%s --utc)
 current_month=$(date -d "\$current_ts" +%-m --utc)
@@ -154,46 +175,63 @@ current_year=$(date -d "\$current_ts" +%Y --utc)
 
 Object.values(projects).forEach(project => {
     script += `
-process_start_ts=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(counts_lastupdate_date, start_date) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') from pdm_projects where project='${project.id}'")
-process_start_time=\$(date -d "\$process_start_ts" +%s)
+IFS='|'
+process_data=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(counts_lastupdate_date, start_date) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as start, to_char (changes_lastupdate_date at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as end from pdm_projects where project='${project.id}'")
+read -r -a process_qry <<< \$process_data
+process_start_ts=\${process_qry[0]}
 process_start_month=\$(date -d "\$process_start_ts" +%-m)
 process_start_year=\$(date -d "\$process_start_ts" +%Y)
-echo "== Statistics for project ${project.id}" between \$process_start_ts and \$current_ts
+process_end_ts=\${process_qry[1]}
+process_end_time=\$(date -d "\$process_end_ts" +%s)
+process_end_day=\$(date -d "\$process_end_ts" +%-d)
+process_end_month=\$(date -d "\$process_end_ts" +%-m)
+process_end_year=\$(date -d "\$process_end_ts" +%Y)
+echo "== Statistics for project ${project.id}" between \$process_start_ts and \$process_end_ts
 process_start_t0=$(date -d now +%s)`;
     // Dénombrements
     if (project.statistics.count){
         script += `
-echo "== Counting features"
-count_dates_list="('\$current_ts')"
-for ((count_date_year=process_start_year; count_date_year<=current_year; count_date_year++))
-    do
-    count_date_month=\$((count_date_year == process_start_year ? process_start_month : 1))
-    count_date_month_end=\$((count_date_year == current_year ? current_month : 12))
-    for((count_date_month=count_date_month; count_date_month<=count_date_month_end; count_date_month++))
+if [[ \$process_start_ts == \$process_end_ts ]]; then
+    echo "No date to count"
+else
+    echo "== Counting features"
+    count_dates_list="('\$process_end_ts')"
+    process_interm_time=\$(date -d "\${process_end_year}-\${process_end_month}-01T00:00:00Z" +%s --utc)
+    if (( \$process_end_day <= 15 )); then
+        process_interm_time=$((\$process_interm_time - 20*86400))
+    fi
+    process_interm_year=\$(date -d "@\$process_interm_time" +%Y)
+    process_interm_month=\$(date -d "@\$process_interm_time" +%-m)
+    for ((count_date_year=process_start_year; count_date_year<=process_interm_year; count_date_year++))
         do
-        count_date_current=\$(date -d "\${count_date_year}-\${count_date_month}-01" --utc +'%Y-%m-%dT00:00:00Z')
+        count_date_month=\$((count_date_year == process_start_year ? process_start_month : 1))
+        count_date_month_end=\$((count_date_year == process_interm_year ? process_interm_month : 12))
+        for((count_date_month=count_date_month; count_date_month<=count_date_month_end; count_date_month++))
+            do
+            count_date_current=\$(date -d "\${count_date_year}-\${count_date_month}-01" --utc +'%Y-%m-%dT00:00:00Z')
+            count_dates_list="\$count_dates_list,('\$count_date_current')"
+        done
+    done
+    process_interm_time=\$(date -d "\${process_interm_year}-\${process_interm_month}-02T00:00:00Z" +%s --utc)
+    for((count_date_offset=process_interm_time; count_date_offset<process_end_time; count_date_offset+=86400))
+        do
+        count_date_current=\$(date -d "@\$count_date_offset" +'%Y-%m-%dT00:00:00Z')
         count_dates_list="\$count_dates_list,('\$count_date_current')"
     done
-done
-count_date_begin_month=\$(date -d "\${current_year}-\${current_month}-01T00:00:00Z" +%s --utc)
-for((count_date_offset=count_date_begin_month; count_date_offset<current_time; count_date_offset+=86400))
-    do
-    count_date_current=\$(date -d "@\$count_date_offset" +'%Y-%m-%dT00:00:00Z')
-    count_dates_list="\$count_dates_list,('\$count_date_current')"
-done
-    
-${PSQL} -v project_id="'${project.id}'" -v start_date="'\${process_start_ts}'" -v end_date="'\${current_ts}'" -v dates_list="\$count_dates_list" -f "${__dirname}/32_projects_counts.sql"
-`;
+        
+    ${PSQL} -v project_id="'${project.id}'" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v dates_list="\$count_dates_list" -f "${__dirname}/32_projects_counts.sql"
+        `;
     }
 
     script += `
-echo "== Generate user contributions"
-${PSQL} -v project_id="'${project.id}'" -v start_date="'\${process_start_ts}'" -v end_date="'\${current_ts}'" -f "${__dirname}/33_projects_contribs.sql"
+    echo "== Generate user contributions"
+    ${PSQL} -v project_id="'${project.id}'" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -f "${__dirname}/33_projects_contribs.sql"
 
-if [ -f '${__dirname}/../projects/${project.id}/extract.sh' ]; then
-    echo "== Extract script"
-    ${__dirname}/../projects/${project.id}/extract.sh
-    echo ""
+    if [ -f '${__dirname}/../projects/${project.id}/extract.sh' ]; then
+        echo "== Extract script"
+        ${__dirname}/../projects/${project.id}/extract.sh
+        echo ""
+    fi
 fi
     `;
 
@@ -217,7 +255,7 @@ fi
     script += `
 ${PSQL} -c "UPDATE pdm_projects SET counts_lastupdate_date=changes_lastupdate_date WHERE project='${project.id}'"
 process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
-echo "   => Project update sucessful ins \$process_duration seconds"
+echo "   => Project update sucessful in \$process_duration seconds"
 ${separator}
 `;
 });

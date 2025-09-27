@@ -2,7 +2,7 @@
 	"id": "2017-04_electionboard",
 	"title": "Panneaux électoraux",
 	"start_date": "2017-04-01",
-	"end_date": "2017-06-30",
+	"soft_end_date": "2017-06-30",
 	"summary": "Ces dispositifs temporaires permettent de coller des affiches des différents candidats aux élections. Même si les panneaux sont amovibles, leur emplacement est permanent car ancré dans le sol.",
 	"links": {
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/elections"

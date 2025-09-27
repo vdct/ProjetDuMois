@@ -2,7 +2,7 @@
 	"id": "2021-05_laboratory",
 	"title": "Laboratoires d'analyses médicales",
 	"start_date": "2021-04-27",
-	"end_date": "2021-06-06",
+	"soft_end_date": "2021-06-06",
 	"summary": "Les laboratoires d'analyses médicales permettent l'analyse de prélévement d'origine humaine. C'est un maillon essentiel de la réponse à la crise sanitaire du Covid. Cartographions ensemble ces lieux dans OpenStreetMap ! #Labos #ProjetDuMois",
 	"links": {
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Projet_du_mois/laboratoire_de_biologie_m%C3%A9dicale"

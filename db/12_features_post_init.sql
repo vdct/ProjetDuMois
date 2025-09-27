@@ -1,6 +1,6 @@
 -- Boundary subdivide
 CREATE MATERIALIZED VIEW pdm_boundary_subdivide AS
-SELECT id, osm_id, name, admin_level, tags, ST_Subdivide(geom, 450) AS geom
+SELECT id, osm_id, name, admin_level, tags, ST_Subdivide(ST_Transform(geom, 4326), 450) AS geom
 FROM pdm_boundary;
 
 CREATE INDEX ON pdm_boundary_subdivide using gist(geom);

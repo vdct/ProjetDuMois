@@ -72,6 +72,9 @@ Object.values(projects).forEach(project => {
     if (project_end_date != null){
         project_end_date = `'${project_end_date}'`;
     }
+    else {
+        project_end_date = null;
+    }
     projectsQry += `('${project.id}', '${project.start_date}', ${project_end_date}),`;
     projectLength++;
 

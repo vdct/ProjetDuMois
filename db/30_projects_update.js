@@ -176,9 +176,10 @@ current_year=$(date -d "\$current_ts" +%Y --utc)
 Object.values(projects).forEach(project => {
     script += `
 IFS='|'
-process_data=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(counts_lastupdate_date, start_date) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as start, to_char (changes_lastupdate_date at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as end from pdm_projects where project='${project.id}'")
+process_data=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(counts_lastupdate_date, start_date) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as start, to_char (LEAST(end_date, CURRENT_TIMESTAMP) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as end from pdm_projects where project='${project.id}'")
 read -r -a process_qry <<< \$process_data
 process_start_ts=\${process_qry[0]}
+process_start_day=\$(date -d "\$process_start_ts" +%-d)
 process_start_month=\$(date -d "\$process_start_ts" +%-m)
 process_start_year=\$(date -d "\$process_start_ts" +%Y)
 process_end_ts=\${process_qry[1]}
@@ -202,17 +203,22 @@ else
     fi
     process_interm_year=\$(date -d "@\$process_interm_time" +%Y)
     process_interm_month=\$(date -d "@\$process_interm_time" +%-m)
-    for ((count_date_year=process_start_year; count_date_year<=process_interm_year; count_date_year++))
-        do
-        count_date_month=\$((count_date_year == process_start_year ? process_start_month : 1))
-        count_date_month_end=\$((count_date_year == process_interm_year ? process_interm_month : 12))
-        for((count_date_month=count_date_month; count_date_month<=count_date_month_end; count_date_month++))
+    if [[ "\$process_start_month" != "\$process_end_month" ]] || [[ "\$process_start_year" != "\$process_end_year" ]]; then
+        for ((count_date_year=process_start_year; count_date_year<=process_interm_year; count_date_year++))
             do
-            count_date_current=\$(date -d "\${count_date_year}-\${count_date_month}-01" --utc +'%Y-%m-%dT00:00:00Z')
-            count_dates_list="\$count_dates_list,('\$count_date_current')"
+            count_date_month=\$((count_date_year == process_start_year ? process_start_month : 1))
+            count_date_month_end=\$((count_date_year == process_interm_year ? process_interm_month : 12))
+            for((count_date_month=count_date_month; count_date_month<=count_date_month_end; count_date_month++))
+                do
+                count_date_current=\$(date -d "\${count_date_year}-\${count_date_month}-01" --utc +'%Y-%m-%dT00:00:00Z')
+                count_dates_list="\$count_dates_list,('\$count_date_current')"
+            done
         done
-    done
-    process_interm_time=\$(date -d "\${process_interm_year}-\${process_interm_month}-02T00:00:00Z" +%s --utc)
+        process_interm_day="02"
+    else
+        process_interm_day=\$process_start_day
+    fi
+    process_interm_time=\$(date -d "\${process_interm_year}-\${process_interm_month}-\${process_interm_day}T00:00:00Z" +%s --utc)
     for((count_date_offset=process_interm_time; count_date_offset<process_end_time; count_date_offset+=86400))
         do
         count_date_current=\$(date -d "@\$count_date_offset" +'%Y-%m-%dT00:00:00Z')
@@ -253,7 +259,7 @@ fi
     }
 
     script += `
-${PSQL} -c "UPDATE pdm_projects SET counts_lastupdate_date=changes_lastupdate_date WHERE project='${project.id}'"
+${PSQL} -c "UPDATE pdm_projects SET counts_lastupdate_date='\$process_end_ts' WHERE project='${project.id}'"
 process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
 echo "   => Project update sucessful in \$process_duration seconds"
 ${separator}

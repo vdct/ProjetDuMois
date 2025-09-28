@@ -74,7 +74,7 @@ BEGIN {
         if (a != "delete"){
             x = substr($9, 2);     # Longitude
             y = substr($10, 2);    # Latitude
-            g = "POINT("x" "y")"
+            g = "SRID=4326; POINT("x" "y")"
         }
     } else if (f == "w"){
         f = "way"

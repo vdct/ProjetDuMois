@@ -153,20 +153,17 @@ if [[ "\$mode" = "init" ]]; then
 
         echo "== Download OSH PBF file"
         wget --progress=dot:giga -N --no-cookies --header "Cookie: $(cat "${COOKIES_FS}" | cut -d ';' -f 1)" -P "${CONFIG.WORK_DIR}" -O "${OSH_PBF_FS}" "${CONFIG.OSH_PBF_URL}"
-        rm -f "${COOKIES_FS}"
-
-        echo "== Read OSH file information..."
-        osh_ts=\$(osmium fileinfo -e -g data.timestamp.last "${OSH_PBF_FS}")
-        rm -f "${OSH_TS_FS}"
-        echo \$osh_ts > "${OSH_TS_FS}"
+        rm -f "${COOKIES_FS}" "${OSH_TS_FS}"
     else
         echo "OSH file exists"
-        if [ ! -f "${OSH_TS_FS}" ]; then
-            osh_ts=\$(osmium fileinfo -e -g data.timestamp.last "${OSH_PBF_FS}")
-            echo \$osh_ts > "${OSH_TS_FS}"
-        else
-            osh_ts=\$(cat "${OSH_TS_FS}")
-        fi
+    fi
+
+    if [ ! -f "${OSH_TS_FS}" ]; then
+        echo "== Read OSH file information..."
+        osh_ts=\$(osmium fileinfo -e -g data.timestamp.last "${OSH_PBF_FS}")
+        echo \$osh_ts > "${OSH_TS_FS}"
+    else
+        osh_ts=\$(cat "${OSH_TS_FS}")
     fi
 
     if [ ! -f "${POLY_FS}" ]; then

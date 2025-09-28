@@ -90,6 +90,7 @@ Les propriétés dans `info.json` sont les suivantes :
 - `title` : nom de la mission (assez court)
 - `start_date` : date de début de la mission (format AAAA-MM-JJ)
 - `end_date` : date de fin de la mission (format AAAA-MM-JJ)
+- `soft_end_date`: date de fin de la période de _forte_ animation communautaire (format AAAA-MM-JJ). Donnée purement à titre informatif, n'affecte pas le traitement des données.
 - `summary` : résumé de la mission
 - `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
 - `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). Il est possible d'enchaîner plusieurs filtres par & et en répétant l'indication de primitive à chaque niveau. L'opérateur != n'est pour l'instant pas pris en compte.

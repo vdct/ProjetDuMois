@@ -38,15 +38,18 @@ block content
 					h1.font-italic.mb-0= title
 					p.pdm-project-date.text-capitalize.mb-0.mb-md-2= new Date(month).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })
 
-			div.btn-over-wide.d-flex.justify-content-center.align-items-center
-				a.pdm-wide-link.map(href=`/projects/${id}/map`)
-				a.btn.btn-primary.btn-lg(style="color: white")
-					i.fa.fa-pen.mr-2
-					| #{__("Contribuer")}
+			if !isHardEnded
+				div.btn-over-wide.d-flex.justify-content-center.align-items-center
+					a.pdm-wide-link.map(href=`/projects/${id}/map`)
+					a.btn.btn-primary.btn-lg(style="color: white")
+						i.fa.fa-pen.mr-2
+						| #{__("Contribuer")}
+			else
+				p= __("Projet terminé")
 
 			p.lead.mb-0.mt-md-2= summary
 
-	if isRecentPast
+	if isRecentPast || isHardEnded
 		div.container-fluid.py-5.pdm-section-highlight
 			div.blog-post.container
 				h2.blog-post-title.mb-2
@@ -62,9 +65,10 @@ block content
 					wordsTmp.unshift(["#{__("Merci !")}", 50]);
 					createWordCloud(document.getElementById("word-cloud"), wordsTmp);
 
-				a.btn.btn-primary.btn-lg.my-2(href="#statistics")
-					i.fa.fa-chart-bar.mr-2
-					| #{__("Voir les statistiques")}
+				div.text-center
+					a.btn.btn-primary.btn-lg.my-2(href="#statistics")
+						i.fa.fa-chart-bar.mr-2
+						| #{__("Voir les statistiques")}
 
 	a#contribute
 	div.container-fluid.py-5
@@ -76,18 +80,27 @@ block content
 			if isNext
 				p= __("Ce projet du mois commencera le %s, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez commencer dès à présent à enrichir les données à l'aide de nos outils et de la documentation.", new Date(start_date).toLocaleString(getLocale(), { day: "numeric", month: "long" }))
 			else if !isActive
-				p= __("Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.")
+				if isHardEnded
+					p= __("Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez contribuer à d'autres thématiques.")
+				else
+					p= __("Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez continuer à enrichir les données à l'aide de nos outils et de la documentation.")
 
-			div.mt-3!= howto
-			div.text-center
-				a.btn.btn-primary.btn-lg.m-1(style="color: white" href=`/projects/${id}/map`)
-					i.fa.fa-pen.mr-2
-					| #{__("Contribuer")}
-				if links.osmwiki
-					a.btn.btn-secondary.btn-lg.m-1(href=links.osmwiki target="_blank" role="button")
-						i.fa.fa-book.mr-2
-						| #{__("Documentation complète")}
-				if links.osmblog
+			if !isHardEnded
+				div.mt-3!= howto
+				div.text-center
+					a.btn.btn-primary.btn-lg.m-1(style="color: white" href=`/projects/${id}/map`)
+						i.fa.fa-pen.mr-2
+						| #{__("Contribuer")}
+					if links.osmwiki
+						a.btn.btn-secondary.btn-lg.m-1(href=links.osmwiki target="_blank" role="button")
+							i.fa.fa-book.mr-2
+							| #{__("Documentation complète")}
+					if links.osmblog
+						a.btn.btn-secondary.btn-lg.m-1(href=links.osmblog target="_blank" role="button")
+							i.fa.fa-rss.mr-2
+							| #{__("Article de blog")}
+			else if isHardEnded && links.osmblog
+				div.text-center
 					a.btn.btn-secondary.btn-lg.m-1(href=links.osmblog target="_blank" role="button")
 						i.fa.fa-rss.mr-2
 						| #{__("Article de blog")}

@@ -2,7 +2,7 @@
 	"id": "2018-07_substation",
 	"title": "Postes électriques",
 	"start_date": "2018-07-01",
-	"end_date": "2018-08-31",
+	"soft_end_date": "2018-08-31",
 	"summary": "La récente mise à disposition de données ouvertes par les gestionnaires des réseaux de transport électrique et de distribution nous permettent de passer une nouvelle étape dans l'inventaire des réseaux de notre environnement. En outre, ce projet du mois va permettre de mieux qualifier une partie du bâti partiellement ajoutée au cadastre.",
 	"links": {
 		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Project_of_the_month/postes_electriques",

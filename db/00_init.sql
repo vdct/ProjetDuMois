@@ -66,9 +66,7 @@ CREATE TABLE pdm_features_boundary (
 	project VARCHAR NOT NULL,
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,
-	boundary BIGINT,
-
-	UNIQUE(project,osmid,version,boundary)
+	boundary BIGINT
 );
 
 CREATE INDEX ON pdm_features_boundary USING btree(project);

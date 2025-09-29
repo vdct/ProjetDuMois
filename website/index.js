@@ -439,6 +439,17 @@ app.get("/projects/:id/stats", (req, res) => {
       })),
   );
 
+  // Fetch last count update time
+  allPromises.push(
+    pool
+      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
+        req.params.id,
+      ])
+      .then((results) => ({
+        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
+      })),
+  );
+
   // Fetch tags statistics
   allPromises.push(
     pool

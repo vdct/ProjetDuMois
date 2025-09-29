@@ -1,3 +1,7 @@
+//- Last update
+div.row
+	div.col-12.mb-2#stats-update
+
 //- Synthetic stats
 div.row.mb-4#stats-blocks
 	div.col.text-center
@@ -52,6 +56,11 @@ script.
 		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
 		.then(res => res.json())
 		.then(res => {
+			// Last stats update time
+			const lastUpdate = document.getElementById("stats-update");
+			lastUpdate.innerHTML = "#{__("Dernière mise à jour : ")}" + (new Date(res.lastUpdate)).toLocaleDateString();
+
+			// Blocks for small stats
 			const blocks = document.getElementById("stats-blocks");
 			blocks.innerHTML = '';
 			const addBlock = (title, subtitle) => {
@@ -75,7 +84,6 @@ script.
 				blocks.appendChild(b);
 			};
 
-			// Blocks for small stats
 			if(res.added) { addBlock(numberFormat.format(res.added), "#{title.toLowerCase()} ajoutés"); }
 			if(res.count) { addBlock(numberFormat.format(res.count), "#{title.toLowerCase()} au total dans OSM"); }
 			if(res.tasksSolved !== undefined) { addBlock(numberFormat.format(res.tasksSolved), "#{statistics.osmose_tasks}"); }

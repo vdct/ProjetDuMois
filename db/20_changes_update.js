@@ -260,7 +260,6 @@ read -r -a process_qry <<< \$process_data
 process_start_ts=\${process_qry[0]}
 process_start_time=\$(date -d "\$process_start_ts" +%s)
 process_end_ts=\${process_qry[1]}
-process_end_time=\$(date -d "\$process_end_ts" +%s)
 process_delta=\${process_qry[2]}
 
 if (( \$process_delta < 1 )); then
@@ -271,6 +270,11 @@ else
     echo "== Build OSC changes with replication files"
     osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v \$process_start_ts "${CONFIG.WORK_DIR}/world.osc.gz"
     rm -f "${OSC_UPDATES_FS}"
+    
+    echo "== Read OSC file information..."
+    osc_ts=\$(osmium fileinfo -e -g data.timestamp.last "${CONFIG.WORK_DIR}/world.osc.gz")
+    osc_time=\$(date -d "\$osc_ts" +%s)
+    echo "OSC file is up to \$osc_ts"
 
     if [ -f ${POLY_FS} ]; then
         echo "== Extract data in polygon..."
@@ -302,12 +306,15 @@ Object.values(projects).forEach(project => {
     process_start_t0=$(date -d now +%s)
     project_start_ts=\$(${PSQL} -qtAc "SELECT to_char (coalesce(changes_lastupdate_date, start_date) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"HH24:MI:SS\\"Z\\"') from pdm_projects where project='${project.id}'")
     project_start_time=\$(date -d "\$project_start_ts" +%s)
-    project_end_ts=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(end_date, CURRENT_TIMESTAMP) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"HH24:MI:SS\\"Z\\"') from pdm_projects where project='${project.id}'")
+    project_end_ts=\$(${PSQL} -qtAc "SELECT to_char (end_date at time zone 'UTC', 'YYYY-MM-DD\\"T\\"HH24:MI:SS\\"Z\\"') from pdm_projects where project='${project.id}'")
     project_end_time=\$(date -d "\$project_end_ts" +%s)
+    if [[ -z \$project_end_ts ]]; then
+        project_end_time=0
+    fi
 
-    if (( \$process_start_time > \$project_end_time )); then
+    if (( \$project_end_time > 0 && \$process_start_time > \$project_end_time )); then
         echo "Project ${project.id} is over and won't be updated"
-    elif (( \$process_start_time < \$process_start_time )); then
+    elif (( \$project_start_time < \$process_start_time )); then
         echo "Project ${project.id} is too old and should be inited with a fresh OSH again"
     else
         if [ -f "${oscProject}" ]; then
@@ -315,8 +322,15 @@ Object.values(projects).forEach(project => {
             rm -f "${oscProject}"
         fi
 
+        if (( \$project_end_time > 0 && \$project_end_time < \$osc_time )); then
+            echo "Time filter OSC file..."
+            osmium time-filter "${OSC_UPDATES_FS}" -o "${oscProject}" \$project_start_ts \$project_end_ts 
+        else
+            project_end_ts=\$osc_ts
+            cp ${OSC_UPDATES_FS} ${oscProject}
+        fi
+    
         echo "Updating project changes from \$project_start_ts to \$project_end_ts"
-        cp ${OSC_UPDATES_FS} ${oscProject}
         ${separator}
     `;
 

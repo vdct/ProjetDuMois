@@ -41,7 +41,7 @@ BEGIN {
 
 {
     f = substr($1, 1, 1);          # Feature
-    fi = substr($1, 2);             # Feature id
+    fi = substr($1, 2);            # Feature id
     v = substr($2, 2);             # Version
     d = substr($3, 2);             # Visibilité
     t = substr($5, 2);             # Timestamp
@@ -78,6 +78,13 @@ BEGIN {
         }
     } else if (f == "w"){
         f = "way"
+        if (a != "delete"){
+            N = substr($9, 2);
+            gsub(/n[0-9]+x/, "(", N);
+            gsub(/y/, " ", N);
+            gsub(/,/, "),", N);
+            g = "SRID=4326; LINESTRING("N"))"
+        }
     } else if (f == "r"){
         f = "relation"
     }
@@ -109,6 +116,6 @@ BEGIN {
     }
 
     # Construction de la sortie CSV
-    printf "%s,%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
-           p, f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter
+    printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
+           f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter
 }

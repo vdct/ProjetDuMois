@@ -49,6 +49,7 @@ let filterDatasource = (obj = {}) => {
 exports.foldProjects = (projects) => {
 	const prjs = { past: [], current: [], next: [] };
 	Object.values(projects).forEach(project => {
+		const slug = project.name.split("_").pop();
 		// Check dates
 		if(new Date(project.start_date).getTime() <= Date.now() && ((project.end_date == null && project.soft_end_date == null) || Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime())) {
 			prjs.current.push(project);
@@ -62,7 +63,9 @@ exports.foldProjects = (projects) => {
 		) {
 			prjs.past.push({
 				id: project.id,
-				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
+				name: project.name,
+				slug: slug,
+				icon: `/images/badges/${slug}.svg`,
 				title: project.title,
 				month: project.month,
 				end_date: project.end_date,

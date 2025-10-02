@@ -30,7 +30,7 @@ script.
 			postContribAuthDom.innerHTML = `<div class="col text-center mb-3"><span class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></span></div>`;
 			postContribAuthDom.classList.remove("d-none");
 
-			fetch(`${window.location.origin}/projects/#{id}/contribute/${window.osm_user.id}?type=${type}&username=${window.osm_user.name}`, { method: "POST" })
+			fetch(`${window.location.origin}/projects/#{name}/contribute/${window.osm_user.id}?type=${type}&username=${window.osm_user.name}`, { method: "POST" })
 			.then(result => result.json())
 			.then(result => {
 				// Display badges
@@ -42,7 +42,7 @@ script.
 						domBadge.classList.add("col-12", "col-sm", "text-center", "mb-2");
 
 						const img = document.createElement("img");
-						const imgName = `badges/${badge.id === "contributed" ? #{id.split("_").pop()} : badge.id}.svg`;
+						const imgName = `badges/${badge.id === "contributed" ? #{slug} : badge.id}.svg`;
 						img.src = "/images/"+imgName;
 						img.alt = "";
 						img.title = badge.description;

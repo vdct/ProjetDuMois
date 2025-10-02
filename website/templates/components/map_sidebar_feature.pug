@@ -52,7 +52,7 @@ script.
 	// Mark OSM compare feature as ignored
 	const filteredOsmIds = [];
 	function ignoreOsmCompare(f) {
-		fetch(`/projects/#{id}/ignore/${f.properties.osm_id}?${window.osm_user ? "user_id="+window.osm_user.id : ""}`, { method: "POST" })
+		fetch(`/projects/#{name}/ignore/${f.properties.osm_id}?${window.osm_user ? "user_id="+window.osm_user.id : ""}`, { method: "POST" })
 		.then(() => {
 			window.dispatchEvent(new CustomEvent("pdm_sidebar_use", { detail: { close: true } }));
 			filteredOsmIds.push(f.properties.osm_id);
@@ -299,7 +299,7 @@ script.
 		else {
 			for(let osmSourceId in osmSources) {
 				const sourceId = "osm_"+osmSourceId;
-				const features = map.querySourceFeatures(sourceId, { filter: ["==", ["get", "osm_id"], featureId], sourceLayer: `public.pdm_project_#{id.split("_").pop()}` });
+				const features = map.querySourceFeatures(sourceId, { filter: ["==", ["get", "osm_id"], featureId], sourceLayer: `public.pdm_project_#{slug}` });
 				if(features.length >= 1) {
 					return features.pop();
 				}

@@ -9,7 +9,7 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 	try {
 		const project = JSON.parse(fs.readFileSync(PROJECTS_PATH + '/' + projectDir + '/info.json'));
 		project.howto = marked(fs.readFileSync(PROJECTS_PATH + '/' + projectDir + '/howto.md', "utf8"));
-		project.month = project.id.split("_").shift()+"-05T00:00:00Z";
+		project.month = project.name.split("_").shift()+"-05T00:00:00Z";
 
 		// Add auto-computed metadata
 		project.osmoseLabels = {};
@@ -51,7 +51,7 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 			});
 		}
 
-		projects[project.id] = project;
+		projects[project.name] = project; 
 	}
 	catch(e) {
 		console.error("Invalid project", projectDir, e);

@@ -1,4 +1,4 @@
-# Contribuer au développement de ProjetDuMois.fr
+# Exploitation de ProjetDuMois.fr
 
 ## Dépendances
 
@@ -44,9 +44,10 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `OSM_USER` : nom d'utilisateur OpenStreetMap pour la récupération de l'historique des modifications avec métadonnées
 - `OSM_PASS` : mot de passe associé au compte utilisateur OSM
 - `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap
+- `OSH_PBF_AUTHORIZED`: Active l'authentification par OAuth2 pour être autorisé à télécharger les fichiers PBF lorsque c'est nécessaire. A désactiver si le dépôt indiqué dans `OSH_PBF_URL` ne le supporte pas.
 - `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
-- `OSM_PBF_URL`: URL du fichier OSM.PBF (etat courant de la base, exemple `https://download.geofabrik.de/europe/france-latest.osm.pbf`)
-- `POLY_URL`: URL d'un fichier de polygone dans lequel les projets existent (exemple `https://download.geofabrik.de/europe/france.poly`)
+- `OSM_PBF_URL`: URL du fichier OSM.PBF (etat courant de la base, exemple `https://download.geofabrik.de/europe/france-latest.osm.pbf`). Ce fichier n'est pas concerné par le processus d'autorisation.
+- `POLY_URL`: URL d'un fichier de polygone dans lequel les projets existent (exemple `https://download.geofabrik.de/europe/france.poly`) Ce fichier n'est pas concerné par le processus d'autorisation.
 - `DB_USE_IMPOSM_UPDATE` : Active ou désactive l'intégration d'imposm3 (permet d'utiliser une base existante et tenue à jour par d'autres moyens, par défaut `true`)
 - `WORK_DIR` : dossier de téléchargement et stockage temporaire (doit pouvoir contenir le fichier OSH PBF, exemple `/tmp/pdm`)
 - `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
@@ -81,12 +82,13 @@ Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-ré
 
 - `info.json` : métadonnées du projet
 - `howto.md` : descriptif des tâches à réaliser au format Markdown (utiliser les niveaux de titres >= 3)
-- `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_changes, attribuant des classes de contribution à certains changements donnant droit à des points
+- `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_features, attribuant des classes de contribution à certains changements donnant droit à des points
 - `extract.sh` : Script optionnel qui produit un fichier csv des données actuelles produites par le projet, proposé au téléchargement dans l'interface.
 
 Les propriétés dans `info.json` sont les suivantes :
 
-- `id` : identifiant de la mission (caractères autorisés : A-Z, 0-9, \_ et -)
+- `id` : identifiant numérique entier unique
+- `name` : identifiant de la mission (caractères autorisés : A-Z, 0-9, \_ et -)
 - `title` : nom de la mission (assez court)
 - `start_date` : date de début de la mission (format AAAA-MM-JJ)
 - `end_date` : date de fin de la mission (format AAAA-MM-JJ)
@@ -152,18 +154,11 @@ La documentation de la syntaxe des filtres Osmium est décrite dans [la document
 Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.
 Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
 
-Dans le cas où imposm3 serait désactivé, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_id}`, avec la structure suivante :
-
-```sql
-osm_id BIGINT,
-name VARCHAR(255)
-tags json
-geom GEOMETRY
-```
-
 Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
 
-Au-delà de ces tables, il est nécessaire d'avoir une table `pdm_boundary` contenant le découpage administratif de la zone ([niveaux administratifs](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 4, 6 et 8) et ayant cette structure :
+#### Généralités
+
+Il est nécessaire d'avoir une table `pdm_boundary` contenant le découpage administratif de la zone ([niveaux administratifs](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 et 8) et ayant cette structure :
 
 ```sql
 id INT
@@ -180,6 +175,40 @@ La colonne `centre` est comprise comme étant un point compris dans le périmèt
 Créer des indexes sur les colonnes `osm_id`, `tags`, `geom` et `centre` peut être utile suivant la population d'objets touchée par un projet donné.
 
 PdM va automatiquement créer une table `pdm_boundary_subdivide` en utilisant [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) pour faciliter le calcul d'intersection entre les objets du projet et le zonage administratif.
+
+Une fois mise à jour, pensez à propager les changements aux vues utilisants les périmètres administratifs :
+
+```sql
+REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
+```
+
+#### Remplacé par une autre base de données
+Dans le cas vous disposez de votre propre base de données tenue à jour en dehors de ProjetDuMois, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_slug}`, avec la structure suivante :
+
+```sql
+osm_id varchar,
+gid bigint,
+name VARCHAR(255)
+tags json
+geom GEOMETRY
+```
+
+#### Remplacé par le journal des modifications
+Dans le cas où vous accepteriez une mise à jour quotidienne de la vue des objets actuels, c'est à dire sans prise en compte immédiate des objets contribués pendant la journée, il est possible de créer manuellement une vue matérialisée comme suit :
+
+```sql
+create materialized view pdm_project_projectslug as
+  select fc.osmid as osm_id, 
+  split_part(fc.osmid, '/', 2)::bigint as gid, 
+  fc.tags->>'name' as name, 
+  to_json(fc.tags) as tags, 
+  fc.geom 
+  from pdm_features_projectslug_changes fc
+  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
+        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
+```
+
+Il faut penser à la mettre à jour chaque jour.
 
 ### Sources de tuiles
 
@@ -239,7 +268,7 @@ Des objets indirectement liés au projet mais pertinents pour la contribution pe
 
 Cette source ne peut apparaître qu'une seule fois, et correspond aux objets recherchés dans les options `database.compare` de `info.json`.
 
-#### OpenStreetMap extra objects
+#### Objets OpenStreetMap supplémentaires
 
 Ces couches affichent des objets non pris en compte dans le périmètre du projet. Ils sont affichés pour informer les contributeurs que quelque chose de différent existe déjà à cet endroit. Les propriétés à fournir sont les suivantes :
 
@@ -427,7 +456,7 @@ La plateforme attribue les classes communes suivantes :
 - `edit` : Les changements concernant des objets version>1
 
 Il est possible d'attribuer des classes propres à chaque projet en créant un fichier `contribs.sql` à côté de `info.json`.
-Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_changes`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
+Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_features`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
 
 Les montant de points attribués sont configurés dans `info.json` :
 
@@ -632,7 +661,7 @@ Pour arrêter :
 docker-compose down
 ```
 
-### Locale
+### Instance locale
 
 L'execution locale nécessite un serveur node conforme à la compatilité ci-dessus et des tâches planifiées pour tenir la base de données à jour.
 

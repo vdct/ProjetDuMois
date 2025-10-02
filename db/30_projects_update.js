@@ -11,9 +11,9 @@ const booleanContains = require('@turf/boolean-contains').default;
  */
 
 // Constants
-const CSV_NOTES = (project) => `${CONFIG.WORK_DIR}/notes_${project}.csv`;
-const CSV_NOTES_CONTRIBS = (project) => `${CONFIG.WORK_DIR}/user_notes_${project}.csv`;
-const CSV_NOTES_USERS = (project) => `${CONFIG.WORK_DIR}/usernames_notes_${project}.csv`;
+const CSV_NOTES = (project_slug) => `${CONFIG.WORK_DIR}/notes_${project_slug}.csv`;
+const CSV_NOTES_CONTRIBS = (project_slug) => `${CONFIG.WORK_DIR}/user_notes_${project_slug}.csv`;
+const CSV_NOTES_USERS = (project_slug) => `${CONFIG.WORK_DIR}/usernames_notes_${project_slug}.csv`;
 const OUTPUT_SCRIPT_FS = __dirname+'/31_projects_update_tmp.sh';
 
 const PSQL = `psql -d ${process.env.DB_URL}`;
@@ -22,6 +22,7 @@ const HAS_BOUNDARY = `${PSQL} -c "SELECT * FROM pdm_boundary LIMIT 1" > /dev/nul
 // Notes statistics
 function processNotes(project) {
 	console.log("Retreiving notes from OSM server...");
+    const slug = project.name.split("_").pop();
     const days = getProjectDays(project);
     const today = new Date().toISOString().split("T")[0];
     const notesSources = project.datasources.filter(ds => ds.source === "notes");
@@ -82,21 +83,21 @@ function processNotes(project) {
         Promise.all(promises).then(() => {
             // Notes per day
             const csvText = Object.entries(notesPerDay).map(e => `${project.id},${e[0]},${e[1].open},${e[1].closed}`).join("\n");
-            fs.writeFile(CSV_NOTES(project.id), csvText, (err) => {
+            fs.writeFile(CSV_NOTES(slug), csvText, (err) => {
                 if(err) { console.error(err); }
                 else { console.log("Written note stats"); }
             });
 
             // User notes
             const csvUserNotes = userNotes.map(un => un.join(",")).join("\n");
-            fs.writeFile(CSV_NOTES_CONTRIBS(project.id), csvUserNotes, (err) => {
+            fs.writeFile(CSV_NOTES_CONTRIBS(slug), csvUserNotes, (err) => {
                 if(err) { console.error(err); }
                 else { console.log("Written user notes contributions"); }
             });
 
             // User names from notes
             const csvUserNames = Object.entries(userNames).map(e => `${e[0]},${e[1]}`).join("\n");
-            fs.writeFile(CSV_NOTES_USERS(project.id), csvUserNames, (err) => {
+            fs.writeFile(CSV_NOTES_USERS(slug), csvUserNames, (err) => {
                 if(err) { console.error(err); }
                 else { console.log("Written user names from notes"); }
             });
@@ -145,10 +146,15 @@ else
     echo "\$nbPoints points known"
 fi
 
-echo "== Refreshing features changes log..."
-${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_features_changes;"
-
 ${separator}
+
+
+if ${HAS_BOUNDARY}; then
+    echo "== Refresh boundaries"
+    ${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_subdivide"
+
+    ${separator}
+fi
 
 if [[ "\$mode" = "init" ]]; then
     echo "== Initial counts for projects"
@@ -157,13 +163,12 @@ if [[ "\$mode" = "init" ]]; then
     Object.values(projects).forEach(project => {
         if (project.statistics.count){
             script += `
-                ${PSQL} -v project_id="'${project.id}'" -f "${__dirname}/34_projects_init.sql"
+                ${PSQL} -v project_id="${project.id}" -f "${__dirname}/34_projects_init.sql"
             `;
         }
     });
     script += `
-    process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
-    echo "Init done in \$process_duration seconds. Continuing with counts"
+    echo "[\$((\$(date -d now +%s) - \$process_start_t0))s] Init done. Continuing with counts"
     ${separator}
 fi
 
@@ -174,9 +179,10 @@ current_year=$(date -d "\$current_ts" +%Y --utc)
 `;
 
 Object.values(projects).forEach(project => {
+    const slug = project.name.split("_").pop();
     script += `
 IFS='|'
-process_data=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(counts_lastupdate_date, start_date) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as start, to_char (LEAST(end_date, CURRENT_TIMESTAMP) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as end from pdm_projects where project='${project.id}'")
+process_data=\$(${PSQL} -qtAc "SELECT to_char (COALESCE(counts_lastupdate_date, start_date) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as start, to_char (LEAST(end_date, CURRENT_TIMESTAMP) at time zone 'UTC', 'YYYY-MM-DD\\"T\\"00:00:00\\"Z\\"') as end from pdm_projects where project_id=${project.id}")
 read -r -a process_qry <<< \$process_data
 process_start_ts=\${process_qry[0]}
 process_start_day=\$(date -d "\$process_start_ts" +%-d)
@@ -187,7 +193,7 @@ process_end_time=\$(date -d "\$process_end_ts" +%s)
 process_end_day=\$(date -d "\$process_end_ts" +%-d)
 process_end_month=\$(date -d "\$process_end_ts" +%-m)
 process_end_year=\$(date -d "\$process_end_ts" +%Y)
-echo "== Statistics for project ${project.id}" between \$process_start_ts and \$process_end_ts
+echo "== Statistics for project ${project.name}" between \$process_start_ts and \$process_end_ts
 process_start_t0=$(date -d now +%s)`;
     // Dénombrements
     if (project.statistics.count){
@@ -195,7 +201,7 @@ process_start_t0=$(date -d now +%s)`;
 if [[ \$process_start_ts == \$process_end_ts ]]; then
     echo "No date to count"
 else
-    echo "== Counting features"
+    echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Counting features"
     count_dates_list="('\$process_end_ts')"
     process_interm_time=\$(date -d "\${process_end_year}-\${process_end_month}-01T00:00:00Z" +%s --utc)
     if (( \$process_end_day <= 15 )); then
@@ -225,17 +231,17 @@ else
         count_dates_list="\$count_dates_list,('\$count_date_current')"
     done
         
-    ${PSQL} -v project_id="'${project.id}'" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v dates_list="\$count_dates_list" -f "${__dirname}/32_projects_counts.sql"
+    ${PSQL} -v project_id="${project.id}" -v changes_table="pdm_features_${slug}_changes" -v boundary_table="pdm_features_${slug}_boundary" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v dates_list="\$count_dates_list" -f "${__dirname}/32_projects_counts.sql"
         `;
     }
 
     script += `
-    echo "== Generate user contributions"
-    ${PSQL} -v project_id="'${project.id}'" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -f "${__dirname}/33_projects_contribs.sql"
+    echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Generate user contributions"
+    ${PSQL} -v project_id="${project.id}" -v project_table="pdm_features_${slug}" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -f "${__dirname}/33_projects_contribs.sql"
 
-    if [ -f '${__dirname}/../projects/${project.id}/extract.sh' ]; then
-        echo "== Extract script"
-        ${__dirname}/../projects/${project.id}/extract.sh
+    if [ -f '${__dirname}/../projects/${project.name}/extract.sh' ]; then
+        echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Extract script"
+        ${__dirname}/../projects/${project.name}/extract.sh
         echo ""
     fi
 fi
@@ -245,31 +251,29 @@ fi
     let notesSources = processNotes(project);
     if (notesSources.length > 0){
         script += `
-if [ -f "${CSV_NOTES(project.id)}" ]; then
-	echo "   => Notes statistics"
-	${PSQL} -c "DELETE FROM pdm_note_counts WHERE project='${project.id}' AND ts BETWEEN '\${process_start_ts}' AND '\${current_ts}'"
-	${PSQL} -c "\\COPY pdm_note_counts FROM '${CSV_NOTES(project.id)}' CSV"
-	${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS(project.id)}' CSV"
+if [ -f "${CSV_NOTES(slug)}" ]; then
+	echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Notes statistics"
+	${PSQL} -c "DELETE FROM pdm_note_counts WHERE project_id=${project.id} AND ts BETWEEN '\${process_start_ts}' AND '\${current_ts}'"
+	${PSQL} -c "\\COPY pdm_note_counts FROM '${CSV_NOTES(slug)}' CSV"
+	${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS(slug)}' CSV"
 	${PSQL} -c "CREATE TABLE pdm_user_names_notes(userid BIGINT, username VARCHAR)"
-	${PSQL} -c "\\COPY pdm_user_names_notes FROM '${CSV_NOTES_USERS(project.id)}' CSV"
+	${PSQL} -c "\\COPY pdm_user_names_notes FROM '${CSV_NOTES_USERS(slug)}' CSV"
 	${PSQL} -c "INSERT INTO pdm_user_names SELECT userid, username FROM pdm_user_names_notes ON CONFLICT (userid) DO NOTHING; DROP TABLE pdm_user_names_notes;"
-	rm -f "${CSV_NOTES(project.id)}" "${CSV_NOTES_CONTRIBS(project.id)}" "${CSV_NOTES_USERS(project.id)}"
+	rm -f "${CSV_NOTES(slug)}" "${CSV_NOTES_CONTRIBS(slug)}" "${CSV_NOTES_USERS(slug)}"
 fi
 `;
     }
 
     script += `
-${PSQL} -c "UPDATE pdm_projects SET counts_lastupdate_date='\$process_end_ts' WHERE project='${project.id}'"
-process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
-echo "   => Project update sucessful in \$process_duration seconds"
+${PSQL} -c "UPDATE pdm_projects SET counts_lastupdate_date='\$process_end_ts' WHERE project_id=${project.id}"
+echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Project update sucessful"
 ${separator}
 `;
 });
 
 script += `
-echo "== Optimize database"
 if ${HAS_BOUNDARY}; then
-    ${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_subdivide"
+    echo "== Refresh boundary tiles"
     ${PSQL} -c "REFRESH MATERIALIZED VIEW pdm_boundary_tiles"
 fi
 ${separator}

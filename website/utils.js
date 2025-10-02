@@ -49,8 +49,9 @@ let filterDatasource = (obj = {}) => {
 exports.foldProjects = (projects) => {
 	const prjs = { past: [], current: [], next: [] };
 	Object.values(projects).forEach(project => {
+		const slug = project.name.split("_").pop();
 		// Check dates
-		if(new Date(project.start_date).getTime() <= Date.now() && ((project.end_date == null && project.soft_end_date == null) || Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime())) {
+		if(new Date(project.start_date).getTime() <= Date.now() && ((project.end_date == null && project.soft_end_date == null) || Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime() || Date.now() <= new Date(project.soft_end_date+"T23:59:59Z").getTime())) {
 			prjs.current.push(project);
 		}
 		else if(Date.now() <= new Date(project.start_date).getTime()) {
@@ -62,11 +63,15 @@ exports.foldProjects = (projects) => {
 		) {
 			prjs.past.push({
 				id: project.id,
-				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
+				name: project.name,
+				slug: slug,
+				icon: `/images/badges/${slug}.svg`,
 				title: project.title,
 				month: project.month,
 				end_date: project.end_date,
 			});
+		}else{
+			crossOriginIsolated.error(`Unable to fold project ${slug}. Please check start_date or end_date.`);
 		}
 	});
 	return prjs;
@@ -181,7 +186,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "gray";
-				const layer = ds.layer || `public.pdm_project_${p.id.split("_").pop()}`;
+				const layer = ds.layer || `public.pdm_project_${p.slug}`;
 
 				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
@@ -213,7 +218,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#FF7043"; // Orange
-				const layer = `public.pdm_project_${p.id.split("_").pop()}_compare_tiles_filtered`;
+				const layer = `public.pdm_project_${p.slug}_compare_tiles_filtered`;
 
 				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
@@ -245,7 +250,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#2E7D32"; // Green
-				const layer = `public.pdm_project_${p.id.split("_").pop()}`;
+				const layer = `public.pdm_project_${p.slug}`;
 
 				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
@@ -334,23 +339,58 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 	return fetch(CONFIG.VECT_STYLE)
 	.then(res => res.ok ? res.json() : getFallbackStyle())
 	.then(style => {
+		let colors = {
+			"2": "#fe3521",
+			"4": "#2196F3",
+			"6": "#4A148C",
+			"8": "#004D40"
+		}
+		let maxSizes = {
+			"2": 20,
+			"4": 30,
+			"6": 35,
+			"8": 40
+		}
 		let sources = {};
 		let layers = [];
-		const legend = {
-			"4": { color: "#2196F3", minSize: 3, minValue: 1, maxSize: 30, maxValue: maxPerLevel["4"] },
-			"6": { color: "#4A148C", minSize: 3, minValue: 1, maxSize: 35, maxValue: maxPerLevel["6"] },
-			"8": { color: "#004D40", minSize: 3, minValue: 1, maxSize: 40, maxValue: maxPerLevel["8"] }
-		};
+		let legend = {};
+		let adminLevels = {
+			"2":[0.1,3.9],
+			"4":[4.1, 5.4],
+			"6":[5.6,7.9],
+			"8":[8.1]
+		}
 
 		if(p && p.statistics && p.statistics.count) {
-			const condOpacity = ["interpolate", ["linear"], ["zoom"],
-				4.9, ["case", ["==", ["get", "admin_level"], 4], 1, 0 ],
-				5, 0,
-				5.1, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],
-				7.9, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],
-				8, 0,
-				8.1, ["case", ["==", ["get", "admin_level"], 8], 1, 0 ]
-			];
+			let circleColors = ["match", ["get", "admin_level"]];
+			let circlesRadius = ["match", ["get", "admin_level"]];
+			let condOpacity = ["interpolate", ["linear"], ["zoom"]];
+			let oldZLevel = null;
+
+			Object.keys(adminLevels).forEach(adminLevel => {
+				if (maxPerLevel.hasOwnProperty(adminLevel)){
+					let minVal = Math.min(1, maxPerLevel[adminLevel]);
+					legend[adminLevel] = { color: colors[adminLevel], minSize: 3, minValue: minVal, maxSize: maxSizes[adminLevel], maxValue: maxPerLevel[adminLevel] };
+					
+					if (minVal < maxPerLevel[adminLevel]){
+						circlesRadius.push(parseInt(adminLevel));
+						circlesRadius.push(["interpolate", ["linear"], ["get", "nb"], 0, 0, minVal, 3, maxPerLevel[adminLevel], maxSizes[adminLevel]]);
+						circleColors.push(parseInt(adminLevel));
+						circleColors.push(colors[adminLevel]);
+
+						if (oldZLevel != null){
+							condOpacity.push(oldZLevel+0.1);
+							condOpacity.push(0);
+						}
+						for (zLevel of adminLevels[adminLevel]){
+							condOpacity.push(zLevel, ["case", ["==", ["get", "admin_level"], parseInt(adminLevel)], 1, 0 ]);
+							oldZLevel = zLevel;
+						}
+					}
+				}
+			});
+			circlesRadius.push(0);
+			circleColors.push ("#999999");
 
 			// Source stats
 			p.datasources
@@ -360,7 +400,7 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 				let layer = ds.layer ? ds.layer : "public.pdm_boundary_project_tiles";
 
 				sources[id] = Object.assign({
-					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt?project_id=${p.id}` ],
+					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt?prjid=${p.id}` ],
 					layers: [ layer ],
 					minzoom: 2,
 					maxzoom: 14
@@ -379,14 +419,9 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 						"circle-stroke-color": "white",
 						"circle-stroke-width": 2,
 						"circle-stroke-opacity": condOpacity,
-						"circle-color": ["match", ["get", "admin_level"], 4, legend["4"].color, 6, legend["6"].color, legend["8"].color],
+						"circle-color": circleColors,
 						"circle-opacity": condOpacity,
-						"circle-radius": ["match", ["get", "admin_level"],
-							4, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["4"].minValue, legend["4"].minSize, legend["4"].maxValue, legend["4"].maxSize],
-							6, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["6"].minValue, legend["6"].minSize, legend["6"].maxValue, legend["6"].maxSize],
-							8, ["interpolate", ["linear"], ["get", "nb"], 0, 0, legend["8"].minValue, legend["8"].minSize, legend["8"].maxValue, legend["8"].maxSize],
-							0
-						]
+						"circle-radius": circlesRadius
 					}
 				});
 			});

@@ -7,7 +7,8 @@ CREATE TABLE pdm_user_names(
 
 -- Projects
 CREATE TABLE pdm_projects(
-	project VARCHAR PRIMARY KEY,
+	project_id int primary key,
+	project VARCHAR,
 	start_date TIMESTAMP NOT NULL,
 	end_date TIMESTAMP NULL,
 	changes_lastupdate_date TIMESTAMP NULL,
@@ -15,76 +16,25 @@ CREATE TABLE pdm_projects(
 );
 
 CREATE TABLE pdm_projects_points (
-	project VARCHAR,
+	project_id int,
 	contrib VARCHAR,
 	points integer not null,
-	PRIMARY KEY (project, contrib)
+	PRIMARY KEY (project_id, contrib)
 );
-
--- User contributions through all projects
-CREATE TABLE pdm_changes(
-	project VARCHAR NOT NULL,
-	action VARCHAR NOT NULL,
-	osmid VARCHAR NOT NULL,
-	version INT NOT NULL,
-	ts TIMESTAMP NOT NULL,
-	username VARCHAR,
-	userid BIGINT,
-	tags JSONB,
-	geom geometry default null,
-	contrib VARCHAR DEFAULT NULL,
-	tagsfilter boolean,
-	CONSTRAINT pdm_changes_pk PRIMARY KEY(project,osmid,version)
-);
-
-CREATE INDEX ON pdm_changes(project);
-CREATE INDEX ON pdm_changes(action);
-CREATE INDEX ON pdm_changes(osmid);
-CREATE INDEX ON pdm_changes(version);
-CREATE INDEX ON pdm_changes(ts);
-CREATE INDEX ON pdm_changes using gist(geom);
-
-CREATE MATERIALIZED VIEW pdm_features_changes as 
-	SELECT c1.project,
-    c1.action,
-    c1.osmid,
-    c1.version,
-    c1.ts as ts_start,
-    c2.ts as ts_end,
-    c1.username,
-    c1.userid,
-    c1.tags,
-    c1.contrib,
-	c1.tagsfilter
-    FROM pdm_changes c1 
-    LEFT JOIN pdm_changes c2
-		ON c1.project=c2.project and c1.osmid=c2.osmid and c1.version=c2.version-1;
-
--- Associate a given feature/version to a boundary
--- boundary can be null until we'll able to get geometry of deleted features
-CREATE TABLE pdm_features_boundary (
-	project VARCHAR NOT NULL,
-	osmid VARCHAR NOT NULL,
-	version INT NOT NULL,
-	boundary BIGINT
-);
-
-CREATE INDEX ON pdm_features_boundary USING btree(project);
-CREATE INDEX ON pdm_features_boundary USING btree(osmid);
-CREATE INDEX ON pdm_features_boundary USING btree(boundary);
 
 -- Users contributions
 -- No osmid, then no primary key on this table (several contribs can occur at the same ts)
 CREATE TABLE pdm_user_contribs(
-	project VARCHAR NOT NULL,
+	project_id int NOT NULL,
 	userid BIGINT NOT NULL,
-	ts TIMESTAMP NOT NULL,
+	ts DATE NOT NULL,
 	contribution VARCHAR NOT NULL,
 	verified BOOLEAN NOT NULL DEFAULT TRUE,
+	amount INT NOT NULL DEFAULT 1,
 	points INT NOT NULL DEFAULT 1
 );
 
-CREATE INDEX ON pdm_user_contribs(project);
+CREATE INDEX ON pdm_user_contribs(project_id);
 CREATE INDEX ON pdm_user_contribs(userid);
 
 -- User badges
@@ -92,44 +42,47 @@ DROP TABLE IF EXISTS pdm_user_badges;
 
 -- Features overall counts
 CREATE TABLE pdm_feature_counts(
-	project VARCHAR NOT NULL,
+	project_id int NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	amount INT NOT NULL,
+	len numeric not null,
 
-	CONSTRAINT pdm_feature_counts_pk PRIMARY KEY(project,ts)
+	CONSTRAINT pdm_feature_counts_pk PRIMARY KEY(project_id,ts)
 );
 
-CREATE INDEX ON pdm_feature_counts(project);
+CREATE INDEX ON pdm_feature_counts(project_id);
 
 -- Note counts
 CREATE TABLE pdm_note_counts(
-	project VARCHAR NOT NULL,
+	project_id int NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	open INT NOT NULL,
 	closed INT NOT NULL
 );
 
-CREATE INDEX ON pdm_note_counts(project);
+CREATE INDEX ON pdm_note_counts(project_id);
 
 CREATE TABLE pdm_feature_counts_per_boundary(
-	project VARCHAR NOT NULL,
+	project_id int NOT NULL,
 	boundary BIGINT NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	amount INT NOT NULL,
+	len numeric not null,
 
-	CONSTRAINT pdm_feature_counts_per_boundary_pk PRIMARY KEY(project, boundary, ts)
+	CONSTRAINT pdm_feature_counts_per_boundary_pk PRIMARY KEY(project_id, boundary, ts)
 );
 
-CREATE INDEX ON pdm_feature_counts_per_boundary using btree (project);
+CREATE INDEX ON pdm_feature_counts_per_boundary using btree (project_id);
 CREATE INDEX ON pdm_feature_counts_per_boundary using btree (boundary);
 
 -- Leaderboard view
 CREATE OR REPLACE VIEW pdm_leaderboard AS
 WITH stats AS (
-	SELECT userid, project, SUM(points) AS amount
-	FROM pdm_user_contribs
-	GROUP BY userid, project
-	ORDER BY SUM(points) DESC
+	SELECT uc.userid, uc.project_id, p.project, SUM(uc.points) AS amount
+	FROM pdm_user_contribs uc
+	JOIn pdm_projects p ON uc.project_id=p.project_id
+	GROUP BY uc.userid, uc.project_id, p.project
+	ORDER BY SUM(uc.points) DESC
 ), scores AS (
 	SELECT project, row_number() over (PARTITION BY project ORDER BY amount DESC) AS pos, amount
 	FROM (
@@ -145,11 +98,11 @@ JOIN pdm_user_names un ON st.userid = un.userid;
 
 -- OSM compare feature exclusions
 CREATE TABLE pdm_compare_exclusions(
-	project VARCHAR NOT NULL,
+	project_id int NOT NULL,
 	osm_id VARCHAR NOT NULL,
 	ts TIMESTAMP NOT NULL DEFAULT current_timestamp,
 	userid BIGINT,
-	CONSTRAINT pdm_compare_exclusions_pk PRIMARY KEY(project, osm_id)
+	CONSTRAINT pdm_compare_exclusions_pk PRIMARY KEY(project_id, osm_id)
 );
 
 -- Function to generate badges for a single user and project

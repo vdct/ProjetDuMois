@@ -537,7 +537,7 @@ And then run the server with:
 docker run -d --rm [--network=your-network] -p 3000:3000 --name=pdm -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest run
 ```
 
-Don't forger to add following lines into your crontab for periodic updates, for example daily updates:
+Don't forget to add following lines into your crontab for periodic updates, for example daily updates:
 
 ```bash
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_daily
@@ -551,6 +551,12 @@ docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e 
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
 ```
 See below for the related documentation.
+
+If you use Imposm updates, you may start and let run another container that handles regular updates as well:
+
+```bash
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_imposm
+```
 
 ### Standalone
 

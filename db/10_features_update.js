@@ -15,6 +15,7 @@ const IMPOSM_YML_FS = CONFIG.WORK_DIR + '/imposm.yml';
 const IMPOSM_CACHE_DIR = CONFIG.WORK_DIR + '/imposm_cache';
 const IMPOSM_DIFF_DIR = CONFIG.WORK_DIR + '/imposm_diffs';
 const OUTPUT_SCRIPT_FS = __dirname+'/11_features_update_tmp.sh';
+const IMPOSM_SCRIPT_FS = __dirname+'/15_imposm_update_tmp.sh';
 const UNINSTALL_SCRIPT_FS = __dirname+'/91_project_uninstall_tmp.sql';
 let OSM_PBF_FS;
 if (IMPOSM_ENABLED && CONFIG.hasOwnProperty("OSM_PBF_URL")){
@@ -228,3 +229,27 @@ fs.writeFile(UNINSTALL_SCRIPT_FS, sqlToScript(preSQL), { mode: 0o766 }, err => {
 	if(err) { throw new Error(err); }
 	console.log("Uninstall script done");
 });
+
+// Imposm run/update script
+if (IMPOSM_ENABLED) {
+	var imposmScript = `#!/bin/bash
+
+# Script for Imposm run/update
+# Generated automatically by npm run features:update
+
+set -e
+
+imposm run \\
+	-connection "${process.env.DB_URL}?prefix=pdm_" \\
+	-mapping "${IMPOSM_YML_FS}" \\
+	-cachedir "${IMPOSM_CACHE_DIR}" \\
+	-dbschema-import public \\
+	-diffdir "${IMPOSM_DIFF_DIR}"
+	`;
+
+	// Script de mise à jour
+	fs.writeFile(IMPOSM_SCRIPT_FS, imposmScript, { mode: 0o766 }, err => {
+		if(err) { throw new Error(err); }
+		console.log("Update script done");
+	});
+}

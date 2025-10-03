@@ -148,6 +148,11 @@ app.get("/projects/:id", (req, res) => {
     all.current.find((p) => p.id === req.params.id) !== undefined;
   const isNext =
     all.next && all.next.find((p) => p.id === req.params.id) !== undefined;
+  const isHardEnded = all.past.find(p => (
+    p.id === req.params.id
+    && p.end_date != null
+    && new Date(p.end_date + "T23:59:59Z").getTime() < Date.now()
+  )) !== undefined;
   const isRecentPast =
     all.past &&
     all.past.length > 0 &&
@@ -165,6 +170,7 @@ app.get("/projects/:id", (req, res) => {
         isActive,
         isNext,
         isRecentPast,
+        isHardEnded,
         projects: all,
         projectsToDisplay: toDisplay,
         days: getProjectDays(p),
@@ -189,6 +195,12 @@ app.get("/projects/:id/map", async (req, res) => {
   const isActive =
     all.current.length > 0 &&
     all.current.find((p) => p.id === req.params.id) !== undefined;
+  
+  // Redirect to project page if hard-ended
+  if(p.end_date != null && new Date(p.end_date + "T23:59:59Z").getTime() < Date.now()) {
+    return res.redirect("/projects/"+req.params.id);
+  }
+
   const mapstyle = await getMapStyle(p);
   res.render(
     "pages/map",
@@ -271,7 +283,11 @@ app.get("/projects/:id/stats", (req, res) => {
               fill: false,
               borderColor: ds.color || "#c62828",
               lineTension: 0,
-            }));
+            }))
+            .catch(e => {
+              console.error(e);
+              return {};
+            });
         }),
     ).then((results) => {
       if (
@@ -420,6 +436,17 @@ app.get("/projects/:id/stats", (req, res) => {
       .then((results) => ({
         nbContributors: results.rows.length,
         leaderboard: osmUserAuthentified ? results.rows : null,
+      })),
+  );
+
+  // Fetch last count update time
+  allPromises.push(
+    pool
+      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
+        req.params.id,
+      ])
+      .then((results) => ({
+        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
       })),
   );
 

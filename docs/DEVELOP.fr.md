@@ -534,13 +534,20 @@ N'oubliez pas d'ajouter les lignes suivantes dans vos crontab pour mettre à jou
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_daily
 ```
 
-Des commandes dédiées sont néamoins disponibles pour relancer une update particuliere:
+Des commandes dédiées sont néamoins disponibles pour relancer une update particulière :
 
 ```bash
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
 ```
+
+Si vous utilisez la mise à jour via Imposm, vous devez avoir un container qui tourne en fond pour gérer les mises à jour régulières :
+
+```bash
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_imposm
+```
+
 Voir ci-dessous pour la portée de chacune.
 
 ### Instance locale

@@ -46,6 +46,10 @@ case $command in
     npm run projects:update $otherArgs
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
+"update_imposm")
+    npm run features:update $otherArgs
+    ./db/15_imposm_update_tmp.sh
+    ;;
 "uninstall")
     npm run features:update $otherArgs
 

@@ -87,7 +87,8 @@ Each project is defined via a subdirectory of `projects'. Each subdirectory must
 
 The properties in `info.json` are as follows:
 
-- `id`: mission identifier (authorized characters: A-Z, 0-9, \_ and -)
+- `id`: Unique integer identifier
+- `name`: mission identifier (authorized characters: A-Z, 0-9, \_ and -)
 - `title`: name of the mission (short enough)
 - `start_date`: start date of the mission (format YYYYY-MM-DD)
 - `end_date`: end date of the mission (format YYYYY-MM-DD)

@@ -87,7 +87,8 @@ Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-ré
 
 Les propriétés dans `info.json` sont les suivantes :
 
-- `id` : identifiant de la mission (caractères autorisés : A-Z, 0-9, \_ et -)
+- `id` : identifiant numérique entier unique
+- `name` : identifiant de la mission (caractères autorisés : A-Z, 0-9, \_ et -)
 - `title` : nom de la mission (assez court)
 - `start_date` : date de début de la mission (format AAAA-MM-JJ)
 - `end_date` : date de fin de la mission (format AAAA-MM-JJ)

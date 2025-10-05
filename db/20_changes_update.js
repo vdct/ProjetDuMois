@@ -234,7 +234,12 @@ Object.values(projects).forEach(project => {
 
         `;
         let tagFilterOsh = OSH_PBF_FS;
+        let getIdOptions = "-H";
+        let tagFilterFeatures = "nwr";
         tagFilterParts.forEach(tagFilter => {
+            if (tagFilter.indexOf('/') > -1){
+                tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
+            }
             script += `
         echo "   => Extract features from OSH (${tagFilter})"
         rm -f "${oshProjectInterm}"
@@ -245,10 +250,14 @@ Object.values(projects).forEach(project => {
             tagFilterOsh = oshProjectFiltered;
         });
 
+        if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
+            getIdOptions += " -r";
+        }
+
         script += `
         echo "   => Seek for all changes related to selected features"
         rm -f "${oshProjectUseful}"
-        osmium getid -H "${OSH_PBF_FS}" -I "${oshProjectFiltered}" -o "${oshProjectUseful}"
+        osmium getid ${getIdOptions} "${OSH_PBF_FS}" -I "${oshProjectFiltered}" -o "${oshProjectUseful}"
 
         echo "   => Convert to OPL changes between \$process_start_ts and \$process_end_ts"
         rm -f "${oplProject}"
@@ -366,14 +375,22 @@ Object.values(projects).forEach(project => {
         ${separator}
     `;
 
+    let getIdOptions = "-H";
+    let tagFilterFeatures = "nwr";
     tagFilterParts.forEach(tagFilter => {
+        if (tagFilter.indexOf('/') > -1){
+            tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
+        }
         script += `
         echo "   => Extract features from OSC (${tagFilter})"
         rm -f "${oscProjectTags}"
         osmium tags-filter "${oscProject}" ${tagFilter} -o "${oscProjectTags}"
         osmium cat "${oscProjectTags}" -f opl | grep ' v1 ' | awk '{print $1}' > "${listCreatedIds}"
         `;
-        });
+    });
+    if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
+        getIdOptions += " -r";
+    }
 
     script += `
         ${PSQL} -qtAc "select regexp_replace(osmid, 'ode/|ay/|elation/', '') as osmid from pdm_features where project_id=${project.id} group by osmid having NOT ('delete' = ANY (array_agg(action)))" > ${listKnownIds}
@@ -383,7 +400,7 @@ Object.values(projects).forEach(project => {
         rm -f "${oplProject}"
         if [[ \$knownfeatures > 0 ]] || [[ \$createdFeatures > 0 ]]; then
             rm -f "${oscProjectIds}"
-            osmium getid -i "${listKnownIds}" -i "${listCreatedIds}" "${oscProject}" --with-history -o "${oscProjectIds}"
+            osmium getid ${getIdOptions} -i "${listKnownIds}" -i "${listCreatedIds}" "${oscProject}" -o "${oscProjectIds}"
 
             echo "   => Merging changes in one file"
             osmium merge ${oscProjectTags} ${oscProjectIds} -f opl,history=true,locations_on_ways=true -o "${oplProject}"

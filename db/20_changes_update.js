@@ -251,7 +251,7 @@ Object.values(projects).forEach(project => {
         });
 
         if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
-            getIdOptions += " -r";
+            getIdOptions += " -r -t";
         }
 
         script += `
@@ -389,7 +389,7 @@ Object.values(projects).forEach(project => {
         `;
     });
     if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
-        getIdOptions += " -r";
+        getIdOptions += " -r -t";
     }
 
     script += `

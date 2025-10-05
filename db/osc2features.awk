@@ -115,6 +115,10 @@ BEGIN {
         }
     }
 
+    if (a != "delete" && tagfilter != true){
+        next
+    }
+
     # Construction de la sortie CSV
     printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
            f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter

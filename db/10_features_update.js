@@ -58,7 +58,8 @@ if(IMPOSM_ENABLED) {
 }
 
 Object.entries(projects).forEach(e => {
-	const [ id, name, project ] = e;
+	const [ name, project ] = e;
+	const id = project.id;
 	const slug = name.split("_").pop();
 
 	if (IMPOSM_ENABLED) {
@@ -115,7 +116,7 @@ Object.entries(projects).forEach(e => {
 
 		preSQL.push(`DROP VIEW IF EXISTS pdm_project_${slug}_compare_tiles_filtered CASCADE`);
 		postSQL.push(
-			`CREATE VIEW pdm_project_${slug}_compare_tiles_filtered AS SELECT a.* FROM pdm_project_${slug}_compare_tiles a LEFT JOIN pdm_compare_exclusions b ON b.project = '${id}' AND a.osm_id = b.osm_id WHERE b.osm_id IS NULL`
+			`CREATE VIEW pdm_project_${slug}_compare_tiles_filtered AS SELECT a.* FROM pdm_project_${slug}_compare_tiles a LEFT JOIN pdm_compare_exclusions b ON b.project_id = '${id}' AND a.osm_id = b.osm_id WHERE b.osm_id IS NULL`
 		);
 	}
 });

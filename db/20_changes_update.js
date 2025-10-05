@@ -27,27 +27,30 @@ const pgPool = new Pool({
 
 function macroChangesCsv (project, csv_file, start_ts = null, end_ts = null){
     const slug = project.name.split("_").pop();
+    const features_table = `pdm_features_${slug}`;
+    const changes_table = `pdm_features_${slug}_changes`;
+    const boundary_table = `pdm_features_${slug}_boundary`;
     let script = `
     echo "   => Init changes table in database"
     `;
     if (start_ts != null && end_ts != null){
-        script += `${PSQL} -c "DELETE FROM pdm_features_${slug} WHERE ts BETWEEN '${start_ts}' AND '${end_ts}'"`;
+        script += `${PSQL} -c "DELETE FROM ${features_table} WHERE ts BETWEEN '${start_ts}' AND '${end_ts}'"`;
     }else{
-        script += `${PSQL} -v features_table="pdm_features_${slug}" -v changes_table="pdm_features_${slug}_changes" -v boundary_table="pdm_features_${slug}_boundary" -f "${__dirname}/22_changes_init.sql"
+        script += `${PSQL} -v features_table="${features_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
         `;
     }
     script += `
 
-    ${PSQL} -c "CREATE TABLE IF NOT EXISTS pdm_features_${slug}_tmp (LIKE pdm_features_${slug})"
-    ${PSQL} -c "TRUNCATE TABLE pdm_features_${slug}_tmp"
+    ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${features_table}_tmp (LIKE ${features_table})"
+    ${PSQL} -c "TRUNCATE TABLE ${features_table}_tmp"
 
-    ${PSQL} -c "\\COPY pdm_features_${slug}_tmp (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csv_file}' CSV"
+    ${PSQL} -c "\\COPY ${features_table}_tmp (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csv_file}' CSV"
 
-    ${PSQL} -v features_table="pdm_features_${slug}" -v features_table_tmp="pdm_features_${slug}_tmp" -f "${__dirname}/23_changes_populate.sql"
+    ${PSQL} -v features_table="${features_table}" -v changes_table="${changes_table}" -v features_table_tmp="${features_table}_tmp" -f "${__dirname}/23_changes_populate.sql"
     if ${HAS_BOUNDARY}; then
-        ${PSQL} -v features_table_tmp="pdm_features_${slug}_tmp" -v boundary_table="pdm_features_${slug}_boundary" -f "${__dirname}/24_changes_boundary.sql"
+        ${PSQL} -v features_table_tmp="${features_table}_tmp" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary.sql"
     fi
-    ${PSQL} -c "DROP TABLE pdm_features_tmp"
+    ${PSQL} -c "DROP TABLE ${features_table}_tmp"
 
     if [ -f "${__dirname}/../projects/${project.name}/contribs.sql" ]; then
         echo "Including project custom contributions"

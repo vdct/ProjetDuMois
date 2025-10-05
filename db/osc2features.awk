@@ -83,7 +83,7 @@ BEGIN {
             gsub(/n[0-9]+x/, "(", N);
             gsub(/y/, " ", N);
             gsub(/,/, "),", N);
-            g = "SRID=4326; LINESTRING("N"))"
+            g = "\"SRID=4326; LINESTRING("N"))\""
         }
     } else if (f == "r"){
         f = "relation"
@@ -116,6 +116,6 @@ BEGIN {
     }
 
     # Construction de la sortie CSV
-    printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",\"%s\",%s\n",
+    printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
            f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter
 }

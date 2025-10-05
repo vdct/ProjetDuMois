@@ -1,5 +1,5 @@
 -- Insert unknown changes in main table
-CREATE INDEX ON pdm_features_tmp using btree(project_id, osmid, version);
+CREATE INDEX ON :features_table_tmp using btree(project_id, osmid, version);
 
 ALTER TABLE :features_table SET UNLOGGED;
 WITH unknown AS (
@@ -15,4 +15,6 @@ FROM unknown u;
 ALTER TABLE :features_table SET LOGGED;
 REINDEX table :features_table;
 
-CREATE INDEX ON pdm_features_tmp using gist(geom);
+REFRESH MATERIALIZED VIEW :changes_table;
+
+CREATE INDEX ON :features_table_tmp using gist(geom);

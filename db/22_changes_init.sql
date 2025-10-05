@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS :features_table CASCADE;
 CREATE TABLE :features_table (
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,
@@ -34,6 +35,7 @@ CREATE MATERIALIZED VIEW :changes_table as
 
 -- Associate a given feature/version to a boundary
 -- boundary can be null until we'll able to get geometry of deleted features
+DROP TABLE IF EXISTS :boundary_table CASCADE;
 CREATE TABLE :boundary_table (
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,

@@ -43,7 +43,8 @@ The general configuration of the tool is to be filled in `config.json`. There is
 
 - `OSM_USER`: OpenStreetMap username for retrieving the modification history with metadata
 - `OSM_PASS`: password associated with the OSM user account
-- `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap
+- `OSM_CLIENT_ID` : client ID associated with the OSM account
+- `OSH_PBF_AUTHORIZED`: Enable OAuth2 authentication to download PBF files when necessary. To be disabled if the repository selected in `OSH_PBF_URL` and `OSM_PBF_URL` doesn't support it.
 - `OSH_PBF_URL`: URL of the OSH.PBF file (history and metadata, example `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
 - `OSM_PBF_URL`: URL of the OSM.PBF file (current state, example `https://download.geofabrik.de/europe/france-latest.osm.pbf`)
 - `POLY_URL`: URL of a polygon file holding the perimeter in which projects are considered (example `https://download.geofabrik.de/europe/france.poly`)
@@ -81,12 +82,13 @@ Each project is defined via a subdirectory of `projects'. Each subdirectory must
 
 - `info.json` : project metadata
 - `howto.md`: description of tasks to be performed in Markdown format (use title levels >= 3)
-- `contribs.sql` : SQL script containing UPDATE request on `pdm_changes` table, to set contribution classes to certain type of OSM changes and associate points
+- `contribs.sql` : SQL script containing UPDATE request on `pdm_features` table, to set contribution classes to certain type of OSM changes and associate points
 - `extract.sh` : Optional script that produces a csv export to be available for download on the web interface.
 
 The properties in `info.json` are as follows:
 
-- `id`: mission identifier (authorized characters: A-Z, 0-9, \_ and -)
+- `id`: Unique integer identifier
+- `name`: mission identifier (authorized characters: A-Z, 0-9, \_ and -)
 - `title`: name of the mission (short enough)
 - `start_date`: start date of the mission (format YYYYY-MM-DD)
 - `end_date`: end date of the mission (format YYYYY-MM-DD)
@@ -439,7 +441,7 @@ By default, the platform create the following contribution types:
 - `edit` : changes concerning features version>1 (tag or geometry edits)
 
 It is possible to attribute your own type for each project by creating a `contribs.sql` file next to `info.json`.
-This script contains UPDATE SQL requests to add entries in `pdm_changes` table. Each OSM change can only have a single type and have a single amount of points associated.
+This script contains UPDATE SQL requests to add entries in `pdm_features` table. Each OSM change can only have a single type and have a single amount of points associated.
 
 Configuration of points is in `info.json`:
 

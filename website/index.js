@@ -124,7 +124,7 @@ app.get("/error/:code", (req, res) => {
   }
 
   const httpcode =
-    req.params.code && !isNaN(req.params.code) ? req.params.code : "400";
+    req.params.code && !isNaN(req.params.code) ? req.params.code : 400;
   res.status(httpcode).render("pages/error", { CONFIG, httpcode });
 });
 

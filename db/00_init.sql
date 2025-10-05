@@ -7,7 +7,7 @@ CREATE TABLE pdm_user_names(
 
 -- Projects
 CREATE TABLE pdm_projects(
-	project_id serial primary key,
+	project_id int primary key,
 	project VARCHAR,
 	start_date TIMESTAMP NOT NULL,
 	end_date TIMESTAMP NULL,

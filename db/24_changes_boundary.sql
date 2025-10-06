@@ -1,8 +1,7 @@
 -- Insert unknown changes from pdm_features_tmp and associate them with enclosing boundaries
 ALTER TABLE :boundary_table SET UNLOGGED;
 WITH unknown AS (
-	SELECT pc.project_id, 
-	pc.osmid AS osmid,
+	SELECT pc.osmid AS osmid,
 	pc.version as version,
 	b.osm_id AS boundary
 	FROM :features_table_tmp pc
@@ -11,7 +10,7 @@ WITH unknown AS (
 	WHERE fb.osmid IS NULL
 )
 INSERT INTO :boundary_table
-SELECT u.project_id AS project_id, u.osmid AS osmid, u.version, u.boundary
+SELECT u.osmid AS osmid, u.version, u.boundary
 FROM unknown u;
 
 ALTER TABLE :boundary_table SET LOGGED;

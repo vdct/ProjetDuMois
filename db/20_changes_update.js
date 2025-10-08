@@ -201,7 +201,7 @@ Object.values(projects).forEach(project => {
     // Project files
     const slug = project.name.split("_").pop();
     const oshProjectFiltered = OSH_PBF_FS.replace(".osh", `.${slug}_filtered.osh`);
-    const oshProjectTime = OSH_PBF_FS.replace(".osh", `.${slug}_time.osh`);
+    let oshProjectTime = OSH_PBF_FS.replace(".osh", `.${slug}_time.osh`);
     const oshProjectInterm = OSH_PBF_FS.replace(".osh", `.${slug}_interm.osh`);
     const oshProjectUseful = OSH_PBF_FS.replace(".osh", `.${slug}_useful.osh`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);

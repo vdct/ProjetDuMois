@@ -78,13 +78,13 @@ BEGIN {
         }
     } else if (f == "w"){
         f = "way"
-        if (a != "delete"){
-            N = substr($9, 2);
-            gsub(/n[0-9]+x/, "(", N);
-            gsub(/y/, " ", N);
-            gsub(/,/, "),", N);
-            g = "\"SRID=4326; LINESTRING("N"))\""
-        }
+#       if (a != "delete"){
+#           N = substr($9, 2);
+#           gsub(/n[0-9]+x/, "(", N);
+#           gsub(/y/, " ", N);
+#           gsub(/,/, "),", N);
+#           g = "\"SRID=4326; LINESTRING("N"))\""
+#       }
     } else if (f == "r"){
         f = "relation"
     }

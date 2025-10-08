@@ -241,7 +241,7 @@ Object.values(projects).forEach(project => {
                 tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
             }
             script += `
-        echo "   => Extract history between \$process_start_ts and \$process_end_ts
+        echo "   => Extract history between \$process_start_ts and \$process_end_ts"
         rm -f "${oshProjectTime}"
         osmium time-filer "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "${oshProjectTime}"
 

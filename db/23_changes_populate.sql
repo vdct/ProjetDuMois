@@ -1,5 +1,5 @@
 -- Insert unknown changes in main table
-CREATE INDEX ON :features_table_tmp using btree(project_id, osmid, version);
+CREATE INDEX ON :features_table_tmp using btree(osmid, version);
 
 ALTER TABLE :features_table SET UNLOGGED;
 WITH unknown AS (

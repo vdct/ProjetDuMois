@@ -201,7 +201,6 @@ Object.values(projects).forEach(project => {
     // Project files
     const slug = project.name.split("_").pop();
     const oshProjectFiltered = OSH_PBF_FS.replace(".osh", `.${slug}_filtered.osh`);
-    let oshProjectTime = OSH_PBF_FS.replace(".osh", `.${slug}_time.osh`);
     const oshProjectInterm = OSH_PBF_FS.replace(".osh", `.${slug}_interm.osh`);
     const oshProjectUseful = OSH_PBF_FS.replace(".osh", `.${slug}_useful.osh`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);
@@ -233,7 +232,19 @@ Object.values(projects).forEach(project => {
             process_end_ts=\$(date -d "@\$project_end_time" +"%Y-%m-%dT00:00:00Z")
         fi
 
+        history_start=\$(date -d "$process_start_ts" +"%Y%m%d")
+        history_end=\$(date -d "$process_end_ts" +"%Y%m%d")
+        history_osh="\${${OSH_PBF_FS}/.osh/"time-\$history_start-\$history_end"}
+        if [[ ! -f "\$history_osh" ]]; then
+            echo "   => Extract history between \$process_start_ts and \$process_end_ts"
+            rm -f "${oshProjectTime}"
+            osmium time-filter "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "\$history_osh"
+        else
+            echo "   => Reuse existing history between \$process_start_ts and \$process_end_ts"
+        fi
+
         `;
+        let oshProjectTime = "\$history_osh";
         let getIdOptions = "-H";
         let tagFilterFeatures = "nwr";
         tagFilterParts.forEach(tagFilter => {
@@ -241,10 +252,6 @@ Object.values(projects).forEach(project => {
                 tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
             }
             script += `
-        echo "   => Extract history between \$process_start_ts and \$process_end_ts"
-        rm -f "${oshProjectTime}"
-        osmium time-filter "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "${oshProjectTime}"
-
         echo "   => Extract features from OSH (${tagFilter})"
         rm -f "${oshProjectInterm}"
         osmium tags-filter "${oshProjectTime}" -R ${tagFilter} -O -o "${oshProjectInterm}"
@@ -284,7 +291,7 @@ Object.values(projects).forEach(project => {
 
 script += `
     echo "== Removing temp files"
-    rm -f "${OSH_PBF_FS}" "${OSH_TS_FS}"
+    rm -f "${CONFIG.WORK_DIR}/*.osh.pbf"
 ${separator}
 fi
 

@@ -243,7 +243,7 @@ Object.values(projects).forEach(project => {
             script += `
         echo "   => Extract history between \$process_start_ts and \$process_end_ts"
         rm -f "${oshProjectTime}"
-        osmium time-filer "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "${oshProjectTime}"
+        osmium time-filter "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "${oshProjectTime}"
 
         echo "   => Extract features from OSH (${tagFilter})"
         rm -f "${oshProjectInterm}"

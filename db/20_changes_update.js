@@ -201,6 +201,7 @@ Object.values(projects).forEach(project => {
     // Project files
     const slug = project.name.split("_").pop();
     const oshProjectFiltered = OSH_PBF_FS.replace(".osh", `.${slug}_filtered.osh`);
+    const oshProjectTime = OSH_PBF_FS.replace(".osh", `.${slug}_time.osh`);
     const oshProjectInterm = OSH_PBF_FS.replace(".osh", `.${slug}_interm.osh`);
     const oshProjectUseful = OSH_PBF_FS.replace(".osh", `.${slug}_useful.osh`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);
@@ -233,7 +234,6 @@ Object.values(projects).forEach(project => {
         fi
 
         `;
-        let tagFilterOsh = OSH_PBF_FS;
         let getIdOptions = "-H";
         let tagFilterFeatures = "nwr";
         tagFilterParts.forEach(tagFilter => {
@@ -241,13 +241,17 @@ Object.values(projects).forEach(project => {
                 tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
             }
             script += `
+        echo "   => Extract history between \$process_start_ts and \$process_end_ts
+        rm -f "${oshProjectTime}"
+        osmium time-filer "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "${oshProjectTime}"
+
         echo "   => Extract features from OSH (${tagFilter})"
         rm -f "${oshProjectInterm}"
-        osmium tags-filter "${tagFilterOsh}" -R ${tagFilter} -O -o "${oshProjectInterm}"
+        osmium tags-filter "${oshProjectTime}" -R ${tagFilter} -O -o "${oshProjectInterm}"
         rm -f "${oshProjectFiltered}"
         mv "${oshProjectInterm}" "${oshProjectFiltered}"
         `;
-            tagFilterOsh = oshProjectFiltered;
+            oshProjectTime = oshProjectFiltered;
         });
 
         if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
@@ -257,14 +261,14 @@ Object.values(projects).forEach(project => {
         script += `
         echo "   => Seek for all changes related to selected features"
         rm -f "${oshProjectUseful}"
-        osmium getid ${getIdOptions} "${OSH_PBF_FS}" -I "${oshProjectFiltered}" -o "${oshProjectUseful}"
+        osmium getid ${getIdOptions} "${oshProjectTime}" -I "${oshProjectFiltered}" -o "${oshProjectUseful}"
 
-        echo "   => Convert to OPL changes between \$process_start_ts and \$process_end_ts"
+        echo "   => Convert to OPL changes"
         rm -f "${oplProject}"
-        osmium time-filter "${oshProjectUseful}" \$process_start_ts \$process_end_ts -f opl,history=true,locations_on_ways=true -o "${oplProject}"
+        osmium cat "${oshProjectUseful}" -f opl,history=true -o "${oplProject}"
 
         echo "   => Transform changes into CSV file"
-        rm -f "${csvFeatures}" "${oshProjectFiltered}" "${oshProjectUseful}"
+        rm -f "${csvFeatures}" "${oshProjectTime}" "${oshProjectFiltered}" "${oshProjectUseful}"
         awk -f ${OSC2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" "${oplProject}" > "${csvFeatures}"
         rm -f "${oplProject}"
 

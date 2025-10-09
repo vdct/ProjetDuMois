@@ -14,7 +14,7 @@ INSERT INTO pdm_feature_counts (project_id, ts, amount)
     JOIN pdm_features_counts_dates d 
     ON d.ts BETWEEN fc.ts_start AND fc.ts_end
     OR (d.ts > fc.ts_start AND fc.ts_end is null)
-    WHERE action!='delete' and fc.tagsfilter=true
+    WHERE fc.action!='delete' and fc.tagsfilter=true
     GROUP BY d.ts
 ON CONFLICT (project_id,ts) DO UPDATE SET amount=EXCLUDED.amount;
 
@@ -26,7 +26,7 @@ INSERT INTO pdm_feature_counts_per_boundary (project_id, boundary, ts, amount)
     JOIN pdm_features_counts_dates d 
     ON d.ts BETWEEN fc.ts_start AND fc.ts_end
     OR (d.ts > fc.ts_start AND fc.ts_end is null)
-    WHERE action!='delete' and fc.tagsfilter=true
+    WHERE fc.action!='delete' and fc.tagsfilter=true
     GROUP BY fb.boundary, d.ts
  ON CONFLICT (project_id,boundary,ts) DO UPDATE SET amount=EXCLUDED.amount;
 

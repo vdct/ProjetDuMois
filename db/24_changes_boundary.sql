@@ -7,7 +7,7 @@ WITH unknown AS (
 	FROM :features_table_tmp tmp
 	JOIN pdm_boundary_subdivide b ON ST_Intersects(tmp.geom, b.geom)
 	LEFT JOIN :boundary_table fb ON fb.osmid=tmp.osmid AND fb.version=tmp.version AND fb.boundary=b.osm_id
-	WHERE fb.osmid IS NULL
+	WHERE fb.osmid IS NULL AND tmp.action!='delete'
 )
 INSERT INTO :boundary_table
 SELECT u.osmid AS osmid, u.version, u.boundary

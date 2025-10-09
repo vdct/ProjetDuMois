@@ -31,7 +31,13 @@ CREATE MATERIALIZED VIEW :changes_table as
 	c1.tagsfilter
     FROM :features_table c1 
     LEFT JOIN :features_table c2
-		ON c1.osmid=c2.osmid and c1.version=c2.version-1;
+		ON c1.osmid=c2.osmid and c1.version=c2.version-1
+	WHERE c1.action!="delete";
+
+CREATE INDEX ON :changes_table (osmid, version);
+CREATE INDEX ON :changes_table (action);
+CREATE INDEX ON :changes_table (ts_start, ts_end);
+CREATE INDEX ON :changes_table using gist(geom);
 
 -- Associate a given feature/version to a boundary
 -- boundary can be null until we'll able to get geometry of deleted features

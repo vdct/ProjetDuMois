@@ -202,7 +202,6 @@ Object.values(projects).forEach(project => {
     const slug = project.name.split("_").pop();
     const oshProjectFiltered = OSH_PBF_FS.replace(".osh", `.${slug}_filtered.osh`);
     const oshProjectInterm = OSH_PBF_FS.replace(".osh", `.${slug}_interm.osh`);
-    const oshProjectUseful = OSH_PBF_FS.replace(".osh", `.${slug}_useful.osh`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);
     const csvFeatures = CSV_FEATURES_FS.replace("features", `features-${slug}`);
 
@@ -232,12 +231,12 @@ Object.values(projects).forEach(project => {
             process_end_ts=\$(date -d "@\$project_end_time" +"%Y-%m-%dT00:00:00Z")
         fi
 
+        history_file="${OSH_PBF_FS}"
         history_start=\$(date -d "$process_start_ts" +"%Y%m%d")
         history_end=\$(date -d "$process_end_ts" +"%Y%m%d")
-        history_osh="\${${OSH_PBF_FS}/.osh/"time-\$history_start-\$history_end"}
+        history_osh="\${history_file/.osh/".time-\$history_start-\$history_end.osh"}"
         if [[ ! -f "\$history_osh" ]]; then
             echo "   => Extract history between \$process_start_ts and \$process_end_ts"
-            rm -f "${oshProjectTime}"
             osmium time-filter "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "\$history_osh"
         else
             echo "   => Reuse existing history between \$process_start_ts and \$process_end_ts"
@@ -266,16 +265,12 @@ Object.values(projects).forEach(project => {
         }
 
         script += `
-        echo "   => Seek for all changes related to selected features"
-        rm -f "${oshProjectUseful}"
-        osmium getid ${getIdOptions} "${oshProjectTime}" -I "${oshProjectFiltered}" -o "${oshProjectUseful}"
-
-        echo "   => Convert to OPL changes"
+        echo "   => Seek for all changes related to selected features and convert to OPL"
         rm -f "${oplProject}"
-        osmium cat "${oshProjectUseful}" -f opl,history=true -o "${oplProject}"
+        osmium getid ${getIdOptions} "\$history_osh" -I "${oshProjectFiltered}" -f opl,history=true -o "${oplProject}"
 
         echo "   => Transform changes into CSV file"
-        rm -f "${csvFeatures}" "${oshProjectTime}" "${oshProjectFiltered}" "${oshProjectUseful}"
+        rm -f "${csvFeatures}" "${oshProjectFiltered}"
         awk -f ${OSC2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" "${oplProject}" > "${csvFeatures}"
         rm -f "${oplProject}"
 
@@ -404,7 +399,7 @@ Object.values(projects).forEach(project => {
     }
 
     script += `
-        ${PSQL} -qtAc "select regexp_replace(osmid, 'ode/|ay/|elation/', '') as osmid from pdm_features where project_id=${project.id} group by osmid having NOT ('delete' = ANY (array_agg(action)))" > ${listKnownIds}
+        ${PSQL} -qtAc "select regexp_replace(osmid, 'ode/|ay/|elation/', '') as osmid from pdm_features_${slug} where group by osmid having NOT ('delete' = ANY (array_agg(action)))" > ${listKnownIds}
         knownFeatures=$(wc -l ${listKnownIds} | awk '{print $1}')
         createdFeatures=$(wc -l ${listCreatedIds} | awk '{print $1}')
         echo "   => Extract \$knownFeatures known features and \$createdFeatures created features by their ids"

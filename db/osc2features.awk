@@ -1,6 +1,7 @@
 function escape_json(str) {
-    gsub(/\\/, "\\\\\\", str);
+    gsub(/\\/, "\\\\", str);
     gsub(/"/, "", str);
+    gsub(/%20%/, " ", str);
     return str;
 }
 function escape(str){
@@ -115,7 +116,7 @@ BEGIN {
         }
     }
 
-    if (a != "delete" && tagfilter != true){
+    if (a != "delete" and tagfilter != 1){
         next
     }
 

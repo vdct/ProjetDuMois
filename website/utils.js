@@ -347,6 +347,7 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 
 		if(p && p.statistics && p.statistics.count) {
 			const condOpacity = ["interpolate", ["linear"], ["zoom"],
+				0.1, ["case", ["<", ["get", "admin_level"], 4], 1, 0 ],
 				4.9, ["case", ["==", ["get", "admin_level"], 4], 1, 0 ],
 				5, 0,
 				5.1, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],

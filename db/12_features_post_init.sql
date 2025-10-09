@@ -48,7 +48,7 @@ BEGIN
 		WHERE
 			t.project_id = project_id
 			AND CASE
-				WHEN z < 5 THEN t.admin_level = 4
+				WHEN z < 5 THEN t.admin_level <= 4
 				WHEN z >= 5 AND z < 8 THEN t.admin_level = 6
 				WHEN z >= 8 THEN t.admin_level = 8
 			END

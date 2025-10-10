@@ -14,7 +14,3 @@ FROM unknown u;
 
 ALTER TABLE :features_table SET LOGGED;
 REINDEX table :features_table;
-
-REFRESH MATERIALIZED VIEW :changes_table;
-
-CREATE INDEX ON :features_table_tmp using gist(geom);

@@ -32,7 +32,7 @@ CREATE MATERIALIZED VIEW :changes_table as
     FROM :features_table c1 
     LEFT JOIN :features_table c2
 		ON c1.osmid=c2.osmid and c1.version=c2.version-1
-	WHERE c1.action!="delete";
+	WHERE c1.action!='delete';
 
 CREATE INDEX ON :changes_table (osmid, version);
 CREATE INDEX ON :changes_table (action);

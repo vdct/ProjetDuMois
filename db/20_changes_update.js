@@ -9,7 +9,7 @@ const {Pool} = require('pg')
  */
 
 // Constants
-const OSC2FTS_FS = __dirname+'/osc2features.awk';
+const OPL2FTS_FS = __dirname+'/opl2features.awk';
 const OSC_UPDATES_FS = CONFIG.WORK_DIR + '/changes.osc.gz';
 const CSV_FEATURES_FS = CONFIG.WORK_DIR + '/features.csv';
 const OSH_PBF_FS = CONFIG.WORK_DIR + '/' +  CONFIG.OSH_PBF_URL.split("/").pop().split(".").shift() + ".osh.pbf";
@@ -25,32 +25,44 @@ const pgPool = new Pool({
     connectionString: `${process.env.DB_URL}`
 });
 
-function macroChangesCsv (project, csv_file, start_ts = null, end_ts = null){
+function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
     const slug = project.name.split("_").pop();
     const features_table = `pdm_features_${slug}`;
     const changes_table = `pdm_features_${slug}_changes`;
     const boundary_table = `pdm_features_${slug}_boundary`;
-    let script = `
-    echo "   => Init changes table in database"
-    `;
-    if (start_ts != null && end_ts != null){
-        script += `${PSQL} -c "DELETE FROM ${features_table} WHERE ts BETWEEN '${start_ts}' AND '${end_ts}'"`;
+    let work_table;
+    let script;
+
+    if (start_ts == null && end_ts == null){
+        work_table = features_table;
+        script += `
+        echo "   => Init changes table in database"
+        ${PSQL} -v features_table="${work_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
+
+        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
+        ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
+        `;
     }else{
-        script += `${PSQL} -v features_table="${features_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
+        work_table = `${features_table}_tmp`;
+        script += `
+        echo "   => Accumulate changes table in database"
+        ${PSQL} -c "DELETE FROM ${features_table} WHERE ts BETWEEN '${start_ts}' AND '${end_ts}'"
+
+        ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${work_table} (LIKE ${features_table})"
+        ${PSQL} -c "TRUNCATE TABLE ${work_table}"
+
+        ${PSQL} -c "COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
+
+        ${PSQL} -v features_table="${features_table}" -v features_table_tmp="${work_table}" -f "${__dirname}/23_changes_populate.sql"
+        ${PSQL} -c "CREATE INDEX ON ${work_table} using gist(geom)"
+        ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
         `;
     }
+
     script += `
-
-    ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${features_table}_tmp (LIKE ${features_table})"
-    ${PSQL} -c "TRUNCATE TABLE ${features_table}_tmp"
-
-    ${PSQL} -c "\\COPY ${features_table}_tmp (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csv_file}' CSV"
-
-    ${PSQL} -v features_table="${features_table}" -v changes_table="${changes_table}" -v features_table_tmp="${features_table}_tmp" -f "${__dirname}/23_changes_populate.sql"
     if ${HAS_BOUNDARY}; then
-        ${PSQL} -v features_table_tmp="${features_table}_tmp" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary.sql"
+        ${PSQL} -v features_table="${work_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary.sql"
     fi
-    ${PSQL} -c "DROP TABLE ${features_table}_tmp"
 
     if [ -f "${__dirname}/../projects/${project.name}/contribs.sql" ]; then
         echo "Including project custom contributions"
@@ -59,6 +71,11 @@ function macroChangesCsv (project, csv_file, start_ts = null, end_ts = null){
 
     rm -f "${csv_file}"
     ${separator}`;
+
+    if (start_ts != null && end_ts != null){
+        script += `${PSQL} -c "DROP TABLE ${work_table}"
+        `;
+    }
 
     return script;
 }
@@ -271,7 +288,7 @@ Object.values(projects).forEach(project => {
 
         echo "   => Transform changes into CSV file"
         rm -f "${csvFeatures}" "${oshProjectFiltered}"
-        awk -f ${OSC2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" "${oplProject}" > "${csvFeatures}"
+        awk -f ${OPL2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" "${oplProject}"
         rm -f "${oplProject}"
 
         ${macroChangesCsv (project, csvFeatures)}
@@ -399,7 +416,7 @@ Object.values(projects).forEach(project => {
     }
 
     script += `
-        ${PSQL} -qtAc "select regexp_replace(osmid, 'ode/|ay/|elation/', '') as osmid from pdm_features_${slug} where group by osmid having NOT ('delete' = ANY (array_agg(action)))" > ${listKnownIds}
+        ${PSQL} -qtAc "select regexp_replace(osmid, 'ode/|ay/|elation/', '') as osmid from pdm_features_${slug} group by osmid having NOT ('delete' = ANY (array_agg(action)))" > ${listKnownIds}
         knownFeatures=$(wc -l ${listKnownIds} | awk '{print $1}')
         createdFeatures=$(wc -l ${listCreatedIds} | awk '{print $1}')
         echo "   => Extract \$knownFeatures known features and \$createdFeatures created features by their ids"
@@ -409,17 +426,17 @@ Object.values(projects).forEach(project => {
             osmium getid ${getIdOptions} -i "${listKnownIds}" -i "${listCreatedIds}" "${oscProject}" -o "${oscProjectIds}"
 
             echo "   => Merging changes in one file"
-            osmium merge ${oscProjectTags} ${oscProjectIds} -f opl,history=true,locations_on_ways=true -o "${oplProject}"
+            osmium merge ${oscProjectTags} ${oscProjectIds} -f opl,history=true -o "${oplProject}"
             rm -f "${oscProjectTags}" "${oscProjectIds}"
         else
             echo "   => Transform to OPL"
-            osmium cat "${oscProjectTags}" -f opl,history=true,locations_on_ways=true -o "${oplProject}"
+            osmium cat "${oscProjectTags}" -f opl,history=true -o "${oplProject}"
             rm -f "${oscProjectTags}"
         fi
 
         echo "   => Transform changes into CSV file"
         rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}" "${oscProject}"
-        awk -f ${OSC2FTS_FS} -v tagfiler="${project.database.osmium_tag_filter}" "${oplProject}" > "${csvFeatures}"
+        awk -f ${OPL2FTS_FS} -v tagfiler="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" "${oplProject}"
         rm -f "${oplProject}"
 
         ${macroChangesCsv (project, csvFeatures, "\$project_start_ts", "\$project_end_ts")}

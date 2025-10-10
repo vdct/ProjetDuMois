@@ -31,7 +31,7 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
     const changes_table = `pdm_features_${slug}_changes`;
     const boundary_table = `pdm_features_${slug}_boundary`;
     let work_table;
-    let script;
+    let script = ``;
 
     if (start_ts == null && end_ts == null){
         work_table = features_table;
@@ -39,7 +39,7 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
         echo "   => Init changes table in database"
         ${PSQL} -v features_table="${work_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
 
-        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
+        ${PSQL} -c "COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
         ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
         `;
     }else{
@@ -69,7 +69,7 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
         ${PSQL} -f "${__dirname}/../projects/${project.name}/contribs.sql"
     fi
 
-    rm -f "${csv_file}"
+    rm -f "${csvProject}"
     ${separator}`;
 
     if (start_ts != null && end_ts != null){

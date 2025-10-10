@@ -123,10 +123,4 @@ BEGIN {
     # Construction de la sortie CSV principale
     printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
            f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter >> output_main
-
-    # Sortie optionelle des noeuds référencés par les ways
-    if (output_nodes != ""){
-        printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
-           f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter >> output_nodes
-    }
 }

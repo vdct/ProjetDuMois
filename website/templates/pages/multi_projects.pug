@@ -23,10 +23,10 @@ block content
 					each proj in currentProjects
 						div.col-md-6.col-lg-4.h-100
 							div.media.my-1.p-2(style="background-color: white; border-radius: 10px")
-								a.align-self-center.mr-3(href=`/projects/${proj.id}`)
+								a.align-self-center.mr-3(href=`/projects/${proj.name}`)
 									img(src=proj.icon alt="" style="height: 100px")
 								div.media-body.align-self-center
-									a.text-decoration-none(href=`/projects/${proj.id}`)= proj.title
+									a.text-decoration-none(href=`/projects/${proj.name}`)= proj.title
 
 	//- Other projects
 	a#others
@@ -41,9 +41,9 @@ block content
 					each proj in otherProjects
 						div.col-md-6.col-lg-4.h-100
 							div.media.mb-3
-								a.align-self-center.mr-3(href=`/projects/${proj.id}`)
+								a.align-self-center.mr-3(href=`/projects/${proj.name}`)
 									img(src=proj.icon alt="" style="max-width: 100px")
 								div.media-body.align-self-center
-									a.text-decoration-none(href=`/projects/${proj.id}`)
+									a.text-decoration-none(href=`/projects/${proj.name}`)
 										| #{proj.title}
 										span.text-muted.d-block= new Date(proj.month).toLocaleString(getLocale(), { month: 'long', year: 'numeric' })

@@ -49,6 +49,7 @@ let filterDatasource = (obj = {}) => {
 exports.foldProjects = (projects) => {
 	const prjs = { past: [], current: [], next: [] };
 	Object.values(projects).forEach(project => {
+		const slug = project.name.split("_").pop();
 		// Check dates
 		if(new Date(project.start_date).getTime() <= Date.now() && ((project.end_date == null && project.soft_end_date == null) || Date.now() <= new Date(project.end_date+"T23:59:59Z").getTime())) {
 			prjs.current.push(project);
@@ -62,7 +63,9 @@ exports.foldProjects = (projects) => {
 		) {
 			prjs.past.push({
 				id: project.id,
-				icon: `/images/badges/${project.id.split("_").pop()}.svg`,
+				name: project.name,
+				slug: slug,
+				icon: `/images/badges/${slug}.svg`,
 				title: project.title,
 				month: project.month,
 				end_date: project.end_date,
@@ -181,7 +184,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "gray";
-				const layer = ds.layer || `public.pdm_project_${p.id.split("_").pop()}`;
+				const layer = ds.layer || `public.pdm_project_${p.slug}`;
 
 				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
@@ -213,7 +216,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#FF7043"; // Orange
-				const layer = `public.pdm_project_${p.id.split("_").pop()}_compare_tiles_filtered`;
+				const layer = `public.pdm_project_${p.slug}_compare_tiles_filtered`;
 
 				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
@@ -245,7 +248,7 @@ exports.getMapStyle = (p) => {
 			.forEach((ds, dsid) => {
 				const id = `${ds.source}_${dsid}`;
 				const color = ds.color || "#2E7D32"; // Green
-				const layer = `public.pdm_project_${p.id.split("_").pop()}`;
+				const layer = `public.pdm_project_${p.slug}`;
 
 				sources[id] = Object.assign({
 					tiles: [ `${CONFIG.PDM_TILES_URL}/${layer}/{z}/{x}/{y}.mvt` ],
@@ -344,6 +347,7 @@ exports.getMapStatsStyle = (p, maxPerLevel) => {
 
 		if(p && p.statistics && p.statistics.count) {
 			const condOpacity = ["interpolate", ["linear"], ["zoom"],
+				0.1, ["case", ["<", ["get", "admin_level"], 4], 1, 0 ],
 				4.9, ["case", ["==", ["get", "admin_level"], 4], 1, 0 ],
 				5, 0,
 				5.1, ["case", ["==", ["get", "admin_level"], 6], 1, 0 ],

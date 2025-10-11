@@ -44,6 +44,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `OSM_USER` : nom d'utilisateur OpenStreetMap pour la récupération de l'historique des modifications avec métadonnées
 - `OSM_PASS` : mot de passe associé au compte utilisateur OSM
 - `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap
+- `OSH_PBF_AUTHORIZED`: Active l'authentification par OAuth2 pour télécharger les fichiers PBF lorsque c'est nécessaire. A désactiver si le dépôt indiqué dans `OSH_PBF_URL` et `OSM_PBF_URL` ne le supporte pas.
 - `OSH_PBF_URL` : URL du fichier OSH.PBF (historique et métadonnées, exemple `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
 - `OSM_PBF_URL`: URL du fichier OSM.PBF (etat courant de la base, exemple `https://download.geofabrik.de/europe/france-latest.osm.pbf`)
 - `POLY_URL`: URL d'un fichier de polygone dans lequel les projets existent (exemple `https://download.geofabrik.de/europe/france.poly`)
@@ -81,12 +82,13 @@ Chaque projet est défini via un sous-répertoire de `projects`. Chaque sous-ré
 
 - `info.json` : métadonnées du projet
 - `howto.md` : descriptif des tâches à réaliser au format Markdown (utiliser les niveaux de titres >= 3)
-- `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_changes, attribuant des classes de contribution à certains changements donnant droit à des points
+- `contribs.sql` : Script SQL contenant des requêtes UPDATE sur la table pdm_features, attribuant des classes de contribution à certains changements donnant droit à des points
 - `extract.sh` : Script optionnel qui produit un fichier csv des données actuelles produites par le projet, proposé au téléchargement dans l'interface.
 
 Les propriétés dans `info.json` sont les suivantes :
 
-- `id` : identifiant de la mission (caractères autorisés : A-Z, 0-9, \_ et -)
+- `id` : identifiant numérique entier unique
+- `name` : identifiant de la mission (caractères autorisés : A-Z, 0-9, \_ et -)
 - `title` : nom de la mission (assez court)
 - `start_date` : date de début de la mission (format AAAA-MM-JJ)
 - `end_date` : date de fin de la mission (format AAAA-MM-JJ)
@@ -427,7 +429,7 @@ La plateforme attribue les classes communes suivantes :
 - `edit` : Les changements concernant des objets version>1
 
 Il est possible d'attribuer des classes propres à chaque projet en créant un fichier `contribs.sql` à côté de `info.json`.
-Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_changes`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
+Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_features`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
 
 Les montant de points attribués sont configurés dans `info.json` :
 

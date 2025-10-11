@@ -1,6 +1,7 @@
 function escape_json(str) {
-    gsub(/\\/, "\\\\\\", str);
+    gsub(/\\/, "\\\\", str);
     gsub(/"/, "", str);
+    gsub(/%20%/, " ", str);
     return str;
 }
 function escape(str){
@@ -37,11 +38,15 @@ BEGIN {
             }
         }
     }
+
+    features["n"] = "node"
+    features["w"] = "way"
+    features["r"] = "relation"
 }
 
 {
     f = substr($1, 1, 1);          # Feature
-    fi = substr($1, 2);             # Feature id
+    fi = substr($1, 2);            # Feature id
     v = substr($2, 2);             # Version
     d = substr($3, 2);             # Visibilité
     t = substr($5, 2);             # Timestamp
@@ -70,16 +75,24 @@ BEGIN {
     }
 
     if (f == "n"){
-        f = "node"
         if (a != "delete"){
             x = substr($9, 2);     # Longitude
             y = substr($10, 2);    # Latitude
             g = "SRID=4326; POINT("x" "y")"
         }
     } else if (f == "w"){
-        f = "way"
+        if (a != "delete" and output_members != ""){
+            N = substr($9, 2);
+            n=split(N, Nlist, /,/)
+            for (j=1 ; j<=n ; j++){
+                printf "%s/%s,%s/%s,%s,%s\n",
+                    features[substr(Nlist[j], 1, 1)], substr(Nlist[j], 2), features[f], fi, v, j >> output_members
+            }
+        }
     } else if (f == "r"){
-        f = "relation"
+        if (a != "delete" and output_members != ""){
+
+        }
     }
 
     n=split(T, tag_pairs, /,/);
@@ -108,7 +121,7 @@ BEGIN {
         }
     }
 
-    # Construction de la sortie CSV
-    printf "%s,%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
-           p, f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter
+    # Construction de la sortie CSV principale
+    printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
+           features[f], fi, v, a, c, t, w, u, tagsjson, g, tagfilter >> output_main
 }

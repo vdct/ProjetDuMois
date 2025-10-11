@@ -12,6 +12,7 @@
   "MATOMO_SITE": "6",
   "REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
   "JOSM_REMOTE_URL": "http://localhost:8111",
+  "OSH_PBF_AUTHORIZED": true,
   "OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/france-internal.osh.pbf",
   "OSM_PBF_URL": "http://download.openstreetmap.fr/extracts/europe/france-latest.osm.pbf",
   "POLY_URL": "https://download.geofabrik.de/europe/france.poly",

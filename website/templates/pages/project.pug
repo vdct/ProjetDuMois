@@ -40,7 +40,7 @@ block content
 
 			if !isHardEnded
 				div.btn-over-wide.d-flex.justify-content-center.align-items-center
-					a.pdm-wide-link.map(href=`/projects/${id}/map`)
+					a.pdm-wide-link.map(href=`/projects/${name}/map`)
 					a.btn.btn-primary.btn-lg(style="color: white")
 						i.fa.fa-pen.mr-2
 						| #{__("Contribuer")}
@@ -88,7 +88,7 @@ block content
 			if !isHardEnded
 				div.mt-3!= howto
 				div.text-center
-					a.btn.btn-primary.btn-lg.m-1(style="color: white" href=`/projects/${id}/map`)
+					a.btn.btn-primary.btn-lg.m-1(style="color: white" href=`/projects/${name}/map`)
 						i.fa.fa-pen.mr-2
 						| #{__("Contribuer")}
 					if links.osmwiki
@@ -149,9 +149,9 @@ block content
 						each proj in projectsToDisplay
 							div.col-md-6.col-lg-4.h-100
 								div.media.mb-3
-									a.align-self-center.mr-3(href=`/projects/${proj.id}`)
+									a.align-self-center.mr-3(href=`/projects/${proj.name}`)
 										img(src=proj.icon alt="" style="max-width: 100px")
 									div.media-body.align-self-center
-										a.text-decoration-none(href=`/projects/${proj.id}`)
+										a.text-decoration-none(href=`/projects/${proj.name}`)
 											| #{proj.title}
 											span.text-muted.d-block= new Date(proj.month).toLocaleString('fr-FR', { month: 'long', year: 'numeric' })

@@ -17,6 +17,18 @@ CREATE INDEX ON :features_table (action);
 CREATE INDEX ON :features_table (ts);
 CREATE INDEX ON :features_table using gist(geom);
 
+DROP TABLE IF EXISTS :members_table CASCADE;
+CREATE TABLE :members_table (
+	osmid VARCHAR NOT NULL,
+	version INT NOT NULL,
+	memberid VARCHAR NOT NULL,
+	pos int not null
+);
+
+CREATE INDEX ON :members_table (osmid, version, memberid, pos);
+CREATE INDEX ON :members_table (osmid, version);
+CREATE INDEX ON :members_table (memberid);
+
 CREATE MATERIALIZED VIEW :changes_table as 
     SELECT 
     c1.osmid,

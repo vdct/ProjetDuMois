@@ -25,9 +25,10 @@ const pgPool = new Pool({
     connectionString: `${process.env.DB_URL}`
 });
 
-function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
+function macroChangesCsv (project, csvFeatures, csvMembers = null, start_ts = null, end_ts = null){
     const slug = project.name.split("_").pop();
     const features_table = `pdm_features_${slug}`;
+    const members_table = `pdm_members_${slug}`;
     const changes_table = `pdm_features_${slug}_changes`;
     const boundary_table = `pdm_features_${slug}_boundary`;
     let work_table;
@@ -37,11 +38,17 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
         work_table = features_table;
         script += `
         echo "   => Init changes table in database"
-        ${PSQL} -v features_table="${work_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
+        ${PSQL} -v features_table="${work_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
 
-        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
+        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
+
         ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
         `;
+        if (csvMembers != null){
+            script += `
+            ${PSQL} -c "\\COPY ${members_table} (memberid, osmid, version, pos) FROM '${csvMembers}' CSV"
+            `;
+        }
     }else{
         work_table = `${features_table}_tmp`;
         script += `
@@ -51,12 +58,22 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
         ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${work_table} (LIKE ${features_table})"
         ${PSQL} -c "TRUNCATE TABLE ${work_table}"
 
-        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
+        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
 
         ${PSQL} -v features_table="${features_table}" -v features_table_tmp="${work_table}" -f "${__dirname}/23_changes_populate.sql"
         ${PSQL} -c "CREATE INDEX ON ${work_table} using gist(geom)"
         ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
         `;
+
+        if (csvMembers != null){
+            script += `
+            ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${members_table}_tmp (LIKE ${members_table})"
+            ${PSQL} -c "\\COPY ${members_table}_tmp (memberid, osmid, version, pos) FROM '${csvMembers}' CSV"
+
+            ${PSQL} -v members_table="${members_table}" -v members_table_tmp="${members_table}_tmp" -f "${__dirname}/25_members_populate.sql"
+            ${PSQL} -c "DROP TABLE ${members_table}_tmp"
+            `;
+        }
     }
 
     script += `
@@ -76,7 +93,7 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
     }
 
     script += `
-    rm -f "${csvProject}"
+    rm -f "${csvFeatures}" "${csvMembers}"
     ${separator}
     `;
 
@@ -224,6 +241,7 @@ Object.values(projects).forEach(project => {
     const oshProjectInterm = OSH_PBF_FS.replace(".osh", `.${slug}_interm.osh`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);
     const csvFeatures = CSV_FEATURES_FS.replace("features", `features-${slug}`);
+    const csvMembers = CSV_FEATURES_FS.replace("features", `members-${slug}`);
 
     let tagFilterParts = project.database.osmium_tag_filter.split("&");
 
@@ -290,11 +308,11 @@ Object.values(projects).forEach(project => {
         osmium getid ${getIdOptions} "\$history_osh" -I "${oshProjectTags}" -f opl,history=true -o "${oplProject}"
 
         echo "   => Transform changes into CSV file"
-        rm -f "${csvFeatures}" "${oshProjectTags}"
-        awk -f ${OPL2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" "${oplProject}"
+        rm -f "${csvFeatures}" "${csvMembers}" "${oshProjectTags}"
+        awk -f ${OPL2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" -v output_members="${csvMembers}" "${oplProject}"
         rm -f "${oplProject}"
 
-        ${macroChangesCsv (project, csvFeatures)}
+        ${macroChangesCsv (project, csvFeatures, csvMembers)}
 
         ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${process_end_ts}', counts_lastupdate_date=NULL WHERE project_id=${project.id}"
         process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
@@ -323,36 +341,44 @@ if (( \$process_delta < 1 )); then
     echo "Nothing is suitable to update. Projects older than 30 days should be inited again."
 else
     echo "Start processing from: \$process_start_ts to \$process_end_ts"
+    
+    changes_src="${OSC_UPDATES_FS}"
+    changes_start=\$(date -d "$process_start_ts" +"%Y%m%d")
+    changes_end=\$(date -d "$process_end_ts" +"%Y%m%d")
+    changes_osc="\${changes_src/.osc.gz/".time-\$changes_start-\$changes_end.osc.gz"}"
+    changes_oscts="\${changes_src/.osc.gz/".time-\$changes_start-\$changes_end.osc.ts"}"
+    if [[ ! -f \$changes_osc ]]; then
+        echo "== Build OSC changes with replication files"
+        osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v \$process_start_ts "\$changes_osc"
 
-    echo "== Build OSC changes with replication files"
-    osmupdate --keep-tempfiles --day -t="${CONFIG.WORK_DIR}/osmupdate/" -v \$process_start_ts "${CONFIG.WORK_DIR}/world.osc.gz"
-    rm -f "${OSC_UPDATES_FS}"
-
-    echo "== Read OSC file information..."
-    osc_ts=\$(osmium fileinfo -e -g data.timestamp.last "${CONFIG.WORK_DIR}/world.osc.gz")
-    osc_time=\$(date -d "\$osc_ts" +%s)
-    echo "OSC file is up to \$osc_ts"`;
-
+        echo "== Read OSC file information..."
+        osc_ts=\$(osmium fileinfo -e -g data.timestamp.last "\$changes_osc")
+        echo \$osc_ts > "\$changes_oscts"
+        osc_time=\$(date -d "\$osc_ts" +%s)
+        echo "OSC file is up to \$osc_ts"
+        `;
+    
     if (CONFIG.POLY_URL != null){
-        script += `
-    if [ -f ${POLY_FS} ]; then
-        echo "== Extract data in polygon..."
-        osmium extract -p "${POLY_FS}" --with-history -s complete_ways "${CONFIG.WORK_DIR}/world.osc.gz" -O -o "${OSC_UPDATES_FS}"
-
-        echo "== Remove temp files"
-        rm -f "${CONFIG.WORK_DIR}/world.osc.gz"
-    else
-        echo "== No polygon data to restrict on"
-        mv ${CONFIG.WORK_DIR}/world.osc.gz ${OSC_UPDATES_FS}
-    fi
-    `;
+            script += `
+        if [ -f ${POLY_FS} ]; then
+            echo "== Extract data in polygon..."
+            osmium extract -p "${POLY_FS}" --with-history -s complete_ways "\$changes_osc" -O -o "${OSC_UPDATES_FS}"
+        else
+            echo "== No polygon data to restrict on"
+        fi
+        `;
     }else{
-        script += `
-    echo "== No polygon data to restrict on"
-    mv ${CONFIG.WORK_DIR}/world.osc.gz ${OSC_UPDATES_FS}
-    `;
+            script += `
+        echo "== No polygon data to restrict on"
+        `;
     }
+
     script += `
+    else
+        echo "== Reuse existing OSC file"
+        osc_ts=\$(cat "\$changes_oscts")
+        echo "OSC file is up to \$osc_ts"
+    fi
     ${separator}
     `;
 
@@ -364,6 +390,7 @@ Object.values(projects).forEach(project => {
     const oscProjectIds = OSC_UPDATES_FS.replace("changes", `changes.${slug}_ids`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes.${slug}.opl`);
     const csvFeatures = CSV_FEATURES_FS.replace("features", `features-${slug}`);
+    const csvMembers = CSV_FEATURES_FS.replace("features", `members-${slug}`);
     const listKnownIds = CONFIG.WORK_DIR+'/ids-known.list'
     const listCreatedIds = CONFIG.WORK_DIR+'/ids-created.list'
 
@@ -385,30 +412,31 @@ Object.values(projects).forEach(project => {
     elif (( \$project_start_time < \$process_start_time )); then
         echo "Project ${project.name} is too old and should be inited with a fresh OSH again"
     else
-        echo "Updating project changes from \$project_start_ts to \$project_end_ts"
-
-        changes_src="${OSC_UPDATES_FS}"
+        
+        projectChanges_src="$changes_osc"
         if (( \$project_end_time > 0 && \$project_end_time < \$osc_time )); then
-            changes_start=\$(date -d "$project_start_ts" +"%Y%m%d")
-            changes_end=\$(date -d "$project_end_ts" +"%Y%m%d")
-            changes_osh="\${changes_src/.osc.gz/".time-\$changes_start-\$changes_end.osc.gz"}"
+            projectChanges_start=\$(date -d "$project_start_ts" +"%Y%m%d")
+            projectChanges_end=\$(date -d "$project_end_ts" +"%Y%m%d")
+            projectChanges_osc="\${projectChanges_src/.osc.gz/".time-\$projectChanges_start-\$projectChanges_end.osc.gz"}"
 
-            if [[ ! -f \$changes_osh ]]; then
-                echo "Time filter OSC file..."
-                osmium time-filter "\$changes_src" -o "\$changes_osh" \$project_start_ts \$project_end_ts
+            if [[ ! -f \$projectChanges_osc ]]; then
+                echo "Time filter OSC file between \$project_start_ts to \$project_end_ts"
+                osmium time-filter "\$projectChanges_src" -o "\$projectChanges_osc" \$project_start_ts \$project_end_ts
             else
                 echo "Reuse existing time-filtered OSC file"
             fi
         else
             project_end_ts=\$osc_ts
         fi
-     
+        
+        echo "Updating project changes from \$project_start_ts to \$project_end_ts"
+
         ${separator}
     `;
 
     let getIdOptions = "-H";
     let tagFilterFeatures = "nwr";
-    let oscProjectUpdate = "\$changes_osh";
+    let oscProjectUpdate = "\$projectChanges_osc";
     tagFilterParts.forEach(tagFilter => {
         if (tagFilter.indexOf('/') > -1){
             tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
@@ -438,7 +466,7 @@ Object.values(projects).forEach(project => {
         rm -f "${oplProject}"
         if [[ \$knownfeatures > 0 ]] || [[ \$createdFeatures > 0 ]]; then
             rm -f "${oscProjectIds}"
-            osmium getid ${getIdOptions} -i "${listKnownIds}" -i "${listCreatedIds}" "\$changes_osh" -o "${oscProjectIds}"
+            osmium getid ${getIdOptions} -i "${listKnownIds}" -i "${listCreatedIds}" "\$projectChanges_osc" -o "${oscProjectIds}"
 
             echo "   => Merging changes in one file"
             osmium merge ${oscProjectTags} ${oscProjectIds} -f opl,history=true -o "${oplProject}"
@@ -451,10 +479,10 @@ Object.values(projects).forEach(project => {
 
         echo "   => Transform changes into CSV file"
         rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}"
-        awk -f ${OPL2FTS_FS} -v tagfiler="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" "${oplProject}"
+        awk -f ${OPL2FTS_FS} -v tagfiler="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" èv output_members="${csvMembers}" "${oplProject}"
         rm -f "${oplProject}"
 
-        ${macroChangesCsv (project, csvFeatures, "\$project_start_ts", "\$project_end_ts")}
+        ${macroChangesCsv (project, csvFeatures, csvMembers, "\$project_start_ts", "\$project_end_ts")}
 
         ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${project_end_ts}' WHERE project_id=${project.id}"
         process_duration=\$((\$(date -d now +%s) - \$process_start_t0))
@@ -465,7 +493,8 @@ Object.values(projects).forEach(project => {
 });
 
 script += `
-    rm -f "${OSC_UPDATES_FS}"
+    echo "== Removing temp files"
+    rm -f "${CONFIG.WORK_DIR}/*.osc.*"
 fi
 `;
 

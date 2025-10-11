@@ -38,6 +38,10 @@ BEGIN {
             }
         }
     }
+
+    features["n"] = "node"
+    features["w"] = "way"
+    features["r"] = "relation"
 }
 
 {
@@ -71,23 +75,24 @@ BEGIN {
     }
 
     if (f == "n"){
-        f = "node"
         if (a != "delete"){
             x = substr($9, 2);     # Longitude
             y = substr($10, 2);    # Latitude
             g = "SRID=4326; POINT("x" "y")"
         }
     } else if (f == "w"){
-        f = "way"
-#       if (a != "delete"){
-#           N = substr($9, 2);
-#           gsub(/n[0-9]+x/, "(", N);
-#           gsub(/y/, " ", N);
-#           gsub(/,/, "),", N);
-#           g = "\"SRID=4326; LINESTRING("N"))\""
-#       }
+        if (a != "delete" and output_members != ""){
+            N = substr($9, 2);
+            n=split(N, Nlist, /,/)
+            for (j=1 ; j<=n ; j++){
+                printf "%s/%s,%s/%s,%s,%s\n",
+                    features[substr(Nlist[j], 1, 1)], substr(Nlist[j], 2), features[f], fi, v, j >> output_members
+            }
+        }
     } else if (f == "r"){
-        f = "relation"
+        if (a != "delete" and output_members != ""){
+
+        }
     }
 
     n=split(T, tag_pairs, /,/);
@@ -122,5 +127,5 @@ BEGIN {
 
     # Construction de la sortie CSV principale
     printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
-           f, fi, v, a, c, t, w, u, tagsjson, g, tagfilter >> output_main
+           features[f], fi, v, a, c, t, w, u, tagsjson, g, tagfilter >> output_main
 }

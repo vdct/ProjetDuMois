@@ -39,7 +39,7 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
         echo "   => Init changes table in database"
         ${PSQL} -v features_table="${work_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
 
-        ${PSQL} -c "COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
+        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
         ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
         `;
     }else{
@@ -51,7 +51,7 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
         ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${work_table} (LIKE ${features_table})"
         ${PSQL} -c "TRUNCATE TABLE ${work_table}"
 
-        ${PSQL} -c "COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
+        ${PSQL} -c "\\COPY ${work_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvProject}' CSV"
 
         ${PSQL} -v features_table="${features_table}" -v features_table_tmp="${work_table}" -f "${__dirname}/23_changes_populate.sql"
         ${PSQL} -c "CREATE INDEX ON ${work_table} using gist(geom)"
@@ -68,14 +68,17 @@ function macroChangesCsv (project, csvProject, start_ts = null, end_ts = null){
         echo "Including project custom contributions"
         ${PSQL} -f "${__dirname}/../projects/${project.name}/contribs.sql"
     fi
-
-    rm -f "${csvProject}"
-    ${separator}`;
+    `;
 
     if (start_ts != null && end_ts != null){
         script += `${PSQL} -c "DROP TABLE ${work_table}"
         `;
     }
+
+    script += `
+    rm -f "${csvProject}"
+    ${separator}
+    `;
 
     return script;
 }
@@ -217,7 +220,7 @@ script += `
 Object.values(projects).forEach(project => {
     // Project files
     const slug = project.name.split("_").pop();
-    const oshProjectFiltered = OSH_PBF_FS.replace(".osh", `.${slug}_filtered.osh`);
+    const oshProjectTags = OSH_PBF_FS.replace(".osh", `.${slug}_tags.osh`);
     const oshProjectInterm = OSH_PBF_FS.replace(".osh", `.${slug}_interm.osh`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);
     const csvFeatures = CSV_FEATURES_FS.replace("features", `features-${slug}`);
@@ -248,13 +251,13 @@ Object.values(projects).forEach(project => {
             process_end_ts=\$(date -d "@\$project_end_time" +"%Y-%m-%dT00:00:00Z")
         fi
 
-        history_file="${OSH_PBF_FS}"
+        history_src="${OSH_PBF_FS}"
         history_start=\$(date -d "$process_start_ts" +"%Y%m%d")
         history_end=\$(date -d "$process_end_ts" +"%Y%m%d")
-        history_osh="\${history_file/.osh/".time-\$history_start-\$history_end.osh"}"
+        history_osh="\${history_src/.osh/".time-\$history_start-\$history_end.osh"}"
         if [[ ! -f "\$history_osh" ]]; then
             echo "   => Extract history between \$process_start_ts and \$process_end_ts"
-            osmium time-filter "${OSH_PBF_FS}" \$process_start_ts \$process_end_ts -o "\$history_osh"
+            osmium time-filter "\$history_src" \$process_start_ts \$process_end_ts -o "\$history_osh"
         else
             echo "   => Reuse existing history between \$process_start_ts and \$process_end_ts"
         fi
@@ -270,11 +273,11 @@ Object.values(projects).forEach(project => {
             script += `
         echo "   => Extract features from OSH (${tagFilter})"
         rm -f "${oshProjectInterm}"
-        osmium tags-filter "${oshProjectTime}" -R ${tagFilter} -O -o "${oshProjectInterm}"
-        rm -f "${oshProjectFiltered}"
-        mv "${oshProjectInterm}" "${oshProjectFiltered}"
+        osmium tags-filter "${oshProjectTime}" -R ${tagFilter} -o "${oshProjectInterm}"
+        rm -f "${oshProjectTags}"
+        mv "${oshProjectInterm}" "${oshProjectTags}"
         `;
-            oshProjectTime = oshProjectFiltered;
+            oshProjectTime = oshProjectTags;
         });
 
         if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
@@ -284,10 +287,10 @@ Object.values(projects).forEach(project => {
         script += `
         echo "   => Seek for all changes related to selected features and convert to OPL"
         rm -f "${oplProject}"
-        osmium getid ${getIdOptions} "\$history_osh" -I "${oshProjectFiltered}" -f opl,history=true -o "${oplProject}"
+        osmium getid ${getIdOptions} "\$history_osh" -I "${oshProjectTags}" -f opl,history=true -o "${oplProject}"
 
         echo "   => Transform changes into CSV file"
-        rm -f "${csvFeatures}" "${oshProjectFiltered}"
+        rm -f "${csvFeatures}" "${oshProjectTags}"
         awk -f ${OPL2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" "${oplProject}"
         rm -f "${oplProject}"
 
@@ -355,10 +358,11 @@ else
 
 Object.values(projects).forEach(project => {
     const slug = project.name.split("_").pop();
-    const oscProject = OSC_UPDATES_FS.replace("changes", `changes-${slug}`);
-    const oscProjectTags = OSC_UPDATES_FS.replace("changes", `changes-${slug}.tags`);
-    const oscProjectIds = OSC_UPDATES_FS.replace("changes", `changes-${slug}.ids`);
-    const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);
+    const oscProject = OSC_UPDATES_FS.replace("changes", `changes.${slug}`);
+    const oscProjectInterm = OSC_UPDATES_FS.replace("changes", `changes.${slug}_interm`);
+    const oscProjectTags = OSC_UPDATES_FS.replace("changes", `changes.${slug}_tags`);
+    const oscProjectIds = OSC_UPDATES_FS.replace("changes", `changes.${slug}_ids`);
+    const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes.${slug}.opl`);
     const csvFeatures = CSV_FEATURES_FS.replace("features", `features-${slug}`);
     const listKnownIds = CONFIG.WORK_DIR+'/ids-known.list'
     const listCreatedIds = CONFIG.WORK_DIR+'/ids-created.list'
@@ -381,36 +385,47 @@ Object.values(projects).forEach(project => {
     elif (( \$project_start_time < \$process_start_time )); then
         echo "Project ${project.name} is too old and should be inited with a fresh OSH again"
     else
-        if [ -f "${oscProject}" ]; then
-            echo "Remove existing OSC filtered file for this project"
-            rm -f "${oscProject}"
-        fi
+        echo "Updating project changes from \$project_start_ts to \$project_end_ts"
 
+        changes_src="${OSC_UPDATES_FS}"
         if (( \$project_end_time > 0 && \$project_end_time < \$osc_time )); then
-            echo "Time filter OSC file..."
-            osmium time-filter "${OSC_UPDATES_FS}" -o "${oscProject}" \$project_start_ts \$project_end_ts 
+            changes_start=\$(date -d "$project_start_ts" +"%Y%m%d")
+            changes_end=\$(date -d "$project_end_ts" +"%Y%m%d")
+            changes_osh="\${changes_src/.osc.gz/".time-\$changes_start-\$changes_end.osc.gz"}"
+
+            if [[ ! -f \$changes_osh ]]; then
+                echo "Time filter OSC file..."
+                osmium time-filter "\$changes_src" -o "\$changes_osh" \$project_start_ts \$project_end_ts
+            else
+                echo "Reuse existing time-filtered OSC file"
+            fi
         else
             project_end_ts=\$osc_ts
-            cp ${OSC_UPDATES_FS} ${oscProject}
         fi
-    
-        echo "Updating project changes from \$project_start_ts to \$project_end_ts"
+     
         ${separator}
     `;
 
     let getIdOptions = "-H";
     let tagFilterFeatures = "nwr";
+    let oscProjectUpdate = "\$changes_osh";
     tagFilterParts.forEach(tagFilter => {
         if (tagFilter.indexOf('/') > -1){
             tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
         }
         script += `
-        echo "   => Extract features from OSC (${tagFilter})"
+        echo "   => Extract features from OSH (${tagFilter})"
+        rm -f "${oscProjectInterm}"
+        osmium tags-filter "${oscProjectUpdate}" -R ${tagFilter} -o "${oscProjectInterm}"
         rm -f "${oscProjectTags}"
-        osmium tags-filter "${oscProject}" ${tagFilter} -o "${oscProjectTags}"
+        mv "${oscProjectInterm}" "${oscProjectTags}"
+        `;
+            oscProjectUpdate = oscProjectTags;
+    });
+    script += `
         osmium cat "${oscProjectTags}" -f opl | grep ' v1 ' | awk '{print $1}' > "${listCreatedIds}"
         `;
-    });
+
     if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
         getIdOptions += " -r -t";
     }
@@ -423,7 +438,7 @@ Object.values(projects).forEach(project => {
         rm -f "${oplProject}"
         if [[ \$knownfeatures > 0 ]] || [[ \$createdFeatures > 0 ]]; then
             rm -f "${oscProjectIds}"
-            osmium getid ${getIdOptions} -i "${listKnownIds}" -i "${listCreatedIds}" "${oscProject}" -o "${oscProjectIds}"
+            osmium getid ${getIdOptions} -i "${listKnownIds}" -i "${listCreatedIds}" "\$changes_osh" -o "${oscProjectIds}"
 
             echo "   => Merging changes in one file"
             osmium merge ${oscProjectTags} ${oscProjectIds} -f opl,history=true -o "${oplProject}"
@@ -435,7 +450,7 @@ Object.values(projects).forEach(project => {
         fi
 
         echo "   => Transform changes into CSV file"
-        rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}" "${oscProject}"
+        rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}"
         awk -f ${OPL2FTS_FS} -v tagfiler="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" "${oplProject}"
         rm -f "${oplProject}"
 

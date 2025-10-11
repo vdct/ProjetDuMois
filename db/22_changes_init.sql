@@ -18,7 +18,7 @@ CREATE INDEX ON :features_table (ts);
 CREATE INDEX ON :features_table using gist(geom);
 
 CREATE MATERIALIZED VIEW :changes_table as 
-	SELECT 
+    SELECT 
     c1.osmid,
     c1.version,
     c1.ts as ts_start,
@@ -26,9 +26,10 @@ CREATE MATERIALIZED VIEW :changes_table as
     c1.username,
     c1.userid,
     c1.tags,
-	c1.action,
+    c1.action,
     c1.contrib,
-	c1.tagsfilter
+    c1.tagsfilter,
+    c1.geom
     FROM :features_table c1 
     LEFT JOIN :features_table c2
 		ON c1.osmid=c2.osmid and c1.version=c2.version-1

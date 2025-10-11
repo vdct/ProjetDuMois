@@ -40,7 +40,7 @@ BEGIN {
     }
 
     features["n"] = "node"
-    features["w"] = "way"
+    features["w"] = "way"
     features["r"] = "relation"
 }
 
@@ -119,10 +119,6 @@ BEGIN {
         for (i in localresult){
             tagfilter = tagfilter && localresult[i]
         }
-    }
-
-    if (a != "delete" and tagfilter != 1){
-        next
     }
 
     # Construction de la sortie CSV principale

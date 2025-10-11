@@ -241,7 +241,7 @@ Object.values(projects).forEach(project => {
     const oshProjectInterm = OSH_PBF_FS.replace(".osh", `.${slug}_interm.osh`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes-${slug}.opl`);
     const csvFeatures = CSV_FEATURES_FS.replace("features", `features-${slug}`);
-    const csvMembers = CSV_FEATURES_FS.replace("features", `members-${slug}`);
+    let csvMembers = CSV_FEATURES_FS.replace("features", `members-${slug}`);
 
     let tagFilterParts = project.database.osmium_tag_filter.split("&");
 
@@ -300,6 +300,8 @@ Object.values(projects).forEach(project => {
 
         if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
             getIdOptions += " -r -t";
+        }else{
+            csvMembers = null;
         }
 
         script += `
@@ -390,7 +392,7 @@ Object.values(projects).forEach(project => {
     const oscProjectIds = OSC_UPDATES_FS.replace("changes", `changes.${slug}_ids`);
     const oplProject = OSC_UPDATES_FS.replace("changes.osc.gz", `changes.${slug}.opl`);
     const csvFeatures = CSV_FEATURES_FS.replace("features", `features-${slug}`);
-    const csvMembers = CSV_FEATURES_FS.replace("features", `members-${slug}`);
+    let csvMembers = CSV_FEATURES_FS.replace("features", `members-${slug}`);
     const listKnownIds = CONFIG.WORK_DIR+'/ids-known.list'
     const listCreatedIds = CONFIG.WORK_DIR+'/ids-created.list'
 
@@ -456,6 +458,8 @@ Object.values(projects).forEach(project => {
 
     if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
         getIdOptions += " -r -t";
+    }else{
+        csvMembers = null;
     }
 
     script += `
@@ -479,7 +483,7 @@ Object.values(projects).forEach(project => {
 
         echo "   => Transform changes into CSV file"
         rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}"
-        awk -f ${OPL2FTS_FS} -v tagfiler="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" èv output_members="${csvMembers}" "${oplProject}"
+        awk -f ${OPL2FTS_FS} -v tagfiler="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" -v output_members="${csvMembers}" "${oplProject}"
         rm -f "${oplProject}"
 
         ${macroChangesCsv (project, csvFeatures, csvMembers, "\$project_start_ts", "\$project_end_ts")}

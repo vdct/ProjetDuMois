@@ -255,7 +255,7 @@ if [ -f "${CSV_NOTES(slug)}" ]; then
 	echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Notes statistics"
 	${PSQL} -c "DELETE FROM pdm_note_counts WHERE project_id=${project.id} AND ts BETWEEN '\${process_start_ts}' AND '\${current_ts}'"
 	${PSQL} -c "\\COPY pdm_note_counts FROM '${CSV_NOTES(slug)}' CSV"
-	${PSQL} -c "\\COPY pdm_user_contribs(project, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS(slug)}' CSV"
+	${PSQL} -c "\\COPY pdm_user_contribs(project_id, userid, ts, contribution, points) FROM '${CSV_NOTES_CONTRIBS(slug)}' CSV"
 	${PSQL} -c "CREATE TABLE pdm_user_names_notes(userid BIGINT, username VARCHAR)"
 	${PSQL} -c "\\COPY pdm_user_names_notes FROM '${CSV_NOTES_USERS(slug)}' CSV"
 	${PSQL} -c "INSERT INTO pdm_user_names SELECT userid, username FROM pdm_user_names_notes ON CONFLICT (userid) DO NOTHING; DROP TABLE pdm_user_names_notes;"

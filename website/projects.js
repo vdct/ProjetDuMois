@@ -10,6 +10,7 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 		const project = JSON.parse(fs.readFileSync(PROJECTS_PATH + '/' + projectDir + '/info.json'));
 		project.howto = marked(fs.readFileSync(PROJECTS_PATH + '/' + projectDir + '/howto.md', "utf8"));
 		project.month = project.name.split("_").shift()+"-05T00:00:00Z";
+		project.slug = project.name.split("_").pop();
 
 		// Add auto-computed metadata
 		project.osmoseLabels = {};

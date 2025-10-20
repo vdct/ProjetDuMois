@@ -40,7 +40,7 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
 
     script += `
     echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Transform changes into CSV file"
-    awk -f ${OPL2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" ${awk_param_members} "${oplProject}"
+    mawk -f ${OPL2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" -v output_main="${csvFeatures}" ${awk_param_members} "${oplProject}"
     rm -f "${oplProject}"
     `;
 
@@ -485,7 +485,7 @@ Object.values(projects).forEach(project => {
             oscProjectUpdate = oscProjectTags;
     });
     script += `
-        osmium cat "${oscProjectTags}" -f opl | grep ' v1 ' | awk '{print $1}' > "${listCreatedIds}"
+        osmium cat "${oscProjectTags}" -f opl | grep ' v1 ' | mawk '{print $1}' > "${listCreatedIds}"
         `;
 
     if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
@@ -496,8 +496,8 @@ Object.values(projects).forEach(project => {
 
     script += `
         ${PSQL} -qtAc "select regexp_replace(osmid, 'ode/|ay/|elation/', '') as osmid from pdm_features_${slug} group by osmid having NOT ('delete' = ANY (array_agg(action)))" > ${listKnownIds}
-        knownFeatures=$(wc -l ${listKnownIds} | awk '{print $1}')
-        createdFeatures=$(wc -l ${listCreatedIds} | awk '{print $1}')
+        knownFeatures=$(wc -l ${listKnownIds} | mawk '{print $1}')
+        createdFeatures=$(wc -l ${listCreatedIds} | mawk '{print $1}')
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Extract \$knownFeatures known features and \$createdFeatures created features by their ids"
         rm -f "${oplProject}"
         if [[ \$knownfeatures > 0 ]] || [[ \$createdFeatures > 0 ]]; then

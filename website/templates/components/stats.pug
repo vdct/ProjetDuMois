@@ -419,7 +419,7 @@ script.
 				// Boundary stats legends
 				const mapStatsLegend = document.getElementById("map-stats-legend");
 				mapStatsLegend.innerHTML = '';
-				const admLvlToText = { "2": "#{__("Pays")}", "3": "#{__("Subdivision nationale")}", "4": "#{__("Région")}", "6": "#{__("Département")}", "8": "#{__("Commune")}" };
+				const admLvlToText = { "2": "#{__("Pays")}", "4": "#{__("Région")}", "6": "#{__("Département")}", "8": "#{__("Commune")}" };
 				Object.entries(res.mapStyle.legend).forEach(e => {
 					const [lvl, data] = e;
 

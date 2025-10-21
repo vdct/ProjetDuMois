@@ -31,6 +31,7 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
     const members_table = `pdm_members_${slug}`;
     const changes_table = `pdm_features_${slug}_changes`;
     const boundary_table = `pdm_features_${slug}_boundary`;
+    const labels_table = `pdm_features_${slug}_label`;
     let script = ``;
 
     let awk_param_members = "";
@@ -53,6 +54,12 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
         ${PSQL} -c "\\COPY ${features_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
         `;
 
+        if (project.database.hasOwnProperty("labels")){
+            Object.keys(project.database.labels).forEach(label => {
+                script += `${PSQL} -v features_table="${features_table}" -v labels_table="${labels_table}" -v label="'${label}'" -v labelfilter="'${project.database.labels[label]}'" -f "${__dirname}/27_changes_labels.sql"`
+            });
+        }
+
         if (csvMembers != null){
             script += `
             echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy members"
@@ -69,7 +76,15 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
 
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
         ${PSQL} -c "\\COPY ${features_table}_tmp (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
+        `;
 
+        if (project.database.hasOwnProperty("labels")){
+            Object.keys(project.database.labels).forEach(label => {
+                script += `${PSQL} -v features_table="${features_table}_tmp" -v labels_table="${labels_table}"  -v label="'${label}'" -v labelfilter="'${project.database.labels[label]}'" -f "${__dirname}/27_changes_labels.sql"`
+            });
+        }
+
+        script += `
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Populate features"
         ${PSQL} -v features_table="${features_table}" -v features_table_tmp="${features_table}_tmp" -f "${__dirname}/23_changes_populate.sql"
         ${PSQL} -c "CREATE INDEX ON ${features_table}_tmp using gist(geom)"

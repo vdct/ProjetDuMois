@@ -231,7 +231,7 @@ else
         count_dates_list="\$count_dates_list,('\$count_date_current')"
     done
         
-    ${PSQL} -v project_id="${project.id}" -v changes_table="pdm_features_${slug}_changes" -v boundary_table="pdm_features_${slug}_boundary" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v dates_list="\$count_dates_list" -f "${__dirname}/32_projects_counts.sql"
+    ${PSQL} -v project_id="${project.id}" -v changes_table="pdm_features_${slug}_changes" -v boundary_table="pdm_features_${slug}_boundary" -v labels_table="pdm_features_${slug}_labels" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v dates_list="\$count_dates_list" -f "${__dirname}/32_projects_counts.sql"
         `;
     }
 

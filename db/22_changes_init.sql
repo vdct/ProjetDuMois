@@ -17,6 +17,7 @@ CREATE INDEX ON :features_table (action, tagsfilter);
 CREATE INDEX ON :features_table (ts);
 CREATE INDEX ON :features_table (userid);
 CREATE INDEX ON :features_table using gist(geom);
+CREATE INDEX ON :features_table using gin(tags);
 
 DROP TABLE IF EXISTS :members_table CASCADE;
 CREATE TABLE :members_table (
@@ -55,8 +56,18 @@ CREATE INDEX ON :changes_table (action, tagsfilter);
 CREATE INDEX ON :changes_table (ts_start, ts_end);
 CREATE INDEX ON :changes_table using gist(geom);
 
+-- Associate a given feature/version to a label
+DROP TABLE IF EXISTS :labels_table CASCADE;
+CREATE TABLE :boundary_table (
+	osmid VARCHAR NOT NULL,
+	version INT NOT NULL,
+	label varchar
+);
+
+CREATE INDEX ON :labels_table USING btree(osmid, version);
+CREATE INDEX ON :labels_table USING btree(label);
+
 -- Associate a given feature/version to a boundary
--- boundary can be null until we'll able to get geometry of deleted features
 DROP TABLE IF EXISTS :boundary_table CASCADE;
 CREATE TABLE :boundary_table (
 	osmid VARCHAR NOT NULL,

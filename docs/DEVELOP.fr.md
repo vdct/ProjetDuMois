@@ -98,6 +98,7 @@ Les propriétés dans `info.json` sont les suivantes :
 - `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). Il est possible d'enchaîner plusieurs filtres par & et en répétant l'indication de primitive à chaque niveau. L'opérateur != n'est pour l'instant pas pris en compte.
 - `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs, voir [la documentation Imposm](https://imposm.org/docs/imposm3/latest/mapping.html#tags) pour le format de ces champs)
 - `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
+- `database.labels` : Objet de définition d'étiquettes attribuées aux versions d'objets en fonction de leurs tags. Chaque étiquette est associée au path JSON utilisé par la fonction [jsonb_path_exists](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE) utilisée sur la chaine de tags. Exemple `"labels":{"etiquette1":"$ ? (@.substation==\"transmission\")"}` pour attribuer `etiquette1` à tous les objets portant le tags `substation=transmission`. Voir ci-dessous à propos du filtrage
 - `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
 - `statistics` : configuration de l'affichage des statistiques sur la page du projet
 - `statistics.count` : activer le comptage des objets du projet
@@ -145,9 +146,44 @@ Les dénombrements suivants sont réalisés de manière systématique :
 
 ### Filtrer les objets
 
+![Logique de filtrage des projets](./projects_labels.svg)
+Un projet peut se décomposer selon les constituants ci-dessus : le filtre de périmètre accumule les objets qui s'y conforment et les étiquettes permettent ensuite de qualifier finement chaque version.
+
+#### Périmètre
 ProjetDuMois s'appuie sur Osmium et Imposm pour filtrer les objets concernés par les projets configurés, au moyen des clés de configuration `database.osmium_tag_filter` et `database.imposm`.
 
+Le filtre de périmètre doit être suffisament sélectif pour traiter des quantités d'objets raisonnables. Il doit aussi être suffisament large pour tenir compte de multiples variations des tags OSM pour un même sujet. Il est recommandé de se concentrer ici sur les tags principaux et de définir des étiquettes (voir ci-dessous) pour affiner la catégorisation.
+
 La documentation de la syntaxe des filtres Osmium est décrite dans [la documentation de l'outil](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html). Néanmoins, en raison de la nécessité d'appliquer ces filtres à plusieurs l'endroits dans le processus de sélection, y compris en dehors d'osmium, les filtres mobilisant l'opérateur `!=` ne sont pas supportés.
+
+#### Étiquetage
+Afin de compléter les fonctionnalités de filtrage décrites ci-dessus, ProjetDuMois permet d'assigner des étiquettes à chaque version des objets considérés par le projet en fonction de leurs tags.  
+Chaque version peut recevoir 0, 1 ou plusieurs étiquettes en fonction des tags. Tant et si bien que chaque étiquette peut couvrir tout ou partie de la population du projet.
+
+Ces étiquettes servent ensuite dans les dénombrements et distinguent les différentes populations. C'est ainsi qu'il est utile de considérer un périmètre large et de définir différentes étiquettes pour dénombrer les objets qui nous intéressent et ceux incomplets qu'il conviendrait de compléter par exemple.
+
+La syntaxe qui permet de les définir est basée sur le [SQL/JSON de Postgresql](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-SQLJSON-PATH) qui permet une grande souplesse et supporte les types. On considère par exemple les possibilités suivantes pour les définir :
+
+```json
+"labels":{
+  "label1":"$.char_key",
+  "label2":"$ ? (@.\"char:key\" == \"value\")",
+  "label3":"$ ? (@.numeric_key < 20000)",
+  "label4":"$.numeric_array_key ? (@ < 20000)",
+  "label5":"$ ? (@.numeric_array_key[*] > 10000 && @.char_key != \"value\")"
+}
+```
+
+L'attribution des étiquettes est réalisé durant la phase `update_changes`. Seule une réinitialisation de cette phase permet de réviser naturellement la population de versions concernée par une modification des définitions.  
+Toutefois, il est possible manuellement de supprimer puis attribuer à nouveau une étiquette `label1` donnée, par les trois commandes suivantes :
+
+```bash
+psql -d postgresql://... -c "DELETE FROM pdm_features_project_labels WHERE label='label1'"
+psql -d postgresql://... -v features_table="pdm_features_project" -v labels_table="pdm_features_project_labels" -v label="'label1'" -v labelfilter="'... new label filer ...'" -f "db/27_changes_labels.sql"
+psql -d postgresql://... -c "ANALYSE pdm_features_project_labels"
+```
+
+La phase `update_projects` devra ensuite être réinitialisée à son tour pour prendre en compte les nouveaux dénombrements.
 
 ### Se passer d'imposm3
 

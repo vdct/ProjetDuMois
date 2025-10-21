@@ -1,9 +1,9 @@
-# Contribute to the development of ProjetDuMois.fr
+# Running of ProjetDuMois.fr
 
 ## Dependencies
 
 - NodeJS >= 18
-- Bash tools : curl, awk, grep, sed, bc
+- Bash tools : curl, mawk, grep, sed, bc
 - PostgreSQL >= 13
 - Python 3 (and `requests` module)
 - [Osmium](https://osmcode.org/osmium-tool/) > 1.10
@@ -43,10 +43,11 @@ The general configuration of the tool is to be filled in `config.json`. There is
 
 - `OSM_USER`: OpenStreetMap username for retrieving the modification history with metadata
 - `OSM_PASS`: password associated with the OSM user account
-- `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap
+- `OSM_CLIENT_ID` : client ID associated with the OSM account
+- `OSH_PBF_AUTHORIZED`: Enable OAuth2 authentication to download OSH files when necessary. To be disabled if the repository selected in `OSH_PBF_URL` doesn't support it.
 - `OSH_PBF_URL`: URL of the OSH.PBF file (history and metadata, example `https://osm-internal.download.geofabrik.de/europe/france/reunion-internal.osh.pbf`)
-- `OSM_PBF_URL`: URL of the OSM.PBF file (current state, example `https://download.geofabrik.de/europe/france-latest.osm.pbf`)
-- `POLY_URL`: URL of a polygon file holding the perimeter in which projects are considered (example `https://download.geofabrik.de/europe/france.poly`)
+- `OSM_PBF_URL`: URL of the OSM.PBF file (current state, example `https://download.geofabrik.de/europe/france-latest.osm.pbf`). This file isn't covered by authorization process.
+- `POLY_URL`: URL of a polygon file holding the perimeter in which projects are considered (example `https://download.geofabrik.de/europe/france.poly`). This file isn't covered by authorization process.
 - `DB_USE_IMPOSM_UPDATE` : enable or disabled Imposm3 integration (to use an existing database which would be maintained by other means, by default `true`)
 - `WORK_DIR`: download and temporary storage folder (must have capacity to store the OSH PBF file, example `/tmp/pdm`)
 - `OSM_URL`: OpenStreetMap instance to use (example `https://www.openstreetmap.org`)
@@ -81,12 +82,13 @@ Each project is defined via a subdirectory of `projects'. Each subdirectory must
 
 - `info.json` : project metadata
 - `howto.md`: description of tasks to be performed in Markdown format (use title levels >= 3)
-- `contribs.sql` : SQL script containing UPDATE request on `pdm_changes` table, to set contribution classes to certain type of OSM changes and associate points
+- `contribs.sql` : SQL script containing UPDATE request on `pdm_features` table, to set contribution classes to certain type of OSM changes and associate points
 - `extract.sh` : Optional script that produces a csv export to be available for download on the web interface.
 
 The properties in `info.json` are as follows:
 
-- `id`: mission identifier (authorized characters: A-Z, 0-9, \_ and -)
+- `id`: Unique integer identifier
+- `name`: mission identifier (authorized characters: A-Z, 0-9, \_ and -)
 - `title`: name of the mission (short enough)
 - `start_date`: start date of the mission (format YYYYY-MM-DD)
 - `end_date`: end date of the mission (format YYYYY-MM-DD)
@@ -148,21 +150,13 @@ Documented syntax of filters is available in [Osmium documentation online](https
 
 ### Disable imposm3 usage
 
-It is possible to not use Imposm3 and connect to an existing database already populated with necessary data.
-You should make sure that it is correctly hourly-updated for this application needs.
+Is it possible to not use imposm3 and provide an updated database with all necessary data.  
+You must ensure yourself it will be updated at the necessary pace for PdM need, at least daily.
 
-In case Imposm3 is disabled, you have also to make available materialized views named `pdm_project_${project_id}`, with following structure:
+#### Common principles
 
-```sql
-osm_id BIGINT
-name VARCHAR(255)
-tags json
-geom GEOMETRY
-```
-
-Optionally, if compare mode is enabled in a given project, another view `pdm_project_${project_id}_compare` containing data to which features should be compared is necessary. It has the same structure as described above.
-
-In complement of these tables, you need a `pdm_boundary` table with administrative boundaries for your area ([administrative levels](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 4, 6 and 8) with following structure:
+A table `pdm_boundary` with every administrative boundaries will be useful to aggregate statistics at several levels. [Administrative boundaries](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 and 8 are supported by web interface.  
+It should conform to this structure:
 
 ```sql
 id INT
@@ -174,11 +168,46 @@ geom GEOMETRY(Geometry, 3857)
 centre GEOMETRY(Point, 3857)
 ```
 
-`centre` column is understood as a point included in the boundary shape (you can use [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html))
+`centre` column contains a point that must be inside the boundary perimeter (please use [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html) function).  
+Indices should be created on columns `osm_id`, `tags`, `geom` and `centre` depending on the amount of boundaries covering each project.
 
-Create indexes on `osm_id`, `tags`, `geom` and `centre` columns might be useful depending of your database content.
+Processing will automatically derivate another table `pdm_boundary_subdivide` by using [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) as to significantly ease the intersecting computation between features and boundaries.
 
-PdM will autonomously derivate a `pdm_boundary_subdivide` table with usage of [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) function as to improve features intersection with admin boundaries.
+Once updated, use the following to propagate the changes you have made to the boundaries:
+
+```sql
+REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
+```
+
+#### Replace by another database
+In case you have access to your own database already updated outside of PdM, you should produce a materialized view for each active project, called `pdm_project_${project_slug}` that conforms to following structure:
+
+```sql
+osm_id varchar,
+gid bigint,
+name VARCHAR(255)
+tags json
+geom GEOMETRY
+```
+
+Optionally, if the compare mode is enabled for a given project, a supplemntary view called `pdm_project_${project_id}_compare` that conforms to the given structure for `pdm_project_${project_id}` is needed.
+
+#### Replace by the changelog
+If you accept to only have a daily update to most statsitics, which means without instant update when some features get edited along the day, it is possible to create a materialized view as such:
+
+```sql
+create materialized view pdm_project_projectslug as
+  select fc.osmid as osm_id, 
+  split_part(fc.osmid, '/', 2)::bigint as gid, 
+  fc.tags->>'name' as name, 
+  to_json(fc.tags) as tags, 
+  fc.geom 
+  from pdm_features_projectslug_changes fc
+  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
+        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
+```
+
+Please mind refreshing it every day.
 
 ### Data sources
 
@@ -439,7 +468,7 @@ By default, the platform create the following contribution types:
 - `edit` : changes concerning features version>1 (tag or geometry edits)
 
 It is possible to attribute your own type for each project by creating a `contribs.sql` file next to `info.json`.
-This script contains UPDATE SQL requests to add entries in `pdm_changes` table. Each OSM change can only have a single type and have a single amount of points associated.
+This script contains UPDATE SQL requests to add entries in `pdm_features` table. Each OSM change can only have a single type and have a single amount of points associated.
 
 Configuration of points is in `info.json`:
 

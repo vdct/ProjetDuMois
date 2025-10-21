@@ -23,7 +23,7 @@ case $command in
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
 "run")
-    npm run projects:update $otherArgs
+    npm run changes:update $otherArgs
     npm run start
     ;;
 "update_features")

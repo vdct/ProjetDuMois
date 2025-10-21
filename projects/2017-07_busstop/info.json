@@ -1,5 +1,6 @@
 {
-	"id": "2017-07_busstop",
+	"id": 2,
+	"name": "2017-07_busstop",
 	"title": "Arrêts de bus",
 	"start_date": "2017-07-01",
 	"soft_end_date": "2017-08-01",

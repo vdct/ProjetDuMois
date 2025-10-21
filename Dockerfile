@@ -1,4 +1,4 @@
-FROM node:18.17.0-bullseye-slim
+FROM node:24-trixie-slim
 
 ENV DB_URL=postgres://localhost:5432/osm
 ENV PORT=3000
@@ -12,10 +12,7 @@ RUN groupadd --gid 10001 -r osm \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
         apt-utils curl xsltproc osmctools ca-certificates gnupg \
-    && curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
-    && echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
-    && apt-get update \
-    && apt-get -y --no-install-recommends install postgresql-client-13 libpq-dev libgeos-dev osmium-tool python3 python3-requests bc \
+    && apt-get -y --no-install-recommends install postgresql-client libpq-dev libgeos-dev osmium-tool python3 python3-requests bc \
     && apt-get clean \
     && update-ca-certificates \
     && rm -rf /var/lib/apt/lists/*

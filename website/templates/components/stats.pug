@@ -53,7 +53,7 @@ script.
 	function showStatistics() {
 		const numberFormat = new Intl.NumberFormat();
 
-		fetch("/projects/#{id}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
+		fetch("/projects/#{name}/stats"+(window.osm_user ? "?osm_user="+window.osm_user.name : ""))
 		.then(res => res.json())
 		.then(res => {
 			// Last stats update time
@@ -310,9 +310,9 @@ script.
 					pitchWithRotate: false,
 					dragRotate: false,
 					center: [2.5, 46.0],
-					zoom: 4,
+					zoom: 3,
 					style: res.mapStyle.style,
-					minZoom: 4,
+					minZoom: 1,
 					maxZoom: 10
 				});
 
@@ -419,7 +419,7 @@ script.
 				// Boundary stats legends
 				const mapStatsLegend = document.getElementById("map-stats-legend");
 				mapStatsLegend.innerHTML = '';
-				const admLvlToText = { "4": "#{__("Région")}", "6": "#{__("Département")}", "8": "#{__("Commune")}" };
+				const admLvlToText = { "2": "#{__("Pays")}", "4": "#{__("Région")}", "6": "#{__("Département")}", "8": "#{__("Commune")}" };
 				Object.entries(res.mapStyle.legend).forEach(e => {
 					const [lvl, data] = e;
 

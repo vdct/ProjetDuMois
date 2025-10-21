@@ -80,15 +80,15 @@ app.get("/", (req, res) => {
   if (nbProjects === 1) {
     // One currently active project
     if (p.current && p.current.length === 1) {
-      res.redirect(`/projects/${p.current.pop().id}`);
+      res.redirect(`/projects/${p.current.pop().name}`);
     }
     // One next project
     else if (p.next && p.next.length > 0) {
-      res.redirect(`/projects/${p.next.pop().id}`);
+      res.redirect(`/projects/${p.next.pop().name}`);
     }
     // One last project
     else if (p.past && p.past.length > 0) {
-      res.redirect(`/projects/${p.past.pop().id}`);
+      res.redirect(`/projects/${p.past.pop().name}`);
     }
   }
   // Multiple projects
@@ -124,41 +124,42 @@ app.get("/error/:code", (req, res) => {
   }
 
   const httpcode =
-    req.params.code && !isNaN(req.params.code) ? req.params.code : "400";
+    req.params.code && !isNaN(req.params.code) ? parseInt(req.params.code) : 400;
   res.status(httpcode).render("pages/error", { CONFIG, httpcode });
 });
 
 // Project page
-app.get("/projects/:id", (req, res) => {
+app.get("/projects/:name", (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
   }
 
-  if (!req.params.id || !projects[req.params.id]) {
+  if (!req.params.name || !projects[req.params.name]) {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.id];
+  const p = projects[req.params.name];
   const all = foldProjects(projects);
   const toDisplay = all.past
     .reverse()
-    .concat(all.current.filter((p) => p.id !== req.params.id));
+    .concat(all.current.filter((p) => p.name !== req.params.name));
   const isActive =
     all.current.length > 0 &&
-    all.current.find((p) => p.id === req.params.id) !== undefined;
+    all.current.find((p) => p.name === req.params.name) !== undefined;
   const isNext =
-    all.next && all.next.find((p) => p.id === req.params.id) !== undefined;
+    all.next && all.next.find((p) => p.name === req.params.name) !== undefined;
   const isHardEnded = all.past.find(p => (
     p.id === req.params.id
     && p.end_date != null
     && new Date(p.end_date + "T23:59:59Z").getTime() < Date.now()
   )) !== undefined;
+  
   const isRecentPast =
     all.past &&
     all.past.length > 0 &&
     all.past.find(
       (p) =>
-        p.id === req.params.id && p.end_date != null && 
+        p.name === req.params.name && p.end_date != null && 
         new Date(p.end_date + "T23:59:59Z").getTime() >=
           Date.now() - 30 * 24 * 60 * 60 * 1000,
     ) !== undefined;
@@ -181,24 +182,24 @@ app.get("/projects/:id", (req, res) => {
 });
 
 // Project map editor
-app.get("/projects/:id/map", async (req, res) => {
+app.get("/projects/:name/map", async (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
   }
 
-  if (!req.params.id || !projects[req.params.id]) {
+  if (!req.params.name || !projects[req.params.name]) {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.id];
+  const p = projects[req.params.name];
   const all = foldProjects(projects);
   const isActive =
     all.current.length > 0 &&
-    all.current.find((p) => p.id === req.params.id) !== undefined;
+    all.current.find((p) => p.name === req.params.name) !== undefined;
   
   // Redirect to project page if hard-ended
   if(p.end_date != null && new Date(p.end_date + "T23:59:59Z").getTime() < Date.now()) {
-    return res.redirect("/projects/"+req.params.id);
+    return res.redirect("/projects/"+req.params.name);
   }
 
   const mapstyle = await getMapStyle(p);
@@ -213,34 +214,34 @@ app.get("/projects/:id/map", async (req, res) => {
 });
 
 // Project notes list
-app.get("/projects/:id/issues", (req, res) => {
+app.get("/projects/:name/issues", (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
   }
 
-  if (!req.params.id || !projects[req.params.id]) {
+  if (!req.params.name || !projects[req.params.name]) {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.id];
+  const p = projects[req.params.name];
   const all = foldProjects(projects);
   const isActive =
     all.current.length > 0 &&
-    all.current.find((p) => p.id === req.params.id) !== undefined;
+    all.current.find((p) => p.name === req.params.name) !== undefined;
   res.render("pages/issues", Object.assign({ CONFIG, isActive }, p));
 });
 
 // Project statistics
-app.get("/projects/:id/stats", (req, res) => {
+app.get("/projects/:name/stats", (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
   }
 
-  if (!req.params.id || !projects[req.params.id]) {
+  if (!req.params.name || !projects[req.params.name]) {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.id];
+  const p = projects[req.params.name];
   const allPromises = [];
   const osmUserAuthentified =
     typeof req.query.osm_user === "string" &&
@@ -324,7 +325,7 @@ app.get("/projects/:id/stats", (req, res) => {
 			WHERE project = $1
 			ORDER BY ts ASC
 		`,
-          [req.params.id],
+          [p.id],
         )
         .then((results) => ({
           chartNotes:
@@ -370,12 +371,12 @@ app.get("/projects/:id/stats", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, amount
-			FROM pdm_feature_counts
-			WHERE project = $1
-			ORDER BY ts ASC
-		`,
-          [req.params.id],
+        SELECT ts, amount
+        FROM pdm_feature_counts
+        WHERE project_id = $1
+        ORDER BY ts ASC
+        `,
+        [p.id]
         )
         .then((results) => ({
           chart: [
@@ -397,7 +398,7 @@ app.get("/projects/:id/stats", (req, res) => {
     allPromises.push(
       pool
         .query(
-          `SELECT COUNT(*) AS amount FROM pdm_project_${req.params.id.split("_").pop()}`,
+          `SELECT COUNT(*) AS amount FROM pdm_project_${p.name.split("_").pop()}`,
         )
         .then((results) => ({
           count: results.rows.length > 0 && results.rows[0].amount,
@@ -408,9 +409,9 @@ app.get("/projects/:id/stats", (req, res) => {
       allPromises.push(
         pool
           .query(
-            `SELECT admin_level, max(nb) AS amount FROM pdm_boundary_tiles WHERE project = $1 GROUP BY admin_level`,
-            [req.params.id],
-          )
+            `SELECT admin_level, max(nb) AS amount FROM pdm_boundary_tiles WHERE project_id = $1 GROUP BY admin_level`,[
+             p.id
+          ])
           .then((results) => {
             const maxLevel = {};
             results.rows.forEach((r) => {
@@ -431,7 +432,7 @@ app.get("/projects/:id/stats", (req, res) => {
   allPromises.push(
     pool
       .query(`SELECT * FROM pdm_leaderboard WHERE project = $1 ORDER BY pos`, [
-        req.params.id,
+        req.params.name,
       ])
       .then((results) => ({
         nbContributors: results.rows.length,
@@ -443,7 +444,7 @@ app.get("/projects/:id/stats", (req, res) => {
   allPromises.push(
     pool
       .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
-        req.params.id,
+        req.params.name,
       ])
       .then((results) => ({
         lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
@@ -458,7 +459,7 @@ app.get("/projects/:id/stats", (req, res) => {
 		SELECT k, COUNT(*) AS amount
 		FROM (
 			SELECT json_object_keys(tags) AS k
-			FROM pdm_project_${req.params.id.split("_").pop()}
+			FROM pdm_project_${req.params.name.split("_").pop()}
 		) a
 		GROUP BY k
 		ORDER BY COUNT(*) desc;`,
@@ -495,6 +496,135 @@ app.get("/projects/:id/stats", (req, res) => {
               toSend.chart = toSend.chart.concat(e[1]);
             }
           });
+        }else if (r != null && r.status === "rejected"){
+          console.error(`Promise rejected: ${r.reason}`);
+        }
+      });
+    }
+    res.send(toSend);
+  });
+});
+
+// Project counts per boundary
+app.get("/projects/:name/counts", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
+  }
+
+  if (!req.params.name || !projects[req.params.name]) {
+    return res.redirect("/error/404");
+  }
+
+  const p = projects[req.params.name];
+  const allPromises = [];
+
+  // Fetch feature counts
+  if (p.statistics.count) {
+    allPromises.push(
+      pool
+        .query(
+          `
+			SELECT ts, amount, len
+			FROM pdm_feature_counts
+			WHERE project_id = $1
+			ORDER BY ts ASC
+		`,
+          [p.id]
+        )
+        .then((results) => ({
+          data: results.rows.map((r) => ({ t: r.ts, amount: r.amount, length: r.len }))
+        })),
+    );
+  }
+
+  // Fetch last count update time
+  allPromises.push(
+    pool
+      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
+        req.params.name,
+      ])
+      .then((results) => ({
+        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
+      })),
+  );
+
+  Promise.allSettled(allPromises).then((results) => {
+    let toSend = {};
+    if (typeof results == "object" && results != null) {
+      results.forEach((r) => {
+        if (r != null && r.status === "fulfilled") {
+          Object.entries(r.value).forEach((e) => {
+            if (!toSend[e[0]]) {
+              toSend[e[0]] = e[1];
+            } else if (e[0] === "chart") {
+              toSend.chart = toSend.chart.concat(e[1]);
+            }
+          });
+        }else if (r != null && r.status === "rejected"){
+          console.error(`Promise rejected: ${r.reason}`);
+        }
+      });
+    }
+    res.send(toSend);
+  });
+});
+
+app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
+  }
+
+  if (!req.params.name || !projects[req.params.name] || !req.params.boundary) {
+    return res.redirect("/error/404");
+  }
+
+  const p = projects[req.params.name];
+  const allPromises = [];
+
+  // Fetch feature counts
+  if (p.statistics.count) {
+    allPromises.push(
+      pool
+        .query(
+          `
+			SELECT ts, amount, len
+			FROM pdm_feature_counts_per_boundary
+			WHERE project_id = $1 AND boundary = $2
+			ORDER BY ts ASC
+		`,
+          [p.id, req.params.boundary]
+        )
+        .then((results) => ({
+          data: results.rows.map((r) => ({ t: r.ts, amount: r.amount, length: r.len }))
+        })),
+    );
+  }
+
+  // Fetch last count update time
+  allPromises.push(
+    pool
+      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
+        req.params.name,
+      ])
+      .then((results) => ({
+        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
+      })),
+  );
+
+  Promise.allSettled(allPromises).then((results) => {
+    let toSend = {};
+    if (typeof results == "object" && results != null) {
+      results.forEach((r) => {
+        if (r != null && r.status === "fulfilled") {
+          Object.entries(r.value).forEach((e) => {
+            if (!toSend[e[0]]) {
+              toSend[e[0]] = e[1];
+            } else if (e[0] === "chart") {
+              toSend.chart = toSend.chart.concat(e[1]);
+            }
+          });
+        }else if (r != null && r.status === "rejected"){
+          console.error(`Promise rejected: ${r.reason}`);
         }
       });
     }
@@ -503,18 +633,18 @@ app.get("/projects/:id/stats", (req, res) => {
 });
 
 // User contributions
-app.post("/projects/:id/contribute/:userid", (req, res) => {
+app.post("/projects/:name/contribute/:userid", (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
   }
 
   // Check project is active
-  const p = foldProjects(projects);
+  const all = foldProjects(projects);
   if (
-    !req.params.id ||
-    !projects[req.params.id] ||
-    p.current.length < 1 ||
-    p.current.find((p) => p.id === req.params.id) === undefined
+    !req.params.name ||
+    !projects[req.params.name] ||
+    all.current.length < 1 ||
+    all.current.find((p) => p.name === req.params.name) === undefined
   ) {
     return res.redirect("/error/400");
   }
@@ -536,6 +666,7 @@ app.post("/projects/:id/contribute/:userid", (req, res) => {
   ) {
     return res.redirect("/error/400");
   }
+  const p = projects[req.params.name];
 
   // Update user name in DB
   pool
@@ -547,7 +678,7 @@ app.post("/projects/:id/contribute/:userid", (req, res) => {
       // Get badges before edit
       pool
         .query("SELECT * FROM pdm_get_badges($1, $2)", [
-          req.params.id,
+          req.params.name,
           req.params.userid,
         ])
         .then((r2) => {
@@ -556,14 +687,14 @@ app.post("/projects/:id/contribute/:userid", (req, res) => {
           // Insert contribution (will be deleted and re-inserted at next project update)
           pool
             .query(
-              "WITH points AS (SELECT pts FROM pdm_projects_points WHERE project=$1 AND contrib=$3) INSERT INTO pdm_user_contribs(project, userid, ts, contribution, verified, points) VALUES (SELECT $1, $2, current_timestamp, $3, false, pts FROM points)",
-              [req.params.id, req.params.userid, req.query.type],
+              "WITH points AS (SELECT pts FROM pdm_projects_points WHERE project_id=$1 AND contrib=$3) INSERT INTO pdm_user_contribs(project, userid, ts, contribution, verified, points) VALUES (SELECT $1, $2, current_timestamp, $3, false, pts FROM points)",
+              [p.id, req.params.userid, req.query.type],
             )
             .then((r3) => {
               // Get badges after contribution
               pool
                 .query("SELECT * FROM pdm_get_badges($1, $2)", [
-                  req.params.id,
+                  req.params.name,
                   req.params.userid,
                 ])
                 .then((r4) => {
@@ -598,13 +729,13 @@ app.post("/projects/:id/contribute/:userid", (req, res) => {
 });
 
 // Add OSM feature to compare exclusion list
-app.post("/projects/:id/ignore/:osmtype/:osmid", (req, res) => {
+app.post("/projects/:name/ignore/:osmtype/:osmid", (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
   }
 
   // Check project exists
-  if (!req.params.id || !projects[req.params.id]) {
+  if (!req.params.name || !projects[req.params.name]) {
     return res.redirect("/error/404");
   }
   // Check OSM ID
@@ -617,11 +748,13 @@ app.post("/projects/:id/ignore/:osmtype/:osmid", (req, res) => {
     return res.redirect("/error/400");
   }
 
+  const p = projects[req.params.name];
+
   pool
     .query(
-      "INSERT INTO pdm_compare_exclusions(project, osm_id, userid) VALUES ($1, $2, $3) ON CONFLICT (project, osm_id) DO UPDATE SET ts = current_timestamp, userid = $3",
+      "INSERT INTO pdm_compare_exclusions(project_id, osm_id, userid) VALUES ($1, $2, $3) ON CONFLICT (project, osm_id) DO UPDATE SET ts = current_timestamp, userid = $3",
       [
-        req.params.id,
+        p.id,
         req.params.osmtype + "/" + req.params.osmid,
         req.query.user_id,
       ],

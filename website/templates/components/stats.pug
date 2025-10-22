@@ -221,6 +221,8 @@ script.
 				scd.classList.add("d-none");
 			}
 
+			const dateFmt = #{isActive || isNext || isRecentPast || "false"} ? "DD/MM" : "MM/YYYY";
+
 			// Notes count + chart
 			if(res.chartNotes) {
 				addBlock(numberFormat.format(res.openedNotes), `notes ouvertes (${res.statClosedNotes} résolues)`);
@@ -237,8 +239,8 @@ script.
 								type: 'time',
 								bounds: 'ticks',
 								time: {
-									tooltipFormat: "DD/MM",
-									displayFormats: { day: "DD/MM" },
+									tooltipFormat: "DD/MM/YYYY",
+									displayFormats: { day: dateFmt },
 									round: "day",
 									unit: "day"
 								}
@@ -266,8 +268,8 @@ script.
 							type: 'time',
 							bounds: 'ticks',
 							time: {
-								tooltipFormat: "DD/MM",
-								displayFormats: { day: "DD/MM" },
+								tooltipFormat: "DD/MM/YYYY",
+								displayFormats: { day: dateFmt },
 								round: "day",
 								unit: "day"
 							}
@@ -361,7 +363,7 @@ script.
 							data: {
 								datasets: [{
 									label: "#{__("Nombre total")}",
-									data: projectDays.map(d => ({ t: d, y: fStats[d] || 0 })).filter((d,i) => d.y != 0 || i < projectDays.length - 1),
+									data: projectDays.filter(d => fStats[d] !== undefined).map(d => ({ t: d, y: fStats[d] || 0 })),
 									fill: false,
 									borderColor: "#388E3C",
 									lineTension: 0
@@ -374,8 +376,8 @@ script.
 										type: 'time',
 										bounds: 'ticks',
 										time: {
-											tooltipFormat: "DD/MM",
-											displayFormats: { day: "DD/MM" },
+											tooltipFormat: "DD/MM/YYYY",
+											displayFormats: { day: dateFmt },
 											round: "day",
 											unit: "day"
 										}

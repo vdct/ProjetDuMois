@@ -322,7 +322,7 @@ app.get("/projects/:name/stats", (req, res) => {
           `
 			SELECT ts, open, closed
 			FROM pdm_note_counts
-			WHERE project = $1
+			WHERE project_id = $1
 			ORDER BY ts ASC
 		`,
           [p.id],
@@ -436,7 +436,10 @@ app.get("/projects/:name/stats", (req, res) => {
       ])
       .then((results) => ({
         nbContributors: results.rows.length,
-        leaderboard: osmUserAuthentified ? results.rows : null,
+        leaderboard: osmUserAuthentified ? results.rows.map(r => {
+          r.username = r.username.replace("%20%", " ");
+          return r;
+        }) : null,
       })),
   );
 
@@ -752,7 +755,7 @@ app.post("/projects/:name/ignore/:osmtype/:osmid", (req, res) => {
 
   pool
     .query(
-      "INSERT INTO pdm_compare_exclusions(project_id, osm_id, userid) VALUES ($1, $2, $3) ON CONFLICT (project, osm_id) DO UPDATE SET ts = current_timestamp, userid = $3",
+      "INSERT INTO pdm_compare_exclusions(project_id, osm_id, userid) VALUES ($1, $2, $3) ON CONFLICT (project_id, osm_id) DO UPDATE SET ts = current_timestamp, userid = $3",
       [
         p.id,
         req.params.osmtype + "/" + req.params.osmid,
@@ -780,7 +783,7 @@ app.get("/users/:name", (req, res) => {
   // Find user in database
   pool
     .query(`SELECT userid FROM pdm_user_names WHERE username = $1`, [
-      req.params.name,
+      req.params.name.replace(" ", "%20%"),
     ])
     .then((res1) => {
       if (res1.rows.length === 1) {

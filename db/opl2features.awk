@@ -45,6 +45,12 @@ BEGIN {
     features["n"] = "node"
     features["w"] = "way"
     features["r"] = "relation"
+
+    # Force to write file to avoid error on psql import
+    printf "" >> output_main
+    if (length(output_members) > 0){
+        printf "" >> output_members
+    }
 }
 
 {
@@ -78,11 +84,6 @@ BEGIN {
         for (i in tagsconds) {
             results[i] = false
         }
-    }
-
-    # Force to write file to avoid error on psql import
-    if (length(output_members) > 0){
-        printf "" >> output_members
     }
 
     if (f == "n"){

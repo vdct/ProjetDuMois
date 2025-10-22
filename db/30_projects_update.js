@@ -21,7 +21,6 @@ const HAS_BOUNDARY = `${PSQL} -c "SELECT * FROM pdm_boundary LIMIT 1" > /dev/nul
 
 // Notes statistics
 function processNotes(project) {
-	console.log("Retreiving notes from OSM server...");
     const slug = project.name.split("_").pop();
     const days = getProjectDays(project);
     const today = new Date().toISOString().split("T")[0];
@@ -35,10 +34,15 @@ function processNotes(project) {
         // Review each note source
         const promises = notesSources.map((noteSource, nsid) => {
             // Call OSM API for each term
-            const subpromises = noteSource.terms.map(term => (
-                fetch(`${CONFIG.OSM_URL}/api/0.6/notes/search.json?q=${encodeURIComponent(term)}&limit=10000&closed=-1&from=${project.start_date}`)
-                .then(res => res.json())
-            ));
+            const subpromises = noteSource.terms.map(term => {
+                console.log(`Download notes (${slug}/${term}) from OSM server...`);
+                return fetch(`${CONFIG.OSM_URL}/api/0.6/notes/search.json?q=${encodeURIComponent(term)}&limit=10000&closed=-1&from=${project.start_date}`)
+                    .then(res => res.json())
+                    .catch(e => {
+                        console.error(`Failed to retrieve ${slug}/${term}:`, e);
+                        return { features: [] };
+                    });
+            });
 
             // Process received notes
             const countedNotes = [];

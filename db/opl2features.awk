@@ -80,6 +80,11 @@ BEGIN {
         }
     }
 
+    # Force to write file to avoid error on psql import
+    if (length(output_members) > 0){
+        printf "" >> output_members
+    }
+
     if (f == "n"){
         if (a != "delete"){
             x = substr($9, 2);     # Longitude

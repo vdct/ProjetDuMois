@@ -31,7 +31,7 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
     const members_table = `pdm_members_${slug}`;
     const changes_table = `pdm_features_${slug}_changes`;
     const boundary_table = `pdm_features_${slug}_boundary`;
-    const labels_table = `pdm_features_${slug}_label`;
+    const labels_table = `pdm_features_${slug}_labels`;
     let script = ``;
 
     let awk_param_members = "";
@@ -48,7 +48,7 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
     if (start_ts == null && end_ts == null){
         script += `
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Init changes table in database"
-        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/22_changes_init.sql"
+        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_init.sql"
 
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
         ${PSQL} -c "\\COPY ${features_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
@@ -56,7 +56,8 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
 
         if (project.database.hasOwnProperty("labels")){
             Object.keys(project.database.labels).forEach(label => {
-                script += `${PSQL} -v features_table="${features_table}" -v labels_table="${labels_table}" -v label="'${label}'" -v labelfilter="'${project.database.labels[label]}'" -f "${__dirname}/27_changes_labels.sql"`
+                script += `${PSQL} -v features_table="${features_table}" -v labels_table="${labels_table}" -v label="'${label}'" -v labelfilter="'${project.database.labels[label]}'" -f "${__dirname}/27_changes_labels.sql"
+                `;
             });
         }
 

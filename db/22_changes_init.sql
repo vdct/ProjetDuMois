@@ -58,7 +58,7 @@ CREATE INDEX ON :changes_table using gist(geom);
 
 -- Associate a given feature/version to a label
 DROP TABLE IF EXISTS :labels_table CASCADE;
-CREATE TABLE :boundary_table (
+CREATE TABLE :labels_table (
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,
 	label varchar

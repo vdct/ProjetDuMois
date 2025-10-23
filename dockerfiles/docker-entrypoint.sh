@@ -15,11 +15,11 @@ case $command in
     psql -d $DB_URL -f ./db/00_init.sql
     ;;
 "init")
-    npm run features:update $otherArgs
-    ./db/11_features_update_tmp.sh init
-    npm run changes:update $otherArgs
-    ./db/21_changes_update_tmp.sh init
-    npm run projects:update $otherArgs
+    npm run features:update $otherArgs && \
+    ./db/11_features_update_tmp.sh init && \
+    npm run changes:update $otherArgs && \
+    ./db/21_changes_update_tmp.sh init && \
+    npm run projects:update $otherArgs && \
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
 "run")
@@ -39,11 +39,11 @@ case $command in
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
 "update_daily")
-    npm run features:update $otherArgs
-    ./db/11_features_update_tmp.sh
-    npm run changes:update $otherArgs
-    ./db/21_changes_update_tmp.sh $otherArgs
-    npm run projects:update $otherArgs
+    npm run features:update $otherArgs && \
+    ./db/11_features_update_tmp.sh && \
+    npm run changes:update $otherArgs && \
+    ./db/21_changes_update_tmp.sh $otherArgs && \
+    npm run projects:update $otherArgs && \
     ./db/31_projects_update_tmp.sh $otherArgs
     ;;
 "update_imposm")

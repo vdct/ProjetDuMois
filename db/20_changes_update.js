@@ -56,7 +56,9 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
 
         if (project.database.hasOwnProperty("labels")){
             Object.keys(project.database.labels).forEach(label => {
-                script += `${PSQL} -v features_table="${features_table}" -v labels_table="${labels_table}" -v label="'${label}'" -v labelfilter="'${project.database.labels[label]}'" -f "${__dirname}/27_changes_labels.sql"
+                script += `
+                echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Labelling ${label}"
+                ${PSQL} -v features_table="${features_table}" -v labels_table="${labels_table}" -v label="'${label}'" -v labelfilter="'${project.database.labels[label].replaceAll('"', '\\"')}'" -f "${__dirname}/27_changes_labels.sql"
                 `;
             });
         }
@@ -81,7 +83,10 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
 
         if (project.database.hasOwnProperty("labels")){
             Object.keys(project.database.labels).forEach(label => {
-                script += `${PSQL} -v features_table="${features_table}_tmp" -v labels_table="${labels_table}"  -v label="'${label}'" -v labelfilter="'${project.database.labels[label]}'" -f "${__dirname}/27_changes_labels.sql"`
+                script += `
+                echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Labelling ${label}"
+                ${PSQL} -v features_table="${features_table}_tmp" -v labels_table="${labels_table}"  -v label="'${label}'" -v labelfilter="'${project.database.labels[label].replaceAll('"', '\\"')}'" -f "${__dirname}/27_changes_labels.sql"
+                `
             });
         }
 

@@ -98,6 +98,7 @@ The properties in `info.json` are as follows:
 - `database.osmium_tag_filter` : Osmium filter on the tags to be applied to keep only the relevant OSM objects (for example `nwr/*:covid19`, [syntax described here](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). It is possible to list many filters using `&` character and same syntax.
 - `database.imposm`: configuration for importing updated OSM data (`types` for geometry types to be taken into account, `mapping` for attributes, see [the Imposm documentation](https://imposm.org/docs/imposm3/latest/mapping.html#tags) for the format of these fields)
 - `database.compare`: configuration for the search of OpenStreetMap objects to compare, follows the format of `database.imposm` with an additional property `radius` (reconciliation radius in meters)
+- `database.labels` : Labels definitions that are assigned to each feature version depending on their tags. Each label is associated to a JSON path used by [jsonb_path_exists](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE) over each feature tags. Example `"labels":{"label1":"$ ? (@.substation=="transmission")"}` to assign `label1` to any object that holds `substation=transmission`.
 - `datasources`: list of data sources that appear on the page (see below)
 - `statistics`: configuration of statistics display on the project page
 - `statistics.count`: enable object counting in OSM

@@ -87,10 +87,11 @@
 				{ "type": "textarea", "name": "Localisation précise", "tag": "defibrillator:location", "description": "Exemple : derrière le comptoir de l'accueil" },
 				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
 				{ "type": "number", "name": "Niveau où le trouver", "tag": "level", "description": "0 pour RDC, 1 pour 1er étage... uniquement en intérieur", "optional": true },
-				{ "type": "select", "name": "Qui peut y accéder ?", "tag": "access", "optional": true, "values": [
-					{ "v": "yes", "l": "Tout le monde" },
-					{ "v": "customers", "l": "Clients uniquement" },
-					{ "v": "private", "l": "Personnes autorisées uniquement" }
+				{ "type": "select", "name": "Droit d'accès ?", "tag": "access", "optional": true, "values": [
+					{ "v": "yes", "l": "Accès public, sans contrainte" },
+					{ "v": "permissive", "l": "Accès possible, avec autorisation" },
+					{ "v": "customers", "l": "Accès réservé aux clients ou usagers" },
+					{ "v": "private", "l": "Accès privé" }
 				] },
 				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, modèle, infos pratiques...", "optional": true }
 			],

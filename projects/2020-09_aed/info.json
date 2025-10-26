@@ -90,7 +90,7 @@
 				{ "type": "select", "name": "Droit d'accès ?", "tag": "access", "optional": true, "values": [
 					{ "v": "yes", "l": "Accès public, sans contrainte" },
 					{ "v": "permissive", "l": "Accès possible, avec autorisation" },
-					{ "v": "customers", "l": "Accès réservé aux clients" },
+					{ "v": "customers", "l": "Accès réservé aux clients ou usagers" },
 					{ "v": "private", "l": "Accès privé" }
 				] },
 				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, modèle, infos pratiques...", "optional": true }

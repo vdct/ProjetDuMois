@@ -9,14 +9,14 @@ CREATE INDEX ON pdm_boundary_subdivide using btree(osm_id);
 -- Boundary stats for tiles
 CREATE MATERIALIZED VIEW pdm_boundary_tiles AS
 WITH minc AS (
-	SELECT DISTINCT ON (project_id, boundary) project_id, boundary, label, amount
+	SELECT DISTINCT ON (project_id, boundary, label) project_id, boundary, label, amount
 	FROM pdm_feature_counts_per_boundary
 	ORDER BY project_id, boundary, label, ts
 ),
 maxc AS (
-	SELECT DISTINCT ON (project_id, boundary) project_id, boundary, label, amount
+	SELECT DISTINCT ON (project_id, boundary, label) project_id, boundary, label, amount
 	FROM pdm_feature_counts_per_boundary
-	ORDER BY project_id, boundary, label, ts DESC
+	ORDER BY project_id, boundary, label, ts desc
 ),
 stats AS (
 	SELECT project_id, boundary, label, json_object(array_agg(ts::date::text), array_agg(amount::text)) AS stats
@@ -25,8 +25,8 @@ stats AS (
 )
 SELECT s.project_id, s.boundary, s.label, b.id, b.name, b.admin_level, s.stats, maxc.amount - minc.amount AS nb, b.centre AS geom
 FROM stats s
-JOIN minc ON minc.project_id = s.project_id AND minc.boundary = s.boundary AND minc.label=s.label
-JOIN maxc ON maxc.project_id = s.project_id AND maxc.boundary = s.boundary AND minc.label=s.label
+JOIN minc ON minc.project_id = s.project_id AND minc.boundary = s.boundary AND coalesce(minc.label,'')=coalesce(s.label,'')
+JOIN maxc ON maxc.project_id = s.project_id AND maxc.boundary = s.boundary AND coalesce(maxc.label,'')=coalesce(s.label,'')
 JOIN pdm_boundary b ON s.boundary = b.osm_id;
 
 CREATE INDEX pdm_boundary_tiles_project_idx ON pdm_boundary_tiles(project_id);

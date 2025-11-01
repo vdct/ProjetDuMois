@@ -238,7 +238,7 @@ create materialized view pdm_project_projectslug as
   split_part(fc.osmid, '/', 2)::bigint as gid, 
   fc.tags->>'name' as name, 
   to_json(fc.tags) as tags, 
-  fc.geom 
+  ST_Centroid(fc.geom)::geometry(point,4326) as geom 
   from pdm_features_projectslug_changes fc
   where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
         OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));

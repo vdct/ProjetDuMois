@@ -12,4 +12,4 @@ INSERT INTO :features_table
 SELECT u.*
 FROM unknown u;
 
-ANALYSE :features_table;
+ANALYZE :features_table;

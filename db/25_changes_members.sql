@@ -12,4 +12,4 @@ INSERT INTO :members_table
 SELECT u.*
 FROM unknown u;
 
-ANALYSE :members_table;
+ANALYZE :members_table;

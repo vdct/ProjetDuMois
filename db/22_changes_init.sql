@@ -12,12 +12,6 @@ CREATE TABLE :features_table (
 	tagsfilter boolean
 );
 
-CREATE INDEX ON :features_table (osmid, version);
-CREATE INDEX ON :features_table (action, tagsfilter);
-CREATE INDEX ON :features_table (ts);
-CREATE INDEX ON :features_table (userid);
-CREATE INDEX ON :features_table using gist(geom);
-
 DROP TABLE IF EXISTS :members_table CASCADE;
 CREATE TABLE :members_table (
 	osmid VARCHAR NOT NULL,
@@ -25,10 +19,6 @@ CREATE TABLE :members_table (
 	memberid VARCHAR NOT NULL,
 	pos int not null
 );
-
-CREATE INDEX ON :members_table (osmid, version, memberid, pos);
-CREATE INDEX ON :members_table (osmid, version);
-CREATE INDEX ON :members_table (memberid);
 
 DROP MATERIALIZED VIEW IF EXISTS :changes_table;
 CREATE MATERIALIZED VIEW :changes_table as
@@ -50,19 +40,18 @@ CREATE MATERIALIZED VIEW :changes_table as
 		ON c1.osmid=c2.osmid and c1.version=c2.version-1
 	WHERE c1.action!='delete';
 
-CREATE INDEX ON :changes_table (osmid, version);
-CREATE INDEX ON :changes_table (action, tagsfilter);
-CREATE INDEX ON :changes_table (ts_start, ts_end);
-CREATE INDEX ON :changes_table using gist(geom);
+-- Associate a given feature/version to a label
+DROP TABLE IF EXISTS :labels_table CASCADE;
+CREATE TABLE :labels_table (
+	osmid VARCHAR NOT NULL,
+	version INT NOT NULL,
+	label varchar
+);
 
 -- Associate a given feature/version to a boundary
--- boundary can be null until we'll able to get geometry of deleted features
 DROP TABLE IF EXISTS :boundary_table CASCADE;
 CREATE TABLE :boundary_table (
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,
 	boundary BIGINT
 );
-
-CREATE INDEX ON :boundary_table USING btree(osmid, version);
-CREATE INDEX ON :boundary_table USING btree(boundary);

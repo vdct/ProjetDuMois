@@ -14,6 +14,11 @@
 		"imposm": {
 			"types": ["point", "polygon"],
 			"mapping": { "amenity": ["police"] }
+		},
+		"labels": {
+			"gendarmerie": "$ ? (@.\"police:FR\"==\"gendarmerie\")",
+			"police_nat": "$ ? (@.\"police:FR\"==\"police\")",
+			"police_mun": "$ ? (@.\"police:FR\"==\"police_municipale\")"
 		}
 	},
 	"datasources": [

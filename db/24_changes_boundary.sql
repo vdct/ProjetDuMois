@@ -13,4 +13,4 @@ INSERT INTO :boundary_table
 SELECT u.osmid AS osmid, u.version, u.boundary
 FROM unknown u;
 
-ANALYSE :boundary_table;
+ANALYZE :boundary_table;

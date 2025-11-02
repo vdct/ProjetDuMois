@@ -36,12 +36,6 @@
 			"description": "Cet arrêt de bus existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
 		},
 		{
-			"source": "notes",
-			"name": "Arrêts de bus à intégrer",
-			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"terms": ["busFR", "transportsIDF"]
-		},
-		{
 			"source": "background",
 			"tiles": "mapillary",
 			"name": "Photos de rue",
@@ -70,7 +64,7 @@
 	"editors": {
 		"all": {
 			"comment": "Intégration arrêts de bus",
-			"hashtags": "busFR"
+			"hashtags": "projetdumois,projetdumoisfr"
 		},
 		"pdm": {
 			"fields": [{

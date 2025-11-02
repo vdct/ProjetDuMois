@@ -108,7 +108,7 @@ script.
 
 			const editWithID = document.createElement("a");
 			editWithID.classList.add("dropdown-item", "d-none", "d-sm-block");
-			editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&#{idParams}`;
+			editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&!{idParams}`;
 			editWithID.target = "_blank";
 			editWithID.appendChild(document.createTextNode("#{__("Avec iD")}"));
 			dropdown.appendChild(editWithID);
@@ -117,19 +117,15 @@ script.
 			editWithJOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithJOSM.addEventListener("click", () => {
 				const { lat, lng } = options.originalCoordinates || map.getCenter();
-				const urlsToLoad = [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lng+0.0005}&left=${lng-0.0005}${options.osmid && `&select=${options.osmid.replace("/", "")}` || ""}&#{josmParams}`];
+				const urlsToLoad = [`#{CONFIG.JOSM_REMOTE_URL}/load_and_zoom?bottom=${lat-0.0005}&top=${lat+0.0005}&right=${lng+0.0005}&left=${lng-0.0005}${options.osmid && `&select=${options.osmid.replace("/", "")}` || ""}&!{josmParams}`];
 				if(options.tags && !options.osmid && Object.keys(options.tags).length > 0) {
 					urlsToLoad.push(`#{CONFIG.JOSM_REMOTE_URL}/add_node?lon=${lng}&lat=${lat}&addtags=${encodeURIComponent(Object.entries(options.tags).map(e => e.join("=")).join("|"))}`);
 				}
 				const next = () => {
 					const url = urlsToLoad.shift();
 					if(url) {
-						fetch(url)
-						.then(() => setTimeout(next, 3000))
-						.catch(e => {
-							console.error(e);
-							alert("Une erreur s'est produite avec la télécommande JOSM");
-						});
+						window.open(url, "_blank");
+						next();
 					}
 				};
 				next();

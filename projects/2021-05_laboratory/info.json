@@ -36,7 +36,7 @@
 			"source": "notes",
 			"name": "Labo à intégrer",
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"terms": [ "laboratoire", "labo", "lbm" ]
+			"terms": [ "labo" ]
 		},
 		{
 			"source": "osm",

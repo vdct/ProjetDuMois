@@ -42,7 +42,7 @@
 			"source": "notes",
 			"name": "DAE à intégrer",
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"terms": [ "défibrillateur", "defibrillateur", "dae", "deficoeur", "defibrillator" ]
+			"terms": [ "défib", "dae" ]
 		},
 		{
 			"source": "osm",

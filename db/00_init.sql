@@ -44,10 +44,11 @@ DROP TABLE IF EXISTS pdm_user_badges;
 CREATE TABLE pdm_feature_counts(
 	project_id int NOT NULL,
 	ts TIMESTAMP NOT NULL,
+	label varchar,
 	amount INT NOT NULL,
 	len numeric not null,
 
-	CONSTRAINT pdm_feature_counts_pk PRIMARY KEY(project_id,ts)
+	CONSTRAINT pdm_feature_counts_unique UNIQUE(project_id,ts,label)
 );
 
 CREATE INDEX ON pdm_feature_counts(project_id);
@@ -66,10 +67,11 @@ CREATE TABLE pdm_feature_counts_per_boundary(
 	project_id int NOT NULL,
 	boundary BIGINT NOT NULL,
 	ts TIMESTAMP NOT NULL,
+	label varchar,
 	amount INT NOT NULL,
 	len numeric not null,
 
-	CONSTRAINT pdm_feature_counts_per_boundary_pk PRIMARY KEY(project_id, boundary, ts)
+	CONSTRAINT pdm_feature_counts_per_boundary_unique UNIQUE(project_id, boundary, ts, label)
 );
 
 CREATE INDEX ON pdm_feature_counts_per_boundary using btree (project_id);

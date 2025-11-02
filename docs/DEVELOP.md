@@ -98,6 +98,7 @@ The properties in `info.json` are as follows:
 - `database.osmium_tag_filter` : Osmium filter on the tags to be applied to keep only the relevant OSM objects (for example `nwr/*:covid19`, [syntax described here](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). It is possible to list many filters using `&` character and same syntax.
 - `database.imposm`: configuration for importing updated OSM data (`types` for geometry types to be taken into account, `mapping` for attributes, see [the Imposm documentation](https://imposm.org/docs/imposm3/latest/mapping.html#tags) for the format of these fields)
 - `database.compare`: configuration for the search of OpenStreetMap objects to compare, follows the format of `database.imposm` with an additional property `radius` (reconciliation radius in meters)
+- `database.labels` : Labels definitions that are assigned to each feature version depending on their tags. Each label is associated to a JSON path used by [jsonb_path_exists](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE) over each feature tags. Example `"labels":{"label1":"$ ? (@.substation==\"transmission\")"}` to assign `label1` to any object that holds `substation=transmission`. See below about filtering.
 - `datasources`: list of data sources that appear on the page (see below)
 - `statistics`: configuration of statistics display on the project page
 - `statistics.count`: enable object counting in OSM
@@ -144,9 +145,45 @@ W currently support the following counts:
 
 ### Filtering features
 
+![Projects filtering logic](./projects_labels.svg)
+A project may be summarized as upside: Perimeter filter accumulates features which comply and then labels can be assigned to qualify with more details.
+
+#### Perimeter
+
 ProjetDuMois makes use of Osmium and Imposm to filter necessary features according to each project's configuration, with the help of `database.osmium_tag_filter` and `database.imposm` keys.
 
+Perimeter filter must be selective enough to deal with reasonable amount of features. It must be wide enough to take care of several tagging practices in OSM community for the topic that matters. It is then recommended to focus on main tags here and use labels to get in details about classification, see below.
+
 Documented syntax of filters is available in [Osmium documentation online](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html). However, due to the need to apply those filters at severel steps of the processing, including outside of Osmium logic, filters that would use `!=` operator aren't currently supported.
+
+#### Labelling
+As to complete filtering functionnality, ProjetDuMois supports the assignment of labels to each version of features depending on their tags.  
+Each version can be assigned with 0, 1 or more labels. Then each label can cover part or the whole project.
+
+Labels are then used in counts and KPI to distinguishe several population fo features inside the same project. It it then recommended to consider a wide project filter to include even imperfect features and not only the perfect ones and then separate them with labels. Consumers will then not only spot the population covered by the project but the ones that should be completed to be included in it as well. 
+
+The syntax that is used to define labels conforms to [Postgresql's SQL/JSON](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-SQLJSON-PATH) which supports types. You can use the following example to define your own labels:
+
+```json
+"labels":{
+  "label1":"$.char_key",
+  "label2":"$ ? (@.\"char:key\" == \"value\")",
+  "label3":"$ ? (@.numeric_key < 20000)",
+  "label4":"$.numeric_array_key ? (@ < 20000)",
+  "label5":"$ ? (@.numeric_array_key[*] > 10000 && @.char_key != \"value\")"
+}
+```
+
+Labels assignement is done during the `update_changes` phase. They could only be reseted by initialization to propagate a change on labels definition for instance. There is no particular logic to edit assigned labels.  
+However, it is possible to manually delete and do the assignment of a particular label `label1` with the following commands:
+
+```bash
+psql -d postgresql://... -c "DELETE FROM pdm_features_project_labels WHERE label='label1'"
+psql -d postgresql://... -v features_table="pdm_features_project" -v labels_table="pdm_features_project_labels" -v label="'label1'" -v labelfilter="'... new label filer ...'" -f "db/27_changes_labels.sql"
+psql -d postgresql://... -c "ANALYSE pdm_features_project_labels"
+```
+
+Then, the `update_projects` should be inited again to propagate the new labels into counts and KPI.
 
 ### Disable imposm3 usage
 

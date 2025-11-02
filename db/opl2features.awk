@@ -1,8 +1,11 @@
-function escape_json(str) {
+function json_escape(str) {
     gsub(/\\/, "\\\\", str);
     gsub(/"/, "", str);
     gsub(/%20%/, " ", str);
     return str;
+}
+function json_val(str){
+    return str ~ /^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]{1,6})?$/ ? str : "\"\"" json_escape(str) "\"\""
 }
 function escape(str){
     gsub(/"/, """", str);
@@ -109,7 +112,18 @@ BEGIN {
     tagsjson = "";
     for (j=1 ; j<=n ; j++){
         split(tag_pairs[j], kv, /=/);
-        tagsjson = (j > 1 ? tagsjson "," : "") "\"\"" escape_json(kv[1]) "\"\":\"\"" escape_json(kv[2]) "\"\"";
+        li=split(kv[2], valitems, /;/);
+        tagval=json_val(kv[2])
+        if (li > 1){
+            tagval = "["
+            for (liidx in valitems){
+                if (length(valitems[liidx]) > 0){
+                    tagval = tagval (tagval == "[" ? "" : ",") json_val(valitems[liidx])
+                }
+            }
+            tagval = tagval "]"
+        }
+        tagsjson = (j > 1 ? tagsjson "," : "") "\"\"" json_escape(kv[1]) "\"\":" tagval;
 
         if (length(tagfilter) > 0){
             tag_str = "\"" kv[1] "\":\"" kv[2] "\""
@@ -121,10 +135,9 @@ BEGIN {
 
     # Validation du filtre sur les tags
     if (length(tagfilter) > 0 && tagfilter_r){
-        localresult[1] = false
         for (i in results){
             split(i, indices, SUBSEP)
-            localresult[indices[1]] = localresult[indices[1]] || results[i]
+            localresult[indices[1]] = indices[2] == 1 ? results[i] : localresult[indices[1]] || results[i]
         }
         for (i in localresult){
             tagfilter_r = tagfilter_r && localresult[i]

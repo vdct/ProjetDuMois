@@ -373,7 +373,7 @@ app.get("/projects/:name/stats", (req, res) => {
           `
         SELECT ts, amount
         FROM pdm_feature_counts
-        WHERE project_id = $1
+        WHERE project_id = $1 AND label IS NULL
         ORDER BY ts ASC
         `,
         [p.id]
@@ -409,7 +409,7 @@ app.get("/projects/:name/stats", (req, res) => {
       allPromises.push(
         pool
           .query(
-            `SELECT admin_level, max(nb) AS amount FROM pdm_boundary_tiles WHERE project_id = $1 GROUP BY admin_level`,[
+            `SELECT admin_level, max(nb) AS amount FROM pdm_boundary_tiles WHERE project_id = $1 AND label IS NULL GROUP BY admin_level`,[
              p.id
           ])
           .then((results) => {
@@ -527,16 +527,29 @@ app.get("/projects/:name/counts", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, amount, len
+			SELECT ts, label, amount, len
 			FROM pdm_feature_counts
 			WHERE project_id = $1
 			ORDER BY ts ASC
 		`,
           [p.id]
         )
-        .then((results) => ({
-          data: results.rows.map((r) => ({ t: r.ts, amount: r.amount, length: r.len }))
-        })),
+        .then((results) => {
+          const records = results.rows.reduce((acc, row) => {
+            if (!acc[row.ts]) {
+              acc[row.ts] = { t: row.ts, labels: {} };
+            }
+            if (row.label == null) {
+              acc[row.ts].amount = row.amount;
+              acc[row.ts].length = row.len;
+            } else {
+              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len };
+            }
+            return acc;
+          }, {});
+
+          return { data: Object.values(records) };
+        })
     );
   }
 
@@ -557,11 +570,7 @@ app.get("/projects/:name/counts", (req, res) => {
       results.forEach((r) => {
         if (r != null && r.status === "fulfilled") {
           Object.entries(r.value).forEach((e) => {
-            if (!toSend[e[0]]) {
-              toSend[e[0]] = e[1];
-            } else if (e[0] === "chart") {
-              toSend.chart = toSend.chart.concat(e[1]);
-            }
+            toSend[e[0]] = e[1];
           });
         }else if (r != null && r.status === "rejected"){
           console.error(`Promise rejected: ${r.reason}`);
@@ -590,16 +599,29 @@ app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, amount, len
+			SELECT ts, label, amount, len
 			FROM pdm_feature_counts_per_boundary
 			WHERE project_id = $1 AND boundary = $2
 			ORDER BY ts ASC
 		`,
           [p.id, req.params.boundary]
         )
-        .then((results) => ({
-          data: results.rows.map((r) => ({ t: r.ts, amount: r.amount, length: r.len }))
-        })),
+        .then((results) => {
+          const records = results.rows.reduce((acc, row) => {
+            if (!acc[row.ts]) {
+              acc[row.ts] = { t: row.ts, labels: {} };
+            }
+            if (row.label == null) {
+              acc[row.ts].amount = row.amount;
+              acc[row.ts].length = row.len;
+            } else {
+              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len };
+            }
+            return acc;
+          }, {});
+
+          return { data: Object.values(records) };
+        }),
     );
   }
 
@@ -620,11 +642,7 @@ app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
       results.forEach((r) => {
         if (r != null && r.status === "fulfilled") {
           Object.entries(r.value).forEach((e) => {
-            if (!toSend[e[0]]) {
-              toSend[e[0]] = e[1];
-            } else if (e[0] === "chart") {
-              toSend.chart = toSend.chart.concat(e[1]);
-            }
+            toSend[e[0]] = e[1];
           });
         }else if (r != null && r.status === "rejected"){
           console.error(`Promise rejected: ${r.reason}`);

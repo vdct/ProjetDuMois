@@ -76,7 +76,7 @@ script.
 			const classes = Object.keys(osmoseLabels).length > 1 ? "all" : Object.keys(osmoseLabels)[0].split("_").pop();
 			const params = `item=${items}&class=${classes !== "all" ? classes : ""}`;
 			const bbox = `${map.getBounds()._sw.lng}%2C${map.getBounds()._sw.lat}%2C${map.getBounds()._ne.lng}%2C${map.getBounds()._ne.lat}`;
-			btnExportKml.href = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${map.getZoom()}&${params}&bbox=${bbox}`;
+			btnExportKml.href = `#{CONFIG.OSMOSE_URL}/fr/errors.kml?zoom=${Math.floor(map.getZoom())}&${params}&bbox=${bbox}`;
 		}
 		else {
 			btnExportKml.classList.add("d-none");

@@ -43,7 +43,7 @@
 		  },
 		{
 			"source": "background",
-			"tiles": ["https://wxs.ign.fr/pratique/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image%2Fjpeg"],
+			"tiles": ["https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM_0_19&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"],
 			"name": "Vue aérienne",
 			"icon": "aerial",
 			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"

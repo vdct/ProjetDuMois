@@ -26,6 +26,9 @@ case $command in
     npm run changes:update $otherArgs
     npm run start
     ;;
+"start")
+    npm run start
+    ;;
 "update_features")
     npm run features:update $otherArgs
     ./db/11_features_update_tmp.sh

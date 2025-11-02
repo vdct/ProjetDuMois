@@ -28,11 +28,13 @@ script.
 		pitchWithRotate: false,
 		dragRotate: false,
 		touchPitch: false,
-		touchZoomRotate: false,
 		hash: "map",
 		bounds: [-5.010, 41.212, 10.019, 51.234],
 		style: !{JSON.stringify(mapstyle)}
 	});
+
+	map.keyboard.disableRotation();
+	map.touchZoomRotate.disableRotation();
 
 	map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
 	map.loadImage('/images/exclamation.png', (error, image) => {

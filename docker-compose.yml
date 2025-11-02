@@ -1,6 +1,6 @@
 services:
   pgsqldb:
-    image: camptocamp/postgres:13-postgis-3
+    image: camptocamp/postgres:16-postgis-3
     restart: always
     networks:
       - oim-internal

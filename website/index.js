@@ -508,7 +508,7 @@ app.get("/projects/:name/stats", (req, res) => {
   });
 });
 
-// Project counts per boundary
+// Feature counts
 app.get("/projects/:name/counts", (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
@@ -581,6 +581,7 @@ app.get("/projects/:name/counts", (req, res) => {
   });
 });
 
+// Feature counts per boundary
 app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
   if (CONFIG.MAINTENANCE_MODE === true) {
     return res.redirect("/");
@@ -616,6 +617,152 @@ app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
               acc[row.ts].length = row.len;
             } else {
               acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len };
+            }
+            return acc;
+          }, {});
+
+          return { data: Object.values(records) };
+        }),
+    );
+  }
+
+  // Fetch last count update time
+  allPromises.push(
+    pool
+      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
+        req.params.name,
+      ])
+      .then((results) => ({
+        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
+      })),
+  );
+
+  Promise.allSettled(allPromises).then((results) => {
+    let toSend = {};
+    if (typeof results == "object" && results != null) {
+      results.forEach((r) => {
+        if (r != null && r.status === "fulfilled") {
+          Object.entries(r.value).forEach((e) => {
+            toSend[e[0]] = e[1];
+          });
+        }else if (r != null && r.status === "rejected"){
+          console.error(`Promise rejected: ${r.reason}`);
+        }
+      });
+    }
+    res.send(toSend);
+  });
+});
+
+// Mappers counts
+app.get("/projects/:name/mappers", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
+  }
+
+  if (!req.params.name || !projects[req.params.name]) {
+    return res.redirect("/error/404");
+  }
+
+  const p = projects[req.params.name];
+  const allPromises = [];
+
+  // Fetch mappers counts
+  if (p.statistics.count) {
+    allPromises.push(
+      pool
+        .query(
+          `
+			SELECT ts, label, amount_1d, amount_30d
+			FROM pdm_mapper_counts
+			WHERE project_id = $1
+			ORDER BY ts ASC
+		`,
+          [p.id]
+        )
+        .then((results) => {
+          const records = results.rows.reduce((acc, row) => {
+            if (!acc[row.ts]) {
+              acc[row.ts] = { t: row.ts, labels: {} };
+            }
+            if (row.label == null) {
+              acc[row.ts].amount_1d = row.amount_1d;
+              acc[row.ts].amount_30d = row.amount_30d;
+            } else {
+              acc[row.ts].labels[row.label] = { amount_1d: row.amount_1d, amount_30d: row.amount_30d };
+            }
+            return acc;
+          }, {});
+
+          return { data: Object.values(records) };
+        })
+    );
+  }
+
+  // Fetch last count update time
+  allPromises.push(
+    pool
+      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
+        req.params.name,
+      ])
+      .then((results) => ({
+        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
+      })),
+  );
+
+  Promise.allSettled(allPromises).then((results) => {
+    let toSend = {};
+    if (typeof results == "object" && results != null) {
+      results.forEach((r) => {
+        if (r != null && r.status === "fulfilled") {
+          Object.entries(r.value).forEach((e) => {
+            toSend[e[0]] = e[1];
+          });
+        }else if (r != null && r.status === "rejected"){
+          console.error(`Promise rejected: ${r.reason}`);
+        }
+      });
+    }
+    res.send(toSend);
+  });
+});
+
+// Mapper counts per boundary
+app.get("/projects/:name/mappers/boundary/:boundary", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
+  }
+
+  if (!req.params.name || !projects[req.params.name] || !req.params.boundary) {
+    return res.redirect("/error/404");
+  }
+
+  const p = projects[req.params.name];
+  const allPromises = [];
+
+  // Fetch mappers counts
+  if (p.statistics.count) {
+    allPromises.push(
+      pool
+        .query(
+          `
+			SELECT ts, label, amount_1d, amount_30d
+			FROM pdm_mapper_counts_per_boundary
+			WHERE project_id = $1 AND boundary = $2
+			ORDER BY ts ASC
+		`,
+          [p.id, req.params.boundary]
+        )
+        .then((results) => {
+          const records = results.rows.reduce((acc, row) => {
+            if (!acc[row.ts]) {
+              acc[row.ts] = { t: row.ts, labels: {} };
+            }
+            if (row.label == null) {
+              acc[row.ts].amount_1d = row.amount_1d;
+              acc[row.ts].amount_30d = row.amount_30d;
+            } else {
+              acc[row.ts].labels[row.label] = { amount_1d: row.amount_1d, amount_30d: row.amount_30d };
             }
             return acc;
           }, {});

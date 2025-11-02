@@ -40,7 +40,7 @@ CREATE INDEX ON pdm_user_contribs(userid);
 -- User badges
 DROP TABLE IF EXISTS pdm_user_badges;
 
--- Features overall counts
+-- Overall counts
 CREATE TABLE pdm_feature_counts(
 	project_id int NOT NULL,
 	ts TIMESTAMP NOT NULL,
@@ -48,10 +48,51 @@ CREATE TABLE pdm_feature_counts(
 	amount INT NOT NULL,
 	len numeric not null,
 
-	CONSTRAINT pdm_feature_counts_unique UNIQUE(project_id,ts,label)
+	CONSTRAINT pdm_feature_counts_unique UNIQUE NULLS NOT DISTINCT(project_id,ts,label)
 );
 
 CREATE INDEX ON pdm_feature_counts(project_id);
+
+CREATE TABLE pdm_mapper_counts(
+	project_id int NOT NULL,
+	ts TIMESTAMP NOT NULL,
+	label varchar,
+	amount_1d INT NOT NULL,
+	amount_30d INT NOT NULL,
+
+	CONSTRAINT pdm_mapper_counts_unique UNIQUE NULLS NOT DISTINCT(project_id,ts,label)
+);
+
+CREATE INDEX ON pdm_mapper_counts(project_id);
+
+-- Boundary counts
+CREATE TABLE pdm_feature_counts_per_boundary(
+	project_id int NOT NULL,
+	boundary BIGINT NOT NULL,
+	ts TIMESTAMP NOT NULL,
+	label varchar,
+	amount INT NOT NULL,
+	len numeric not null,
+
+	CONSTRAINT pdm_feature_counts_per_boundary_unique UNIQUE NULLS NOT DISTINCT(project_id, boundary, ts, label)
+);
+
+CREATE INDEX ON pdm_feature_counts_per_boundary using btree (project_id);
+CREATE INDEX ON pdm_feature_counts_per_boundary using btree (boundary);
+
+CREATE TABLE pdm_mapper_counts_per_boundary(
+	project_id int NOT NULL,
+	boundary BIGINT NOT NULL,
+	ts TIMESTAMP NOT NULL,
+	label varchar,
+	amount_1d INT NOT NULL,
+	amount_30d INT NOT NULL,
+
+	CONSTRAINT pdm_mapper_counts_per_boundary_unique UNIQUE NULLS NOT DISTINCT(project_id, boundary, ts, label)
+);
+
+CREATE INDEX ON pdm_mapper_counts_per_boundary using btree (project_id);
+CREATE INDEX ON pdm_mapper_counts_per_boundary using btree (boundary);
 
 -- Note counts
 CREATE TABLE pdm_note_counts(
@@ -62,20 +103,6 @@ CREATE TABLE pdm_note_counts(
 );
 
 CREATE INDEX ON pdm_note_counts(project_id);
-
-CREATE TABLE pdm_feature_counts_per_boundary(
-	project_id int NOT NULL,
-	boundary BIGINT NOT NULL,
-	ts TIMESTAMP NOT NULL,
-	label varchar,
-	amount INT NOT NULL,
-	len numeric not null,
-
-	CONSTRAINT pdm_feature_counts_per_boundary_unique UNIQUE(project_id, boundary, ts, label)
-);
-
-CREATE INDEX ON pdm_feature_counts_per_boundary using btree (project_id);
-CREATE INDEX ON pdm_feature_counts_per_boundary using btree (boundary);
 
 -- Leaderboard view
 CREATE OR REPLACE VIEW pdm_leaderboard AS

@@ -386,7 +386,7 @@ script.
 				let changesetId = localStorage.getItem("changeset_#{id}");
 				let getChangeset;
 
-				const getChangesetPromise = () => osmApi.createChangeset('ProjetDuMois.fr', editors.all.comment, {
+				const getChangesetPromise = () => osmApi.createChangeset('Podoma', editors.all.comment, {
 					host: window.location.toString().split("#")[0],
 					locale: navigator.languages ? navigator.languages[0] : navigator.language,
 					hashtags: editors.all.hashtags.split(",").map(h => "#"+h).join(";")
@@ -475,7 +475,7 @@ script.
 			}
 			// Handle as anonymous note
 			else {
-				const noteText = `${editors.all.comment}\n\n${currentEditorData.osmid ? `#{__("Objet concerné :")} ${currentEditorData.osmid}\n`: ""}#{__("Attributs renseignés :")}\n${Object.entries(tagsToApply).map(e => e.join("=")).join("\n")}\n\n#{__("Plus d'infos sur la résolution de cette note")} : #{links.osmwiki}\nVia ProjetDuMois.fr ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
+				const noteText = `${editors.all.comment}\n\n${currentEditorData.osmid ? `#{__("Objet concerné :")} ${currentEditorData.osmid}\n`: ""}#{__("Attributs renseignés :")}\n${Object.entries(tagsToApply).map(e => e.join("=")).join("\n")}\n\n#{__("Plus d'infos sur la résolution de cette note")} : #{links.osmwiki}\nVia #{CONFIG.WEBSITE_NAME} ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
 
 				osmApi._auth = { skip: true };
 				const coords = currentEditorData.coordinates || currentEditorData.originalCoordinates;
@@ -551,7 +551,7 @@ script.
 			editorWaitDom.classList.remove("d-none");
 			editorDoneDom.classList.add("d-none");
 
-			noteText += `\nVia ProjetDuMois.fr ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
+			noteText += `\nVia #{CONFIG.WEBSITE_NAME} ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
 
 			if(!window.osm_user || !window.osm_user.id || !window.osm_user.auth) {
 				osmApi._auth = { skip: true };

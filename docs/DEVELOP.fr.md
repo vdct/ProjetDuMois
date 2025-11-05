@@ -1,4 +1,4 @@
-# Exploitation de ProjetDuMois.fr
+# Exploitation de Podoma
 
 ## Dépendances
 
@@ -14,7 +14,7 @@
 
 ### Compilation osmium
 
-ProjetDuMois a besoin d'une version récente de osmium puisqu'il tire parti des nouvelles fonctions tags-filter.
+Podoma a besoin d'une version récente de osmium puisqu'il tire parti des nouvelles fonctions tags-filter.
 Peu de distributions linux ont les dernières versions disponibles et vous aurez surement besoin de compiler osmium vous-même.
 
 Voir les consignes sur le [README officiel](https://github.com/osmcode/osmium-tool/blob/master/README.md#building).
@@ -32,8 +32,8 @@ Les paquets suivants pourront être utiles pour cela
 ## Débuter
 
 ```bash
-git clone https://github.com/vdct/ProjetDuMois.git
-cd ProjetDuMois
+git clone https://gitlab.com/PanierAvide/Podoma.git
+cd Podoma
 git submodule update --init
 ```
 
@@ -59,7 +59,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `MAPILLARY_API_KEY`: clé d'API Mapillary ([peut être créée ici](https://www.mapillary.com/dashboard/developers))
 - `MATOMO_HOST`: URL vers l'hôte Matomo auquel nous souhaitons envoyer les statistiques terminant par un /. Supprimez pour désactiver. (exemple `https://stats.maison.fr/`)
 - `MATOMO_SITE`: Identifiant du site web Matomo auquel se rapportent les statistiques (exemple `6`)
-- `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/ProjetDuMois`)
+- `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://gitlab.com/PanierAvide/Podoma`)
 - `VECT_STYLE` : URL d'un [style compatible avec Maplibre GL](https://maplibre.org/maplibre-gl-js/docs/) (exemple `https://tile-vect.openstreetmap.fr/styles/liberty/style.json`)
 - `PDM_TILES_URL` : URL d'accès au service _pg_tileserv_, qui met à disposition les couches dans votre base de données
 - `GEOJSON_BOUNDS` : objet de type `Geometry` (polygone ou multipolygone) en GeoJSON délimitant la zone où rechercher des notes OSM
@@ -105,7 +105,7 @@ Les propriétés dans `info.json` sont les suivantes :
 - `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
 - `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
 - `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
-- `editors` : configuration spécifique à chaque éditeur OSM. Pour ProjetDuMois, les informations sont disponibles ci-dessous. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
+- `editors` : configuration spécifique à chaque éditeur OSM. Pour Podoma, les informations sont disponibles ci-dessous. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Temporalité des projets
 
@@ -114,7 +114,7 @@ Le script `project:update` va automatiquement choisir entre deux sources de donn
 - Les fichiers OSH contenant l'ensemble de l'historique de tous les objets sur une zone géographique donnée. Ils sont mis à jour chaque mois.
 - Les fichiers différentiels journaliers qui contiennent l'ensemble des modifications réalisées chaque jour dans le monde.
 
-ProjetDuMois permet la mise à jour au fil de l'eau et la reconstruction complète de l'historique d'un projet terminé. La seconde possibilité est particulièrement utile en cas de changement de périmètre ou d'amélioration des techniques de comptage.  
+Podoma permet la mise à jour au fil de l'eau et la reconstruction complète de l'historique d'un projet terminé. La seconde possibilité est particulièrement utile en cas de changement de périmètre ou d'amélioration des techniques de comptage.  
 Un projet peut ne pas avoir de date de fin, en utilisant `end_date: null` dans sa configuration, pour un suivi sans limite de temps.
 
 ![Ligne de temps des projets](./projects_process.svg)
@@ -150,14 +150,14 @@ Les dénombrements suivants sont réalisés de manière systématique :
 Un projet peut se décomposer selon les constituants ci-dessus : le filtre de périmètre accumule les objets qui s'y conforment et les étiquettes permettent ensuite de qualifier finement chaque version.
 
 #### Périmètre
-ProjetDuMois s'appuie sur Osmium et Imposm pour filtrer les objets concernés par les projets configurés, au moyen des clés de configuration `database.osmium_tag_filter` et `database.imposm`.
+Podoma s'appuie sur Osmium et Imposm pour filtrer les objets concernés par les projets configurés, au moyen des clés de configuration `database.osmium_tag_filter` et `database.imposm`.
 
 Le filtre de périmètre doit être suffisament sélectif pour traiter des quantités d'objets raisonnables. Il doit aussi être suffisament large pour tenir compte de multiples variations des tags OSM pour un même sujet. Il est recommandé de se concentrer ici sur les tags principaux et de définir des étiquettes (voir ci-dessous) pour affiner la catégorisation.
 
 La documentation de la syntaxe des filtres Osmium est décrite dans [la documentation de l'outil](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html). Néanmoins, en raison de la nécessité d'appliquer ces filtres à plusieurs l'endroits dans le processus de sélection, y compris en dehors d'osmium, les filtres mobilisant l'opérateur `!=` ne sont pas supportés.
 
 #### Étiquetage
-Afin de compléter les fonctionnalités de filtrage décrites ci-dessus, ProjetDuMois permet d'assigner des étiquettes à chaque version des objets considérés par le projet en fonction de leurs tags.  
+Afin de compléter les fonctionnalités de filtrage décrites ci-dessus, Podoma permet d'assigner des étiquettes à chaque version des objets considérés par le projet en fonction de leurs tags.  
 Chaque version peut recevoir 0, 1 ou plusieurs étiquettes en fonction des tags. Tant et si bien que chaque étiquette peut couvrir tout ou partie de la population du projet.
 
 Ces étiquettes servent ensuite dans les dénombrements et distinguent les différentes populations. C'est ainsi qu'il est utile de considérer un périmètre large et de définir différentes étiquettes pour dénombrer les objets qui nous intéressent et ceux incomplets qu'il conviendrait de compléter par exemple.
@@ -219,7 +219,7 @@ REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
 ```
 
 #### Remplacé par une autre base de données
-Dans le cas vous disposez de votre propre base de données tenue à jour en dehors de ProjetDuMois, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_slug}`, avec la structure suivante :
+Dans le cas vous disposez de votre propre base de données tenue à jour en dehors de Podoma, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_slug}`, avec la structure suivante :
 
 ```sql
 osm_id varchar,
@@ -343,7 +343,7 @@ Pour activer l'affichage de statistiques selon le découpage administratif, vous
 - `tiles` (défaut) : Tableau d'URL TMS
 - `layers` (défaut) : Liste des layers correspondant à `tiles` à utiliser
 
-### Éditeur intégré de Projet du Mois
+### Éditeur intégré
 
 La configuration des projets permets de personnaliser les champs disponibles dans l'éditeur intégré. La configuration s'exprime en JSON comme l'exemple suivant (ajouté dans l'objet `editors` du fichier `config.json`) :
 
@@ -507,11 +507,11 @@ Les montant de points attribués sont configurés dans `info.json` :
 ## Installation
 
 L'installation peut se faire en utilisant docker ou bien directement sur l'hôte.
-Confère à la section Déploiement ci-dessous pour obtenir un ProjetDuMois exploitable.
+Confère à la section Déploiement ci-dessous pour obtenir un Podoma exploitable.
 
 ### Submodules git
 
-ProjetDuMois dépend de quelques sous-modules git. Pensez à executer les commandes suivantes avant le build :
+Podoma dépend de quelques sous-modules git. Pensez à executer les commandes suivantes avant le build :
 
 ```sh
 git submodule init

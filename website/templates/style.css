@@ -7,6 +7,19 @@ body {
 	border-bottom: 1px solid #e5e5e5;
 }
 
+
+.blog-header-logo h1 {
+	font-size: 3rem;
+	display: inline;
+	vertical-align: middle;
+	margin-left: 20px;
+	color: #1562ac;
+	font-weight: bold;
+}
+a.blog-header-logo:hover {
+	text-decoration: none;
+}
+
 .blog-header-logo {
 	max-width: 300px;
 	max-height: 120px;

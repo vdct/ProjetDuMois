@@ -1,7 +1,7 @@
 {
-	"name": "Projet du Mois",
+	"name": "Podoma",
 	"short_name": "PDM",
-	"description": "Catalyseur d'énergies pour OpenStreetMap",
+	"description": "The OpenStreetMap statistics engine",
 	"start_url": "/",
 	"display": "standalone",
 	"background_color": "#95DAEC",

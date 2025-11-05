@@ -122,7 +122,7 @@ script.
 		noteHastags.sort((a,b) => b.length - a.length);
 		const issueTextDom = document.createElement("div");
 		issueTextDom.classList.add("card-text");
-		issueTextDom.innerHTML = issue.properties.comments[0].html.split("Plus d'infos sur la résolution")[0].split("Via ProjetDuMois.fr")[0];
+		issueTextDom.innerHTML = issue.properties.comments[0].html.split("Plus d'infos sur la résolution")[0].split("Via #{CONFIG.WEBSITE_NAME}")[0];
 		issueBodyDom.appendChild(issueTextDom);
 
 		// Read tags from editor

@@ -1,16 +1,14 @@
 //- Meta
 meta(charset="UTF-8")
 meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
-title Projet du mois.fr
-meta(name="description" content="Projet du mois.fr est le tableau de bord de la communauté OpenStreetMap en France pour ses actions mensuelles d'amélioration des données")
-meta(name="twitter:site" content="@projetdumois")
-meta(name="twitter:card" content="summary_large_image")
+title= CONFIG.WEBSITE_NAME
+meta(name="description" content=CONFIG.WEBSITE_DESCRIPTION)
 meta(property="og:type" content="website")
-meta(property="og:url" content="https://projetdumois.fr")
-meta(property="og:title" content="Projet du mois.fr")
-meta(property="og:description" content="Projet du mois.fr est le tableau de bord de la communauté OpenStreetMap en France pour ses actions mensuelles d'amélioration des données")
-meta(property="og:image" content="https://projetdumois.fr/images/header.png")
-meta(rel="canonical" href="https://projetdumois.fr")
+meta(property="og:url" content=CONFIG.WEBSITE_URL)
+meta(property="og:title" content=CONFIG.WEBSITE_NAME)
+meta(property="og:description" content=CONFIG.WEBSITE_DESCRIPTION)
+meta(property="og:image" content=CONFIG.WEBSITE_URL+"/images/header.png")
+meta(rel="canonical" href=CONFIG.WEBSITE_URL)
 
 link(rel="manifest" href="/manifest.webmanifest")
 link(rel="icon" href="/images/favicon.png")

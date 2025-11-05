@@ -33,7 +33,7 @@ script.
 	// Close note on OSM
 	function closeNote(p) {
 		if(window.osm_user && osmApi) {
-			osmApi.closeNote(p.id, "#{__("Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)")}")
+			osmApi.closeNote(p.id, "#{__("Marqué comme résolu dans le cadre du projet du mois")}")
 			.then(() => {
 				const source = map.getSource(`notes_${p.pdm_note_source}`);
 				const notes = source._data;

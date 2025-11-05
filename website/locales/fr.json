@@ -104,7 +104,7 @@
 	"Vous n'êtes pas connecté avec un compte OpenStreetMap. Inscrivez-vous ou connectez-vous pour collecter des badges !": "Vous n'êtes pas connecté avec un compte OpenStreetMap. Inscrivez-vous ou connectez-vous pour collecter des badges !",
 	"Nouveau badge": "Nouveau badge",
 	"Voir tous les badges": "Voir tous les badges",
-	"Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)": "Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)",
+	"Marqué comme résolu dans le cadre du projet du mois": "Marqué comme résolu dans le cadre du projet du mois",
 	"Une erreur s'est produite lors de la modification de la note": "Une erreur s'est produite lors de la modification de la note",
 	"Une erreur s'est produite lors de l'enregistrement, merci de réessayer plus tard": "Une erreur s'est produite lors de l'enregistrement, merci de réessayer plus tard",
 	"Attributs": "Attributs",
@@ -155,5 +155,6 @@
 	"Retrouvez l'ensemble des projets du mois, leurs outils, statistiques et données.": "Retrouvez l'ensemble des projets du mois, leurs outils, statistiques et données.",
 	"Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez contribuer à d'autres thématiques.": "Ce projet du mois est terminé, mais la cartographie dans OpenStreetMap ne s'arrête pas ! Vous pouvez contribuer à d'autres thématiques.",
 	"Projet terminé": "Projet terminé",
-	"Dernière mise à jour : ": "Dernière mise à jour : "
+	"Dernière mise à jour : ": "Dernière mise à jour : ",
+	"Copyright 2024-2025 Podoma - Développé sous licence libre AGPL 3.0": "Copyright 2024-2025 Podoma - Développé sous licence libre AGPL 3.0"
 }

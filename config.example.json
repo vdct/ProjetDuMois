@@ -1,4 +1,8 @@
 {
+  "WEBSITE_NAME": "Podoma",
+  "WEBSITE_MOTTO": "The OpenStreetMap statistics engine",
+  "WEBSITE_URL": "https://podoma.fr",
+  "WEBSITE_DESCRIPTION": "Podoma is a powerful, full-featured, engine and dashboard for getting precise statistics about OpenStreetMap community contributions over specific topics.",
   "OSM_URL": "https://www.openstreetmap.org",
   "OSM_API_URL": "https://api.openstreetmap.org",
   "OSM_USER": "user",
@@ -10,7 +14,7 @@
   "MAPILLARY_API_KEY": "yourtoken",
   "MATOMO_HOST": "https://stats.domaine.fr/",
   "MATOMO_SITE": "6",
-  "REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",
+  "REPOSITORY_URL": "https://gitlab.com/PanierAvide/Podoma",
   "JOSM_REMOTE_URL": "http://localhost:8111",
   "OSH_PBF_AUTHORIZED": true,
   "OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/france-internal.osh.pbf",

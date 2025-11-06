@@ -1,10 +1,19 @@
 -- Rebuild geometries of ways
 \timing
-with members as (
-	select f.osmid osmid, f.version version, m.geom geom
+with nodes as (
+	SELECT
+    osmid,
+    version,
+    ts as ts_start,
+    LEAD(ts) OVER (PARTITION BY osmid ORDER BY version) AS ts_end,
+    geom
+    FROM :features_table
+	WHERE osmid like 'n%' and action!='delete'
+), members as (
+	select f.osmid osmid, f.version version, n.geom geom
 	from :features_table f
 	join :members_table fm ON fm.osmid=f.osmid AND fm.version=f.version
-	join :features_table m ON m.osmid=fm.memberid
+	join nodes n ON n.osmid=fm.memberid AND ((greatest(f.ts, :start_date) >= n.ts_start AND greatest(f.ts, :start_date) < n.ts_end) OR (greatest(f.ts, :start_date) > n.ts_start AND n.ts_end IS NULL))
 	where f.geom is null AND f.osmid like 'w%'
 	order by fm.osmid, fm.version, fm.pos
 ), ways as (

@@ -25,7 +25,7 @@ const pgPool = new Pool({
     connectionString: `${process.env.DB_URL}`
 });
 
-function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, start_ts = null, end_ts = null){
+function macroChangesCsv (mode, project, oplProject, csvFeatures, csvMembers = null, start_ts = null, end_ts = null){
     const slug = project.name.split("_").pop();
     const features_table = `pdm_features_${slug}`;
     const members_table = `pdm_members_${slug}`;
@@ -45,13 +45,13 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
     rm -f "${oplProject}"
     `;
 
-    if (start_ts == null && end_ts == null){
+    if (mode == "init"){
         script += `
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Init changes table in database"
         ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_init.sql"
 
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
-        ${PSQL} -c "\\COPY ${features_table} (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
+        ${PSQL} -c "\\COPY ${features_table} (osmid, version, changeset, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
         `;
 
         if (csvMembers != null){
@@ -83,7 +83,7 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
         ${PSQL} -c "TRUNCATE TABLE ${features_table}_tmp"
 
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
-        ${PSQL} -c "\\COPY ${features_table}_tmp (osmid, version, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
+        ${PSQL} -c "\\COPY ${features_table}_tmp (osmid, version, changeset, action, contrib, ts, userid, username, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
         `;
 
         if (project.database.hasOwnProperty("labels")){
@@ -117,7 +117,7 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
     if (csvMembers != null){
         script += `
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Building geometries of ways"
-        ${PSQL} -v features_table="${features_table}" -v features_table_tmp="" -v members_table="${members_table}" -f "${__dirname}/26_changes_geom.sql"
+        ${PSQL} -v features_table="${features_table}" -v changes_table="${changes_table}" -v members_table="${members_table}" -v start_date="'${start_ts}'" -f "${__dirname}/26_changes_geom.sql"
         `;
     }
 
@@ -136,7 +136,7 @@ function macroChangesCsv (project, oplProject, csvFeatures, csvMembers = null, s
     fi
     `;
 
-    if (start_ts != null || end_ts != null){
+    if (mode == "update"){
         script += `${PSQL} -c "DROP TABLE ${features_table}_tmp"
         `;
     }
@@ -370,7 +370,7 @@ Object.values(projects).forEach(project => {
         osmium getid ${getIdOptions} "\$history_osh" -I "${oshProjectTags}" -f opl,history=true -o "${oplProject}"
         rm -f "${csvFeatures}" "${csvMembers}" "${oshProjectTags}"
 
-        ${macroChangesCsv (project, oplProject, csvFeatures, csvMembers)}
+        ${macroChangesCsv ("init", project, oplProject, csvFeatures, csvMembers, "\$process_start_ts", "\$process_end_tss")}
 
         ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${process_end_ts}', counts_lastupdate_date=NULL WHERE project_id=${project.id}"
         echo "== [\$((\$(date -d now +%s) - \$process_start_t0))s] Project ${project.name} successfully initied"
@@ -540,7 +540,7 @@ Object.values(projects).forEach(project => {
         fi
         rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}"
 
-        ${macroChangesCsv (project, oplProject, csvFeatures, csvMembers, "\$project_start_ts", "\$project_end_ts")}
+        ${macroChangesCsv ("update", project, oplProject, csvFeatures, csvMembers, "\$project_start_ts", "\$project_end_ts")}
 
         ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${project_end_ts}' WHERE project_id=${project.id}"
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Project update successful"

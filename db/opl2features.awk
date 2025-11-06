@@ -60,6 +60,7 @@ BEGIN {
     f = substr($1, 1, 1);          # Feature
     fi = substr($1, 2);            # Feature id
     v = substr($2, 2);             # Version
+    cs = substr($4, 2);            # Changeset
     d = substr($3, 2);             # Visibilité
     t = substr($5, 2);             # Timestamp
     w = substr($6, 2);             # User ID
@@ -145,6 +146,6 @@ BEGIN {
     }
 
     # Construction de la sortie CSV principale
-    printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
-           features[f], fi, v, a, c, t, w, u, tagsjson, g, tagfilter_r >> output_main
+    printf "%s/%s,%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
+           features[f], fi, v, cs, a, c, t, w, u, tagsjson, g, tagfilter_r >> output_main
 }

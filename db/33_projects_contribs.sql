@@ -4,7 +4,7 @@ ANALYSE pdm_user_names;
 ANALYSE :features_table;
 
 WITH unknown_users AS (
-  SELECT DISTINCT un.userid, un.username
+  SELECT DISTINCT f.userid, f.username
   FROM :features_table f
   LEFT JOIN pdm_user_names un ON un.userid=f.userid
   WHERE f.ts BETWEEN :start_date AND :end_date

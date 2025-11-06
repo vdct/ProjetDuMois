@@ -1,56 +1,67 @@
-# Podoma
+# 🗺️ Podoma
 
-_The OpenStreetMap statistics engine for thematic contributions !_
+*The OpenStreetMap statistics engine for thematic contributions!*
 
-## About
+## 🚀 Overview
 
-Podoma is a powerful, full-featured, engine and dashboard for getting precise statistics about OpenStreetMap community contributions over specific topics. Its main features are:
+**Podoma** is a powerful and flexible engine for analyzing **OpenStreetMap (OSM)** community contributions around specific themes or projects.
+It provides dashboards and detailed statistics to help communities and organizations track mapping progress over time.
 
-- Create thematic projects to follow
-- Generate daily and/or historical statistics
-- Follow precisely features, notes, contributors over time
-- Highly configurable to meet all your needs
+__🧭 TL;DR__ : Podoma = OpenStreetMap + Thematic Stats + Open Community ❤️
 
-## Help improve this tool
+### ✨ Key Features
 
-The tool is free (as in free beer and as much as in free speech) and developed by a team of volunteers. You can help improve this project by:
-* [Giving return on experience and constructive suggestions](https://github.com/vdct/Podoma/issues) in French or in English
-* [Submitting software code](DEVELOP.md) for new features or bug fixes
+* 🧭 **Create thematic projects** to monitor progress
+* 📈 **Generate daily and historical statistics**
+* 👥 **Track features, notes, and contributors** with precision
+* ⚙️ **Highly configurable**, adaptable to your specific needs
 
-This project embraces the [digital principles for development](https://digitalprinciples.org/).
+## 💡 Get Involved
 
-![Logo of digital principles for development](/website/images/pdd-en.png)
+Podoma is **free and open source**, built by a passionate community of volunteers.
+You can help make it better by:
 
-Therefore, our website is developed for __humans__.
-While doing a proposal, please use [our personas](https://github.com/vdct/Podoma/issues/66) (only in french, sorry).
+* 💬 [Sharing feedback or feature requests](https://github.com/vdct/Podoma/issues) — in English or French
+* 🧑‍💻 [Contributing code or documentation](DEVELOP.md) — for new features or bug fixes
 
-![Personna](/website/images/personna_h.png)
+We embrace the [Digital Principles for Development](https://digitalprinciples.org/): our website and tools are built **for humans**.
 
-## The team
+> While making proposals, please refer to [our personas](https://github.com/vdct/Podoma/issues/66) *(available in French only).*
 
-Podoma is made possible by its _super team_ of volunteers:
+![Persona Example](/website/images/personna_h.png)
 
-* Adrien Pavie
-* Florian Lainez
-* François Lacombe
-* Jocelyn Jaubert and the technical team of [OpenStreetMap France](https://openstreetmap.fr) that host the service
-* And all the people giving a hand over the project!
+## 👥 The Team
 
-## Available servers
+Podoma exists thanks to an amazing team of volunteers and community contributors:
 
-Podoma is running through different services in the OSM community, in particular:
+* **Adrien Pavie**
+* **Florian Lainez**
+* **François Lacombe**
+* **Jocelyn Jaubert** and the technical team at [OpenStreetMap France](https://openstreetmap.fr), who host the service
+* …and all the other wonderful people who contribute to the project! 💚
 
-- [ProjetDuMois](https://projetdumois.fr/) - Monthly projects of the OSM French community
-- [Enedis OSM-FR](https://enedis.openstreetmap.fr) - Statistics of the French power grid mapping
-- [MapYourGrid](https://dianethy.shinyapps.io/Progress_MapYourGrid/) - Global statistics on power grid mapping
+## 🌍 Live Instances
 
-## License
+Podoma powers several OSM-related initiatives across the community:
 
-Copyright 2024-2025 Podoma Team
+* 🇫🇷 [ProjetDuMois](https://projetdumois.fr/) — Monthly community mapping projects (France)
+* ⚡ [Enedis OSM-FR](https://enedis.openstreetmap.fr) — Power grid mapping statistics (France)
+* 🌐 [MapYourGrid](https://dianethy.shinyapps.io/Progress_MapYourGrid/) — Global power grid mapping progress
 
-Some pictures (badges) are extracted from the [MissingMaps](https://github.com/MissingMaps/users) repository under a [BSD-3 licence](https://github.com/MissingMaps/users/blob/master/LICENSE).
+## 📬 Contact
 
-See [LICENSE](LICENSE.txt) for complete AGPL3 license.
+Questions, ideas, or collaboration proposals?
+→ Open an [issue](https://github.com/vdct/Podoma/issues) or start a discussion on our GitHub page!
+
+## 🧾 License
+
+**© 2024–2025 Podoma Team**
+
+Podoma is free software licensed under the **GNU Affero General Public License v3 (AGPL-3.0)** or later.
+See the [LICENSE](LICENSE.txt) file for details.
+
+Some visual assets (badges) are sourced from the [MissingMaps](https://github.com/MissingMaps/users) project,
+licensed under a [BSD-3 License](https://github.com/MissingMaps/users/blob/master/LICENSE).
 
 Podoma is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

@@ -23,7 +23,9 @@ a.navbar-brand h1 {
 	font-size: 3rem;
 }
 
-a.blog-header-logo:hover {
+a.blog-header-logo:hover,
+nav.navbar-pdm a:hover,
+a.navbar-brand:hover {
 	text-decoration: none;
 }
 

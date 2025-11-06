@@ -123,7 +123,7 @@ if CONFIG
 				auth.authenticate((err, res) => {
 					if(err) {
 						console.error(err);
-						alert("#{__("Une erreur s'est produite à la connexion, veuillez réessayer")}");
+						alert("#{__("An error happened during login, please retry")}");
 						logout();
 					}
 					else {

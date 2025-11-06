@@ -7,7 +7,7 @@ form#pdm-editor-form
 
 		button#pdm-edit-position.btn.btn-secondary.btn-block.mb-2.d-none(type="button")
 			i.fa.fa-map-marked.mr-2
-			| #{__("Modifier la position")}
+			| #{__("Edit location")}
 
 		each field in editors.pdm.fields
 			if field.type !== "hidden"
@@ -29,21 +29,21 @@ form#pdm-editor-form
 						div
 							div.form-check.form-check-inline
 								input.form-check-input(type="radio" name=field.tag value="yes" id=`pdm-editor_${field.tag}_yes` required=(!field.optional || false))
-								label.form-check-label(for=`pdm-editor_${field.tag}_yes`) Oui
+								label.form-check-label(for=`pdm-editor_${field.tag}_yes`)= __("Yes")
 							div.form-check.form-check-inline
 								input.form-check-input(type="radio" name=field.tag value="" id=`pdm-editor_${field.tag}_unknown` checked required=(!field.optional || false))
-								label.form-check-label(for=`pdm-editor_${field.tag}_unknown`) Ne sais pas
+								label.form-check-label(for=`pdm-editor_${field.tag}_unknown`)= __("I don't know")
 					else if field.type === "3states"
 						div
 							div.form-check.form-check-inline
 								input.form-check-input(type="radio" name=field.tag value="yes" id=`pdm-editor_${field.tag}_yes` required=(!field.optional || false))
-								label.form-check-label(for=`pdm-editor_${field.tag}_yes`)= __("Oui")
+								label.form-check-label(for=`pdm-editor_${field.tag}_yes`)= __("Yes")
 							div.form-check.form-check-inline
 								input.form-check-input(type="radio" name=field.tag value="no" id=`pdm-editor_${field.tag}_no` required=(!field.optional || false))
-								label.form-check-label(for=`pdm-editor_${field.tag}_no`)= __("Non")
+								label.form-check-label(for=`pdm-editor_${field.tag}_no`)= __("No")
 							div.form-check.form-check-inline
 								input.form-check-input(type="radio" name=field.tag value="" id=`pdm-editor_${field.tag}_unknown` checked required=(!field.optional || false))
-								label.form-check-label(for=`pdm-editor_${field.tag}_unknown`)= __("Ne sais pas")
+								label.form-check-label(for=`pdm-editor_${field.tag}_unknown`)= __("I don't know")
 					else if field.type === "icons"
 						div.container
 							div.row.mx-n4.mb-n2.align-items-center
@@ -59,31 +59,31 @@ form#pdm-editor-form
 						small.form-text.text-muted= field.description
 
 		div.btn-group.btn-block(role="group")
-			button#pdm-editor-submit.btn.btn-success.w-50(type="submit" title=__("Envoyer les informations sur OpenStreetMap"))
-			button#pdm-editor-cancel.btn.btn-warning.w-50(type="button" title=__("Retourner à la carte sans envoyer à OpenStreetMap"))
+			button#pdm-editor-submit.btn.btn-success.w-50(type="submit" title=__("Send info to OpenStreetMap"))
+			button#pdm-editor-cancel.btn.btn-warning.w-50(type="button" title=__("Go back to map without sending to OpenStreetMap"))
 				i.fa.fa-ban.mr-2
-				| #{__("Annuler")}
+				| #{__("Cancel")}
 
 form#pdm-editor-note.d-none
-	div.alert.alert-info= __("La création de notes de carte est à réserver aux cas ambigus, si la situation est claire préférez un autre mode d'édition.")
+	div.alert.alert-info= __("The creation of notes is reserved for ambiguous cases. If the situation is obvious, prefer another editing mode.")
 	div.form-group
-		label(for="pdm-editor-note-txt")= __("Commentaire")
+		label(for="pdm-editor-note-txt")= __("Comment")
 		textarea.form-control(name="note" rows="3" required=true)
 	div.btn-group.btn-block(role="group")
-		button.btn.btn-success.w-50(type="submit" title=__("Envoyer le commentaire de carte sur OpenStreetMap"))
+		button.btn.btn-success.w-50(type="submit" title=__("Send map comment to OpenStreetMap"))
 			i.fa.fa-plus.mr-2
-			| #{__("Créer")}
-		button#pdm-editor-note-cancel.btn.btn-warning.w-50(type="button" title=__("Retourner à la carte sans envoyer à OpenStreetMap"))
+			| #{__("Create")}
+		button#pdm-editor-note-cancel.btn.btn-warning.w-50(type="button" title=__("Go back to map without sending to OpenStreetMap"))
 			i.fa.fa-ban.mr-2
-			| #{__("Annuler")}
+			| #{__("Cancel")}
 
 div#pdm-editor-wait.text-center.d-none
 	span.spinner-border.text-primary(role="status" style="width: 5rem; height: 5rem;")
-	p.text-muted= __("Envoi en cours, veuillez patienter")
+	p.text-muted= __("Sending in progress, please wait")
 
 div#pdm-editor-done.d-none
-	p= __("Votre contribution a bien été prise en compte, merci pour votre participation !")
-	button#pdm-editor-done-btnmap.btn.btn-outline-primary.btn-block.d-md-none(type="button")= __("Retour à la carte")
+	p= __("Your contribution has been taken into account, thank you!")
+	button#pdm-editor-done-btnmap.btn.btn-outline-primary.btn-block.d-md-none(type="button")= __("Go back to map")
 	button#pdm-editor-done-btnok.btn.btn-outline-primary.btn-block.d-none.d-md-block(type="button")= __("OK")
 
 script.
@@ -104,15 +104,15 @@ script.
 	// Show proper editing mode (note or feature)
 	function showEditingMode() {
 		if(editorModeDom) {
-			if(window.osm_user) { editorModeDom.innerHTML = "#{__("Vous êtes connecté : ce formulaire va éditer directement OpenStreetMap")}"; }
-			else { editorModeDom.innerHTML = "#{__("Vous n'êtes pas connecté : ce formulaire va créer une note dans OpenStreetMap")}"; }
+			if(window.osm_user) { editorModeDom.innerHTML = "#{__("You are logged in: this form will directly edit OpenStreetMap")}"; }
+			else { editorModeDom.innerHTML = "#{__("You are not logged in: this form will create an OpenStreetMap note")}"; }
 		}
 	}
 
 	// Show prompt before leaving page
 	function askBeforeUnload(e) {
 		e.preventDefault();
-		e.returnValue = "#{__("Si vous quittez la page, les modifications en cours seront perdues.")}";
+		e.returnValue = "#{__("If you leave the page, the current modifications will be lost.")}";
 		return e.returnValue;
 	}
 
@@ -242,7 +242,7 @@ script.
 		currentEditorData.coordinates = coordinates;
 		currentEditorData.usedZoom = map.getZoom();
 		editorMoveButton.classList.add("d-none");
-		editorSubmitButton.innerHTML = `<i class="fa fa-plus mr-2"></i> #{__("Créer")}`;
+		editorSubmitButton.innerHTML = `<i class="fa fa-plus mr-2"></i> #{__("Create")}`;
 		loadForm();
 		editorFormDom.addEventListener("submit", onFeatureFormSubmit);
 		setTimeout(() => showMarker(coordinates), 500);
@@ -260,7 +260,7 @@ script.
 		currentEditorData = options;
 		currentEditorData.mode = "edit";
 		editorMoveButton.classList.add("d-none");
-		editorSubmitButton.innerHTML = `<i class="fa fa-check mr-2"></i> #{__("Valider")}`;
+		editorSubmitButton.innerHTML = `<i class="fa fa-check mr-2"></i> #{__("Validate")}`;
 		loadForm();
 		editorFormDom.addEventListener("submit", onFeatureFormSubmit);
 
@@ -463,19 +463,19 @@ script.
 						});
 					}
 					else {
-						alert("#{__("Des données sont manquantes, merci de réessayer")}");
+						alert("#{__("Some data are missing, please try again")}");
 						onStartNewFeature();
 					}
 				})
 				.catch(e => {
 					console.error(e);
-					alert("#{__("Une erreur s'est produite, merci de réessayer plus tard")}");
+					alert("#{__("An error occurred, please try again later")}");
 					cancelEdit();
 				});
 			}
 			// Handle as anonymous note
 			else {
-				const noteText = `${editors.all.comment}\n\n${currentEditorData.osmid ? `#{__("Objet concerné :")} ${currentEditorData.osmid}\n`: ""}#{__("Attributs renseignés :")}\n${Object.entries(tagsToApply).map(e => e.join("=")).join("\n")}\n\n#{__("Plus d'infos sur la résolution de cette note")} : #{links.osmwiki}\nVia #{CONFIG.WEBSITE_NAME} ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
+				const noteText = `${editors.all.comment}\n\n${currentEditorData.osmid ? `#{__("Related feature:")} ${currentEditorData.osmid}\n`: ""}#{__("Tags set:")}\n${Object.entries(tagsToApply).map(e => e.join("=")).join("\n")}\n\n#{__("More about the resolution of this note")} : #{links.osmwiki}\nVia #{CONFIG.WEBSITE_NAME} ${editors.all.hashtags.split(",").map(h => "#"+h).join(" ")}`;
 
 				osmApi._auth = { skip: true };
 				const coords = currentEditorData.coordinates || currentEditorData.originalCoordinates;
@@ -492,18 +492,18 @@ script.
 					})
 					.catch(e => {
 						console.error(e);
-						alert("#{__("Une erreur s'est produite, merci de réessayer plus tard")}");
+						alert("#{__("An error occurred, please try again later")}");
 						cancelEdit();
 					});
 				}
 				else {
-					alert("#{__("Des données sont manquantes, merci de réessayer")}");
+					alert("#{__("Some data are missing, please try again")}");
 					onStartNewFeature();
 				}
 			}
 		}
 		else {
-			alert("#{__("Des données sont manquantes, merci de réessayer")}");
+			alert("#{__("Some data are missing, please try again")}");
 			onStartNewFeature();
 		}
 	}
@@ -569,7 +569,7 @@ script.
 			})
 			.catch(e => {
 				console.error(e);
-				alert("#{__("Une erreur s'est produite, merci de réessayer plus tard")}");
+				alert("#{__("An error occurred, please try again later")}");
 				cancelEdit();
 			});
 		}

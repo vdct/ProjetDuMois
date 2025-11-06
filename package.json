@@ -13,14 +13,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/PanierAvide/Podoma.git"
+    "url": "git+https://github.com/vdct/Podoma.git"
   },
   "author": "Podoma",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://gitlab.com/PanierAvide/Podoma/-/issues"
+    "url": "https://github.com/vdct/Podoma/issues"
   },
-  "homepage": "https://gitlab.com/PanierAvide/Podoma",
+  "homepage": "https://github.com/vdct/Podoma",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@turf/boolean-contains": "^6.0.1",

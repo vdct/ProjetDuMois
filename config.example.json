@@ -14,7 +14,7 @@
   "MAPILLARY_API_KEY": "yourtoken",
   "MATOMO_HOST": "https://stats.domaine.fr/",
   "MATOMO_SITE": "6",
-  "REPOSITORY_URL": "https://gitlab.com/PanierAvide/Podoma",
+  "REPOSITORY_URL": "https://github.com/vdct/Podoma",
   "JOSM_REMOTE_URL": "http://localhost:8111",
   "OSH_PBF_AUTHORIZED": true,
   "OSH_PBF_URL": "https://osm-internal.download.geofabrik.de/europe/france/france-internal.osh.pbf",

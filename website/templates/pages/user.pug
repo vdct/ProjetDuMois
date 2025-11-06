@@ -3,14 +3,14 @@ extends ../layout.pug
 
 block navbar
 	a(href="/#summary")
-		i.fa.fa-calendar-day(title=__("En ce moment"))
-		span= __("En ce moment")
+		i.fa.fa-calendar-day(title=__("Currently"))
+		span= __("Currently")
 	a(href="/#statistics")
-		i.fa.fa-chart-bar(title=__("Statistiques"))
-		span= __("Statistiques")
+		i.fa.fa-chart-bar(title=__("Statistics"))
+		span= __("Statistics")
 	a(href="/#data")
-		i.fa.fa-file-download(title=__("Données"))
-		span= __("Données")
+		i.fa.fa-file-download(title=__("Data"))
+		span= __("Data")
 
 
 block content
@@ -21,9 +21,9 @@ block content
 			img#user-pic.img-thumbnail.d-none(src="" alt="" style="max-width: 64px; max-height: 64px")
 			div.ml-3
 				h2.mb-0= username
-				a(href=`${CONFIG.OSM_URL}/user/${username}` target="_blank")= __("Profil OpenStreetMap")
+				a(href=`${CONFIG.OSM_URL}/user/${username}` target="_blank")= __("OpenStreetMap profile")
 				| &nbsp;-&nbsp;
-				a(href=`${CONFIG.OSM_URL}/message/new/${username}` target="_blank")= __("Contacter")
+				a(href=`${CONFIG.OSM_URL}/message/new/${username}` target="_blank")= __("Contact")
 
 		//- Contribution statistics
 		div.row.mb-4.no-gutters
@@ -31,22 +31,22 @@ block content
 				div.p-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 					p.m-0
 						span#stats-changeset.d-block ?
-						small.d-block= __("groupes de modifications")
+						small.d-block= __("changesets")
 			div.col-md-4.mb-2.p-1
 				div.p-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 					p.m-0
-						small.d-block= __("Inscrit sur OSM le")
+						small.d-block= __("Registered on OSM on")
 						span#stats-account.d-block ?
 			div.col-md-4.mb-2.p-1
 				div.p-2.no-gutters.border.rounded.overflow-hidden.flex-md-row.shadow-sm.position-relative.h-100
 					p.m-0
 						span#stats-projects= Object.keys(badges).filter(b => b !== "meta").length
-						small.d-block= __("participations aux projets du mois")
+						small.d-block= __("participations")
 
 		//- Badges
 		h3
 			i.fa.fa-medal.mr-2
-			| #{__("Badges obtenus")}
+			| #{__("Badges received")}
 
 		each badgeProject in Object.keys(badges).sort((a,b) => b.localeCompare(a))
 			div.mb-3.border-top.mt-2.pt-2

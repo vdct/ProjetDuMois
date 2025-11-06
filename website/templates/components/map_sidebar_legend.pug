@@ -1,21 +1,21 @@
-a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title=__("Retour à la page d'accueil"))
-	img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt=__("Projet du mois"))
+a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title=__("Go back to homepage"))
+	img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt="")
 
 
 //- Switch between map and list
 div.btn-group.w-100.mb-2.mt-2(role="group")
 	button.btn.btn-secondary.w-50(type="button" disabled="")
 		i.fa.fa-map.mr-1
-		| #{__("Carte")}
+		| #{__("Map")}
 	a.btn.btn-outline-secondary.w-50(href=`/projects/${name}/issues` role="button")
 		i.fa.fa-list.mr-1
-		| #{__("Liste")}
+		| #{__("List")}
 
 //- Legend entries
 div.map-legend.mb-2.pb-2(style="border-bottom: 1px solid #bbb")
 	each lg in legend
 		if lg.media == "vector"
-			label.switch(id=`pdm-legend-${lg.layerId}` title=__("Afficher/masquer la couche"))
+			label.switch(id=`pdm-legend-${lg.layerId}` title=__("Show/hide layer"))
 				div.pdm-color-patch(style=`border-color: ${lg.color}`)
 
 				div.switch-text= lg.label
@@ -32,7 +32,7 @@ div.map-background-container.px-3
 	div.map-background.mt-2.py-2(style="border-top: 1px solid #bbb;")
 		each lg in legend
 			if lg.media != "vector"
-				label.switch(id=`pdm-legend-${lg.layerId}` title=__("Afficher/masquer la couche"))
+				label.switch(id=`pdm-legend-${lg.layerId}` title=__("Show/hide layer"))
 					img.pdm-raster-patch(src=`/images/imagery/${lg.icon || "other"}.svg`)
 
 					div.switch-text= lg.label
@@ -62,9 +62,9 @@ div.map-background-container.px-3
 script !{legendClickEvents}
 
 //- KML Export button
-a#pdm-export-kml.btn.btn-block.btn-outline-secondary(role="button" title=__("Télécharger un fichier KML pour contribuer avec une application de smartphone"))
+a#pdm-export-kml.btn.btn-block.btn-outline-secondary(role="button" title=__("Download a KML file to contribute with a smartphone app"))
 	i.fa.fa-download.mr-1
-	| #{__("Exporter les points à vérifier")}
+	| #{__("Export features to check")}
 
 script.
 	const osmoseLabels = !{JSON.stringify(osmoseLabels)};

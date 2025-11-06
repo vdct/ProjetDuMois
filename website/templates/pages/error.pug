@@ -3,19 +3,19 @@ extends ../layout.pug
 
 block navbar
 	a(href="/about")
-		i.fa.fa-flag(title=__("A propos"))
-		span= __("A propos")
+		i.fa.fa-flag(title=__("About"))
+		span= __("About")
 
 
 block content
 	div.container
 		h2.mb-2
 			i.fa.fa-exclamation-triangle.mr-2
-			| #{__("Erreur %s", httpcode)}
+			| #{__("Error %s", httpcode)}
 		//- Wide image
 		a(href="/")
-			img.w-100.rounded-lg(src="/images/httperror.png" title=__("Retour à l'accueil") alt=__("Erreur %s : rien que le désert ici...", httpcode))
+			img.w-100.rounded-lg(src="/images/httperror.png" title=__("Go back to homepage") alt=__("Error %s : nothing but desert here...", httpcode))
 
 		//- Where to go
 		div.lead.text-center.m-5
-			a(href="/")= __("Accueil | Découvrir le projet du mois")
+			a(href="/")= __("Homepage | Discover current projects")

@@ -14,7 +14,7 @@ Podoma is a powerful, full-featured, engine and dashboard for getting precise st
 ## Help improve this tool
 
 The tool is free (as in free beer and as much as in free speech) and developed by a team of volunteers. You can help improve this project by:
-* [Giving return on experience and constructive suggestions](https://gitlab.com/PanierAvide/Podoma/-/issues) in French or in English
+* [Giving return on experience and constructive suggestions](https://github.com/vdct/Podoma/issues) in French or in English
 * [Submitting software code](DEVELOP.md) for new features or bug fixes
 
 This project embraces the [digital principles for development](https://digitalprinciples.org/).
@@ -22,7 +22,7 @@ This project embraces the [digital principles for development](https://digitalpr
 ![Logo of digital principles for development](/website/images/pdd-en.png)
 
 Therefore, our website is developed for __humans__.
-While doing a proposal, please use [our personas](https://gitlab.com/PanierAvide/Podoma/-/issues/66) (only in french, sorry).
+While doing a proposal, please use [our personas](https://github.com/vdct/Podoma/issues/66) (only in french, sorry).
 
 ![Personna](/website/images/personna_h.png)
 

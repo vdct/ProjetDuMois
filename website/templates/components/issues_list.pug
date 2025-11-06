@@ -27,7 +27,7 @@ script.
 
 	// Manage pseudo-responsive layout according to page width
 	function fillPage(issues) {
-		issuesListDom.innerHTML = `<div class="col-12 mt-3 text-center"><img src="/images/empty.svg" alt="" style="height: 128px" /><p style="font-size: 2rem;">#{__("Aucun signalement pour l'instant !")}</p></div>`;
+		issuesListDom.innerHTML = `<div class="col-12 mt-3 text-center"><img src="/images/empty.svg" alt="" style="height: 128px" /><p style="font-size: 2rem;">#{__("No issues for now!")}</p></div>`;
 
 		if(issues.length > 0) {
 			// Count issues per user
@@ -77,7 +77,7 @@ script.
 			const badgeComms = document.createElement("span");
 			badgeComms.classList.add("badge", "badge-pill", "badge-primary", "float-right", "cursor-pointer");
 			badgeComms.setAttribute("data-filter", "comments");
-			badgeComms.appendChild(document.createTextNode(`${issue.properties.comments.length - 1} #{__("commentaire(s)")}`));
+			badgeComms.appendChild(document.createTextNode(`${issue.properties.comments.length - 1} #{__("comment(s)")}`));
 			badgeComms.addEventListener("click", e => commentsDom.classList.toggle("d-none"));
 			issueUserDom.appendChild(badgeComms);
 		}
@@ -94,7 +94,7 @@ script.
 			smallDom.appendChild(userLink);
 		}
 		else {
-			smallDom.appendChild(document.createTextNode("#{__("Anonyme")}"));
+			smallDom.appendChild(document.createTextNode("#{__("Anonymous")}"));
 		}
 		smallDom.appendChild(document.createTextNode(` - ${new Date(issue.properties.comments[0].date.split(" ")[0]).toLocaleString(navigator.language, { day: 'numeric', month: 'long', year: 'numeric' })}`));
 		issueUserDom.appendChild(smallDom);
@@ -135,7 +135,7 @@ script.
 
 		// Other comments
 		if(issue.properties.comments.length > 1) {
-			const notesStatuses = { "opened": "#{__("Ouvert")}", "closed": "#{__("Fermé")}", "reopened": "#{__("Réouvert")}", "commented": null };
+			const notesStatuses = { "opened": "#{__("Opened")}", "closed": "#{__("Closed")}", "reopened": "#{__("Re-opened")}", "commented": null };
 			commentsDom.innerHTML = issue.properties.comments.slice(1).map((cmt, i) => `<div class="border-top pdm-note-comment pt-2 mt-2">
 				<div class="text-muted" style="font-size: 0.9rem">
 					${notesStatuses[cmt.action] ? notesStatuses[cmt.action]+" par " : ""}${cmt.user || "une personne anonyme"} le ${new Date(cmt.date.split(" ").slice(0, 2).join("T")).toLocaleString(navigator.language, { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -158,11 +158,11 @@ script.
 		});
 
 		// Can be processed directly ?
-		if(issue.properties.comments[0].text.includes("#{__("Attributs renseignés :")}")) {
+		if(issue.properties.comments[0].text.includes("#{__("Defined tags:")}")) {
 			const badgeDirect = document.createElement("span");
 			badgeDirect.classList.add("badge", "badge-pill", "badge-success", "mr-1");
 			badgeDirect.setAttribute("data-filter", "ready");
-			badgeDirect.appendChild(document.createTextNode("#{__("Prêt à intégrer")}"));
+			badgeDirect.appendChild(document.createTextNode("#{__("Ready to integrate")}"));
 			badges.push(badgeDirect);
 		}
 
@@ -198,7 +198,7 @@ script.
 			noteid: "note/"+issue.properties.id,
 			osmid: featureId,
 			tags,
-			title: featureId ? "#{__("Compléter")}" : "#{__("Éditer")}",
+			title: featureId ? "#{__("Complete")}" : "#{__("Edit")}",
 			page: "issues",
 			originalCoordinates: { lng: issue.geometry.coordinates[0], lat: issue.geometry.coordinates[1] }
 		});

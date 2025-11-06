@@ -7,32 +7,32 @@ div.pdm-sidebar#pdm-issues-sidebar.pdm-hidden.pdm-sidebar
 	div.overflow-auto.h-100.w-100.pdm-sidebar-content
 		//- Filters
 		div.pdm-sidebar-filters.m-3
-			a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title=__("Retour à la page d'accueil"))
-				img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt=__("Projet du mois"))
+			a.d-inline-block.d-md-none.w-100.text-center.mb-1(href="/" title=__("Back to homepage"))
+				img(style="max-width: 100%; height: 40px" src="/images/logo_mini.png" alt="")
 
 			div.btn-group.w-100.mb-2.mt-2(role="group")
 				a.btn.btn-outline-secondary.w-50(href=`/projects/${name}/map` role="button")
 					i.fa.fa-map.mr-1
-					| #{__("Carte")}
+					| #{__("Map")}
 				button.btn.btn-secondary.w-50(type="button" disabled="")
 					i.fa.fa-list.mr-1
-					| #{__("Liste")}
+					| #{__("List")}
 
 			form#filters.mt-3
-				p.mb-1= __("Filtres")
+				p.mb-1= __("Filters")
 				div.form-group.form-check.form-check-inline.m-0.mr-1
 					input#filterReadyMerge.form-check-input(type="checkbox" name="ready")
 					label.form-check-label(for="filterReadyMerge")
-						span.badge.badge-pill.badge-outline-success= __("Prêt à intégrer")
+						span.badge.badge-pill.badge-outline-success= __("Ready to integrate")
 				div.form-group.form-check.form-check-inline.m-0.mr-1
 					input#filterPicture.form-check-input(type="checkbox" name="picture")
 					label.form-check-label(for="filterPicture")
-						span.badge.badge-pill.badge-outline-success= __("Avec photo")
+						span.badge.badge-pill.badge-outline-success= __("With picture")
 				br
 				div.form-group.form-check.form-check-inline.m-0.mr-1
 					input#filterAnonymous.form-check-input(type="checkbox" name="anonymous")
 					label.form-check-label(for="filterAnonymous")
-						span.badge.badge-pill.badge-outline-primary= __("Anonymes")
+						span.badge.badge-pill.badge-outline-primary= __("Anonymous")
 
 script.
 	const issuesSidebarDom = document.getElementById("pdm-issues-sidebar");

@@ -1,6 +1,9 @@
 {
   "name": "projetdumoisfr",
   "version": "0.5.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "description": "ProjetDuMois.fr est un tableau de bord pour encourager les contributions aux Projets du mois d'OpenStreetMap en France.",
   "main": "website/index.js",
   "scripts": {

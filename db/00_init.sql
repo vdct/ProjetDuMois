@@ -58,6 +58,7 @@ CREATE TABLE pdm_mapper_counts(
 	project_id int NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	label varchar,
+	amount INT NOT NULL,
 	amount_1d INT NOT NULL,
 	amount_30d INT NOT NULL,
 
@@ -87,6 +88,7 @@ CREATE TABLE pdm_mapper_counts_per_boundary(
 	boundary BIGINT NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	label varchar,
+	amount INT NOT NULL,
 	amount_1d INT NOT NULL,
 	amount_30d INT NOT NULL,
 

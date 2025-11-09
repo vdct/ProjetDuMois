@@ -28,74 +28,78 @@ INSERT INTO pdm_user_contribs(project_id, userid, ts, contribution, amount, poin
 	GROUP BY f.userid, f.contrib, f.ts::date;
 
 -- Handle dates list
-CREATE TEMP TABLE IF NOT EXISTS pdm_mapper_counts_dates (ts timestamp, ts1d timestamp, ts30d timestamp); TRUNCATE TABLE pdm_mapper_counts_dates;
+CREATE TEMP TABLE IF NOT EXISTS pdm_mapper_counts_dates (ts timestamp, ts1d timestamp, ts30d timestamp, tswindow timestamp); TRUNCATE TABLE pdm_mapper_counts_dates;
 INSERT INTO pdm_mapper_counts_dates (ts) VALUES :dates_list;
-UPDATE pdm_mapper_counts_dates SET ts1d=ts - interval '1 day', ts30d=ts - interval '30 days';
+UPDATE pdm_mapper_counts_dates SET ts1d=ts - interval '1 day', ts30d=ts - interval '30 days', tswindow=least(ts - interval '30 days', :project_start_date);
 CREATE INDEX ON pdm_mapper_counts_dates using btree(ts);
 CREATE INDEX ON pdm_mapper_counts_dates using btree(ts1d);
 CREATE INDEX ON pdm_mapper_counts_dates using btree(ts30d);
 
 -- Main labels count
-INSERT INTO pdm_mapper_counts (project_id, ts, label, amount_1d, amount_30d)
+INSERT INTO pdm_mapper_counts (project_id, ts, label, amount, amount_1d, amount_30d)
   SELECT
       :project_id AS project_id,
       d.ts,
       fl.label,
+      COUNT(DISTINCT CASE WHEN f.ts BETWEEN :project_start_date AND d.ts THEN f.userid END) AS amount,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts1d AND d.ts THEN f.userid END) AS amount_1d,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts30d AND d.ts THEN f.userid END) AS amount_30d
   FROM :features_table f
   JOIN :labels_table fl ON fl.osmid=f.osmid and fl.version=f.version
-  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.ts30d AND d.ts
+  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.tswindow AND d.ts
   WHERE f.tagsfilter = true
   GROUP BY d.ts, fl.label
-ON CONFLICT (project_id, ts, label) DO UPDATE SET amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
+ON CONFLICT (project_id, ts, label) DO UPDATE SET amount=EXCLUDED.amount, amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
 
 -- Main rollup count
-INSERT INTO pdm_mapper_counts (project_id, ts, label, amount_1d, amount_30d)
+INSERT INTO pdm_mapper_counts (project_id, ts, label, amount, amount_1d, amount_30d)
   SELECT
       :project_id AS project_id,
       d.ts,
       null as label,
+      COUNT(DISTINCT CASE WHEN f.ts BETWEEN :project_start_date AND d.ts THEN f.userid END) AS amount,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts1d AND d.ts THEN f.userid END) AS amount_1d,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts30d AND d.ts THEN f.userid END) AS amount_30d
   FROM :features_table f
-  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.ts30d AND d.ts
+  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.tswindow AND d.ts
   WHERE f.tagsfilter = true
   GROUP BY d.ts
-ON CONFLICT (project_id, ts, label) DO UPDATE SET amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
+ON CONFLICT (project_id, ts, label) DO UPDATE SET amount=EXCLUDED.amount, amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
 
 -- Boundary labels count
-INSERT INTO pdm_mapper_counts_per_boundary (project_id, boundary, ts, label, amount_1d, amount_30d)
+INSERT INTO pdm_mapper_counts_per_boundary (project_id, boundary, ts, label, amount, amount_1d, amount_30d)
   SELECT
       :project_id AS project_id,
       fb.boundary as boundary,
       d.ts,
       fl.label,
+      COUNT(DISTINCT CASE WHEN f.ts BETWEEN :project_start_date AND d.ts THEN f.userid END) AS amount,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts1d AND d.ts THEN f.userid END) AS amount_1d,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts30d AND d.ts THEN f.userid END) AS amount_30d
   FROM :features_table f
   JOIN :labels_table fl ON fl.osmid=f.osmid and fl.version=f.version
   JOIN :boundary_table fb ON fb.osmid=f.osmid AND fb.version=f.version
-  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.ts30d AND d.ts
+  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.tswindow AND d.ts
   WHERE f.tagsfilter = true
   GROUP BY fb.boundary, d.ts, fl.label
-ON CONFLICT (project_id, boundary, ts, label) DO UPDATE SET amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
+ON CONFLICT (project_id, boundary, ts, label) DO UPDATE SET amount=EXCLUDED.amount, amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
 
 -- Boundary rollup count
-INSERT INTO pdm_mapper_counts_per_boundary (project_id, boundary, ts, label, amount_1d, amount_30d)
+INSERT INTO pdm_mapper_counts_per_boundary (project_id, boundary, ts, label, amount, amount_1d, amount_30d)
   SELECT
       :project_id AS project_id,
       fb.boundary as boundary,
       d.ts,
       null as label,
+      COUNT(DISTINCT CASE WHEN f.ts BETWEEN :project_start_date AND d.ts THEN f.userid END) AS amount,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts1d AND d.ts THEN f.userid END) AS amount_1d,
       COUNT(DISTINCT CASE WHEN f.ts BETWEEN d.ts30d AND d.ts THEN f.userid END) AS amount_30d
   FROM :features_table f
   JOIN :boundary_table fb ON fb.osmid=f.osmid AND fb.version=f.version
-  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.ts30d AND d.ts
+  JOIN pdm_mapper_counts_dates d ON f.ts BETWEEN d.tswindow AND d.ts
   WHERE f.tagsfilter = true
   GROUP BY fb.boundary, d.ts
-ON CONFLICT (project_id, boundary, ts, label) DO UPDATE SET amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
+ON CONFLICT (project_id, boundary, ts, label) DO UPDATE SET amount=EXCLUDED.amount, amount_1d=EXCLUDED.amount_1d, amount_30d=EXCLUDED.amount_30d;
 
 -- Clean up
 DROP TABLE pdm_mapper_counts_dates;

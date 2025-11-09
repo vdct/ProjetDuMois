@@ -2,11 +2,11 @@
 
 ## Dependencies
 
-- NodeJS >= 18
+- NodeJS >= 24
 - Bash tools : curl, mawk, grep, sed, bc
-- PostgreSQL >= 13
+- PostgreSQL >= 15
 - Python 3 (and `requests` module)
-- [Osmium](https://osmcode.org/osmium-tool/) > 1.10
+- [Osmium](https://osmcode.org/osmium-tool/) > 1.18
 - [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 - [Imposm](https://imposm.org/) >= 3
 - [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
@@ -180,7 +180,6 @@ However, it is possible to manually delete and do the assignment of a particular
 ```bash
 psql -d postgresql://... -c "DELETE FROM pdm_features_project_labels WHERE label='label1'"
 psql -d postgresql://... -v features_table="pdm_features_project" -v labels_table="pdm_features_project_labels" -v label="'label1'" -v labelfilter="'... new label filer ...'" -f "db/27_changes_labels.sql"
-psql -d postgresql://... -c "ANALYSE pdm_features_project_labels"
 ```
 
 Then, the `update_projects` should be inited again to propagate the new labels into counts and KPI.

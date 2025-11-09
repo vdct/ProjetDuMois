@@ -2,11 +2,11 @@
 
 ## Dépendances
 
-- NodeJS >= 18
+- NodeJS >= 24
 - Outils Bash : curl, mawk, grep, sed, bc
-- PostgreSQL >= 13
+- PostgreSQL >= 15
 - Python 3 (et le module `requests`)
-- [Osmium](https://osmcode.org/osmium-tool/) > 1.10
+- [Osmium](https://osmcode.org/osmium-tool/) > 1.18
 - [osmctools](https://wiki.openstreetmap.org/wiki/Osmupdate)
 - [Imposm](https://imposm.org/) >= 3
 - [pg_tileserv](https://github.com/CrunchyData/pg_tileserv)
@@ -180,7 +180,6 @@ Toutefois, il est possible manuellement de supprimer puis attribuer à nouveau u
 ```bash
 psql -d postgresql://... -c "DELETE FROM pdm_features_project_labels WHERE label='label1'"
 psql -d postgresql://... -v features_table="pdm_features_project" -v labels_table="pdm_features_project_labels" -v label="'label1'" -v labelfilter="'... new label filer ...'" -f "db/27_changes_labels.sql"
-psql -d postgresql://... -c "ANALYSE pdm_features_project_labels"
 ```
 
 La phase `update_projects` devra ensuite être réinitialisée à son tour pour prendre en compte les nouveaux dénombrements.

@@ -163,6 +163,13 @@ script.
 			editWithMapillary.target = "_blank";
 			editWithMapillary.appendChild(document.createTextNode("#{__("Via Mapillary")}"));
 			dropdown.appendChild(editWithMapillary);
+			
+			const editWithPanoramax = document.createElement("a");
+			editWithPanoramax.classList.add("dropdown-item", "d-none", "d-sm-block");
+			editWithPanoramax.href = `#{CONFIG.PANORAMAX_URL}/?focus=map&map=18/${lat}/${lng}`;
+			editWithPanoramax.target = "_blank";
+			editWithPanoramax.appendChild(document.createTextNode("#{__("Via Panoramax")}"));
+			dropdown.appendChild(editWithPanoramax);
 
 			if(options.onExternalEdit) {
 				editWithApp.addEventListener("click", options.onExternalEdit);
@@ -170,6 +177,7 @@ script.
 				editWithJOSM.addEventListener("click", options.onExternalEdit);
 				editWithOSM.addEventListener("click", options.onExternalEdit);
 				editWithMapillary.addEventListener("click", options.onExternalEdit);
+				editWithPanoramax.addEventListener("click", options.onExternalEdit);
 			}
 
 			if(options.mapcoords) {
@@ -179,6 +187,7 @@ script.
 					editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&#{idParams}`;
 					editWithOSM.href = `#{CONFIG.OSM_URL}/${options.noteid || options.osmid || ""}#map=18/${lat}/${lng}`;
 					editWithMapillary.href = `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lng}&z=18`;
+					editWithPanoramax.href = `#{CONFIG.PANORAMAX_URL}/?focus=map&map=18/${lat}/${lng}`;
 				});
 			}
 

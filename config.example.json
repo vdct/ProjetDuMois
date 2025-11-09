@@ -8,6 +8,7 @@
   "NOMINATIM_URL": "https://nominatim.openstreetmap.org",
   "MAPILLARY_URL": "https://www.mapillary.com",
   "MAPILLARY_API_KEY": "yourtoken",
+  "PANORAMAX_URL": "https://explore.panoramax.fr",
   "MATOMO_HOST": "https://stats.domaine.fr/",
   "MATOMO_SITE": "6",
   "REPOSITORY_URL": "https://github.com/vdct/ProjetDuMois",

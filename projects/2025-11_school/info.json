@@ -1,7 +1,7 @@
 {
 	"id": 10,
 	"name": "2025-11_school",
-	"title": "Ecoles",
+	"title": "Écoles",
 	"start_date": "2025-11-15",
 	"soft_end_date": "2026-01-31",
 	"summary": "Les Écoles sont des services publics essentiels, dans lesquels nous pouvons tous être amenés à nous rendre un jour ou l'autre. Pourtant, il en manque beaucoup dans OpenStreetMap. Cartographions les ensemble! #ProjetDuMois #ÉcolesDansOpenStreetMap #TeamProf"
@@ -20,8 +20,8 @@
 			"source": "osmose",
 			"item": "8032",
 			"country": "france*",
-			"name": "Ecoles à compléter",
-			"description": "Cette établissement existe déjà dans OSM, et des données supplémentaires peuvent être ajoutées depuis une source officielle. Vérifiez ces infos puis validez leur ajout.",
+			"name": "École à compléter",
+			"description": "Cet établissement existe déjà dans OSM, et des données supplémentaires peuvent être ajoutées depuis une source officielle. Vérifiez ces infos puis validez leur ajout.",
 			"color": "#4A148C",
 			"buttons": { "edit": "Compléter cette école" }
 		},
@@ -29,32 +29,32 @@
 			"source": "osmose",
 			"item": "8030",
 			"country": "france*",
-			"name": "Ecoles à localiser",
+			"name": "École à localiser",
 			"description": "Il y a un établissement scolaire à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap.",
 			"buttons": { "add": "Intégrer cette école" }
 		},
 		{
 			"source": "notes",
-			"name": "Ecole à intégrer",
+			"name": "École à intégrer",
 			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
-			"terms": [ "écoles" ]
+			"terms": [ "école" ]
 		},
 		{
 			"source": "osm",
-			"name": "Ecole dans OSM",
+			"name": "École dans OSM",
 			"description": "Cete école existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
 		},
 		{
 			"source": "background",
 			"tiles": [ "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM_0_19&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}" ],
-			"name": "Vue aérienne",
+			"name": "Vue aérienne (Bd Ortho)",
 			"icon": "aerial",
 			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
 		},
 		{
 			"source": "background",
 			"tiles": [ "https://data.geopf.fr/tms/1.0.0/ORTHOIMAGERY.ORTHOPHOTOS.ORTHO-EXPRESS.2025/{z}/{x}/{y}.jpeg" ],
-			"name": "Vue aérienne 2025",
+			"name": "Vue aérienne (Ortho Express 2025)",
 			"icon": "aerial",
 			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; Ortho Express IGN 2025</a>"
 		},

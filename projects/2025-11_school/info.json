@@ -1,0 +1,102 @@
+{
+	"id": 10,
+	"name": "2025-11_school",
+	"title": "Ecoles",
+	"start_date": "2025-11-15",
+	"soft_end_date": "2026-01-31",
+	"summary": "Les Écoles sont des services publics essentiels, dans lesquels nous pouvons tous être amenés à nous rendre un jour ou l'autre. Pourtant, il en manque beaucoup dans OpenStreetMap. Cartographions les ensemble! #ProjetDuMois #ÉcolesDansOpenStreetMap #TeamProf"
+	"links": {
+		"osmwiki": "https://wiki.openstreetmap.org/wiki/FR:Projet_du_mois/%C3%89coles"
+	},
+	"database": {
+		"osmium_tag_filter": "nwr/amenity=school",
+		"imposm": {
+			"types": ["point", "polygon"],
+			"mapping": { "amenity": ["school"] }
+		}
+	},
+	"datasources": [
+		{
+			"source": "osmose",
+			"item": "8032",
+			"country": "france*",
+			"name": "Ecoles à compléter",
+			"description": "Cette établissement existe déjà dans OSM, et des données supplémentaires peuvent être ajoutées depuis une source officielle. Vérifiez ces infos puis validez leur ajout.",
+			"color": "#4A148C",
+			"buttons": { "edit": "Compléter cette école" }
+		},
+		{
+			"source": "osmose",
+			"item": "8030",
+			"country": "france*",
+			"name": "Ecoles à localiser",
+			"description": "Il y a un établissement scolaire à proximité. Vérifiez sa position exacte sur le terrain, puis ajoutez-le à OpenStreetMap.",
+			"buttons": { "add": "Intégrer cette école" }
+		},
+		{
+			"source": "notes",
+			"name": "Ecole à intégrer",
+			"description": "Une personne a créé une note ici, vérifiez puis éditez OSM pour intégrer les informations.",
+			"terms": [ "écoles" ]
+		},
+		{
+			"source": "osm",
+			"name": "Ecole dans OSM",
+			"description": "Cete école existe déjà dans OSM. Vous pouvez compléter ou modifier ses informations si nécessaire."
+		},
+		{
+			"source": "background",
+			"tiles": [ "https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM_0_19&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}" ],
+			"name": "Vue aérienne",
+			"icon": "aerial",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; BDOrtho IGN</a>"
+		},
+		{
+			"source": "background",
+			"tiles": [ "https://data.geopf.fr/tms/1.0.0/ORTHOIMAGERY.ORTHOPHOTOS.ORTHO-EXPRESS.2025/{z}/{x}/{y}.jpeg" ],
+			"name": "Vue aérienne 2025",
+			"icon": "aerial",
+			"attribution": "<a href=\"https://openstreetmap.fr/bdortho\" target=\"_blank\">&copy; Ortho Express IGN 2025</a>"
+		},
+		{ "source": "stats" }
+	],
+	"statistics": {
+		"count": true,
+		"feature_name": "écoles",
+		"osmose_tasks": "écoles intégrés",
+		"points": { "add": 3, "edit": 1, "note": 1 }
+	},
+	"editors": {
+		"all": {
+			"comment": "Ajout d'établissements scolaires",
+			"hashtags": "projetdumois,ecolesdansopenstreetmap,teamprof"
+		},
+		"pdm": {
+			"fields": [
+				{ "type": "hidden", "tags": { "amenity": "school", "ref:FR:UAI": "*", "ref:FR:SIRET": "*", "source": "*" } },
+				{ "type": "text", "name": "Nom", "tag": "name" },
+				{ "type": "text", "name": "Opérateur / gestionnaire", "tag": "operator", "optional": true },
+				{ "type": "select", "name": "Type de gestionnaire", "tag": "operator:type", "optional": true, "values": [
+					{ "v": "public", "l": "public" },
+					{ "v": "private", "l": "privé" }
+				] },
+				{ "type": "text", "name": "Téléphone", "tag": "contact:phone", "optional": true, "description": "Au format international : +33 X XX XX XX XX" },
+				{ "type": "text", "name": "Site web officiel", "tag": "contact:website", "optional": true },
+				{ "type": "text", "name": "Adresse mail de contact", "tag": "contact:email", "optional": true },
+				{ "type": "select", "name": "Accessibilité fauteuil roulant", "tag": "wheelchair", "optional": true, "values": [
+					{ "v": "yes", "l": "Complètement accessible" },
+					{ "v": "limited", "l": "Partiellement accessible" },
+					{ "v": "no", "l": "Pas accessible" }
+				] },
+				{ "type": "textarea", "name": "Autres informations", "tag": "note", "description": "Horaires, infos pratiques...", "optional": true }
+			],
+			"title": {
+				"add": "Ajouter une école manquante",
+				"edit": "Compléter cette école"
+			}
+		},
+		"iD": {
+			"background": "fr.ign.bdortho"
+		}
+	}
+}

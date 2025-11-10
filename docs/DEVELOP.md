@@ -95,7 +95,7 @@ The properties in `info.json` are as follows:
 - `end_date`: end date of the mission (format YYYYY-MM-DD)
 - `soft_end_date`: end date of the _strong_ community animation period (format YYYYY-MM-DD). This is only informational, it doesn't affect backend processing.
 - `summary`: summary of the mission
-- `links`: definition of the URLs for links to third party pages (OSM wiki)
+- `links`: definition of the URLs for links to third party pages (OSM wiki, OSM forum or blog page) with this format "osmwiki|osmblog|osmforum": "projetdumois.fr"
 - `database.osmium_tag_filter` : Osmium filter on the tags to be applied to keep only the relevant OSM objects (for example `nwr/*:covid19`, [syntax described here](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). It is possible to list many filters using `&` character and same syntax.
 - `database.imposm`: configuration for importing updated OSM data (`types` for geometry types to be taken into account, `mapping` for attributes, see [the Imposm documentation](https://imposm.org/docs/imposm3/latest/mapping.html#tags) for the format of these fields)
 - `database.compare`: configuration for the search of OpenStreetMap objects to compare, follows the format of `database.imposm` with an additional property `radius` (reconciliation radius in meters)

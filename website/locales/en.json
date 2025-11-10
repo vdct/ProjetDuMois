@@ -131,5 +131,8 @@
 	"Contact": "Contact",
 	"changesets": "changesets",
 	"Registered on OSM on": "Registered on OSM on",
-	"participations": "participations"
+	"participations": "participations",
+	"Currently: %s prioritary projects": "Currently: %s prioritary projects",
+	"Currently: %s": "Currently: %s",
+	"Discuss": "Discuss"
 }

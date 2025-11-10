@@ -95,6 +95,10 @@ block content
 						a.btn.btn-secondary.btn-lg.m-1(href=links.osmwiki target="_blank" role="button")
 							i.fa.fa-book.mr-2
 							| #{__("Documentation complète")}
+					if links.osmforum
+						a.btn.btn-secondary.btn.lg.m-1(href=links.osmforum target="_blank" role="button")
+						i.fa.fa-comments.mr-2
+							| #{__("En discuter")}
 					if links.osmblog
 						a.btn.btn-secondary.btn-lg.m-1(href=links.osmblog target="_blank" role="button")
 							i.fa.fa-rss.mr-2

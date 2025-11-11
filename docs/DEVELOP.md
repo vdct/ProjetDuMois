@@ -350,6 +350,7 @@ Raster tile imagery can be added in background to make contribution easier or gi
 - `tileSize` (default 256): width and length of a tile in pixels
 
 These sources should be declared in reverse order of display. The lower layer should be declared first.
+The urls of raster tiles are available in this repository https://github.com/osmlab/editor-layer-index
 
 #### Sources stats
 

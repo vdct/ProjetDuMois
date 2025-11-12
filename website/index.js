@@ -7,7 +7,7 @@ const cors = require("cors");
 const compression = require("compression");
 const path = require("path");
 const fs = require("fs");
-const fetch = require("node-fetch");
+const fetch = require("node-fetch").default;
 const projects = require("./projects");
 const CONFFILE = require("../config.json");
 const PCKGE = require("../package.json");
@@ -51,7 +51,6 @@ const i18n = new I18n({
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors());
-app.options("*", cors());
 app.use(compression());
 app.use(i18n.init);
 app.use(function (req, res, next) {
@@ -279,8 +278,8 @@ app.get("/projects/:name/stats", (req, res) => {
               label: ds.name,
               data: Object.entries(res.data)
                 .filter((e) => daysToKeep(e[0]))
-                .map((e) => ({ t: e[0], y: e[1] }))
-                .sort((a, b) => a.t.localeCompare(b.t)),
+                .map((e) => ({ x: e[0], y: e[1] }))
+                .sort((a, b) => a.x.localeCompare(b.x)),
               fill: false,
               borderColor: ds.color || "#c62828",
               lineTension: 0,
@@ -333,14 +332,14 @@ app.get("/projects/:name/stats", (req, res) => {
               ? [
                   {
                     label: "Ouvertes",
-                    data: results.rows.map((r) => ({ t: r.ts, y: r.open })),
+                    data: results.rows.map((r) => ({ x: r.ts, y: r.open })),
                     fill: false,
                     borderColor: "#c62828",
                     lineTension: 0,
                   },
                   {
                     label: "Résolues",
-                    data: results.rows.map((r) => ({ t: r.ts, y: r.closed })),
+                    data: results.rows.map((r) => ({ x: r.ts, y: r.closed })),
                     fill: false,
                     borderColor: "#388E3C",
                     lineTension: 0,
@@ -382,7 +381,7 @@ app.get("/projects/:name/stats", (req, res) => {
           chart: [
             {
               label: "Nombre dans OSM",
-              data: results.rows.map((r) => ({ t: r.ts, y: r.amount })),
+              data: results.rows.map((r) => ({ x: r.ts, y: r.amount })),
               fill: false,
               borderColor: "#388E3C",
               lineTension: 0,
@@ -551,7 +550,7 @@ app.get("/projects/:name/counts", (req, res) => {
         .then((results) => {
           const records = results.rows.reduce((acc, row) => {
             if (!acc[row.ts]) {
-              acc[row.ts] = { t: row.ts, labels: {} };
+              acc[row.ts] = { x: row.ts, labels: {} };
             }
             if (row.label == null) {
               acc[row.ts].amount = row.amount;
@@ -625,7 +624,7 @@ app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
         .then((results) => {
           const records = results.rows.reduce((acc, row) => {
             if (!acc[row.ts]) {
-              acc[row.ts] = { t: row.ts, labels: {} };
+              acc[row.ts] = { x: row.ts, labels: {} };
             }
             if (row.label == null) {
               acc[row.ts].amount = row.amount;
@@ -699,7 +698,7 @@ app.get("/projects/:name/mappers", (req, res) => {
         .then((results) => {
           const records = results.rows.reduce((acc, row) => {
             if (!acc[row.ts]) {
-              acc[row.ts] = { t: row.ts, labels: {} };
+              acc[row.ts] = { x: row.ts, labels: {} };
             }
             if (row.label == null) {
               acc[row.ts].amount = row.amount;
@@ -773,7 +772,7 @@ app.get("/projects/:name/mappers/boundary/:boundary", (req, res) => {
         .then((results) => {
           const records = results.rows.reduce((acc, row) => {
             if (!acc[row.ts]) {
-              acc[row.ts] = { t: row.ts, labels: {} };
+              acc[row.ts] = { x: row.ts, labels: {} };
             }
             if (row.label == null) {
               acc[row.ts].amount = row.amount;
@@ -1031,8 +1030,10 @@ const authorized = {
   bootstrap: { "bootstrap.css": "dist/css/bootstrap.min.css" },
   "bootstrap.native": { "bootstrap.js": "dist/bootstrap-native.min.js" },
   "chart.js": {
-    "chart.js": "dist/Chart.bundle.min.js",
-    "chart.css": "dist/Chart.min.css",
+    "chart.js": "dist/chart.umd.js",
+  },
+  "chartjs-adapter-moment": {
+    "chartjs-adapter-moment.js": "dist/chartjs-adapter-moment.min.js",
   },
   "maplibre-gl": {
     "maplibre-gl.js": "dist/maplibre-gl.js",
@@ -1042,9 +1043,11 @@ const authorized = {
     "mapillary.js": "dist/mapillary.js",
     "mapillary.css": "dist/mapillary.css",
   },
+  "moment": {
+    "moment.js": "moment.js"
+  },
   "osm-auth": { "osmauth.js": "dist/osm-auth.iife.js" },
   "osm-request": { "osmrequest.js": "dist/OsmRequest.js" },
-  pic4carto: { "pic4carto.js": "dist/P4C.min.js" },
   "swiped-events": { "swiped-events.js": "dist/swiped-events.min.js" },
   wordcloud: { "wordcloud.js": "src/wordcloud2.js" },
 };

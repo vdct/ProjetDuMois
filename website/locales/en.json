@@ -126,5 +126,10 @@
 	"Blog article": "Blog article",
 	"All the data produced before, during and after the project are available at the following addresses:": "All the data produced before, during and after the project are available at the following addresses:",
 	"I don't know": "I don't know",
-	"With Panoramax": "With Panoramax"
+	"With Panoramax": "With Panoramax",
+	"OpenStreetMap profile": "OpenStreetMap profile",
+	"Contact": "Contact",
+	"changesets": "changesets",
+	"Registered on OSM on": "Registered on OSM on",
+	"participations": "participations"
 }

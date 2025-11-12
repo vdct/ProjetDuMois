@@ -11,13 +11,13 @@ block navbar
 			span= __("Currently")
 	else
 		a(href="#contribute")
-			i.fa.fa-question-circle(title=__("Contribute"))
+			i.fa.fa-circle-question(title=__("Contribute"))
 			span= __("How to contribute")
 	a(href="#statistics")
-		i.fa.fa-chart-bar(title=__("Statistics"))
+		i.fa.fa-chart-column(title=__("Statistics"))
 		span= __("Statistics")
 	a(href="#data")
-		i.fa.fa-file-download(title=__("Data"))
+		i.fa.fa-file-arrow-down(title=__("Data"))
 		span= __("Data")
 	a(href="/about")
 		i.fa.fa-flag(title=__("About"))
@@ -53,7 +53,7 @@ block content
 		div.container-fluid.py-5.pdm-section-highlight
 			div.blog-post.container
 				h2.blog-post-title.mb-2
-					i.fa.fa-birthday-cake.mr-2(style="font-size: 2.1rem")
+					i.fa.fa-cake-candles.mr-2(style="font-size: 2.1rem")
 					| #{__("Thank you all!")}
 				p= __("Thanks to all the contributors for making this project a success. Without all of you, OpenStreetMap would be nothing!")
 
@@ -67,7 +67,7 @@ block content
 
 				div.text-center
 					a.btn.btn-primary.btn-lg.my-2(href="#statistics")
-						i.fa.fa-chart-bar.mr-2
+						i.fa.fa-chart-column.mr-2
 						| #{__("See the statistics")}
 
 	a#contribute
@@ -114,7 +114,7 @@ block content
 	div.container-fluid.py-5.mb-3.pdm-section-highlight
 		div.blog-post.container
 			h2.blog-post-title.mb-3
-				i.fa.fa-chart-bar.mr-2(style="font-size: 2.1rem")
+				i.fa.fa-chart-column.mr-2(style="font-size: 2.1rem")
 				| #{__("Statistics")}
 
 			if isNext
@@ -127,7 +127,7 @@ block content
 	div.container-fluid.py-5
 		div.container.blog-post
 			h2.blog-post-title
-				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
+				i.fa.fa-file-arrow-down.mr-2(style="font-size: 2.1rem")
 				| #{__("Data")}
 			if !isNext && opendata && opendata.length > 0
 				p= __("All the data produced before, during and after the project are available at the following addresses:")

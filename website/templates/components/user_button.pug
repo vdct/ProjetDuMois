@@ -89,7 +89,7 @@ script.
 		for(let domConnect of document.getElementsByClassName("connect-osm")) {
 			domConnect.innerHTML = '';
 			const icon = document.createElement("i");
-			icon.classList.add("fa", "fa-sign-in-alt");
+			icon.classList.add("fa", "fa-right-to-bracket");
 			const txt = document.createElement("span");
 			txt.appendChild(document.createTextNode("#{__("Register / Login")}"));
 			txt.classList.add("d-none", "d-sm-inline", "ml-1");
@@ -164,11 +164,11 @@ script.
 mixin user_button
 	div.pdm-user-button
 		button.connect-osm-ub.btn.btn-outline-secondary.text-truncate.ml-2(role="button" title=__("Register / Login"))
-			i.fa.fa-sign-in-alt
+			i.fa.fa-right-to-bracket
 			span.d-none.d-lg-inline.ml-1= __("Register / Login")
 
 		div.dropdown.d-none
-			button.btn.btn-outline-secondary.dropdown-toggle.text-truncate.ml-2(role="button" title="Menu" data-toggle="dropdown")
+			button.btn.btn-outline-secondary.dropdown-toggle.text-truncate.ml-2(type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
 				i.fa.fa-user
 				span.d-none.d-lg-inline.ml-1.pdm-username= __("User")
 				span.badge.badge-info.ml-1.d-none(title=__("Unread notifications"))
@@ -185,10 +185,10 @@ mixin user_button
 					| #{__("My badges")}
 				div.dropdown-divider
 				a.disconnect-osm-ub.dropdown-item
-					i.fa.fa-sign-out-alt.mr-1
+					i.fa.fa-right-from-bracket.mr-1
 					| #{__("Logout")}
 
 mixin user_connect
 	button.connect-osm.btn.btn-lg.btn-primary(role="button")
-		i.fa.fa-sign-in-alt
+		i.fa.fa-right-to-bracket
 		span.d-none.d-sm-inline.ml-1= __("Register / Login")

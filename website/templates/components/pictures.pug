@@ -22,17 +22,6 @@ script.
 			});
 	}
 
-	// Extract pictures from OSM tags
-	function searchPicturesInOSMTags(tags) {
-		try {
-			return new P4C.PicturesManager().getPicturesFromTags(tags) || [];
-		}
-		catch(e) {
-			console.error(e);
-			return [];
-		}
-	}
-
 	// Generate carousel DOM using list of pictures
 	function createPicturesCarousel(container, pictures, options = {}) {
 		if(pictures.length > 0) {

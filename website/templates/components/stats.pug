@@ -235,7 +235,7 @@ script.
 					options: {
 						responsive: true,
 						scales: {
-							xAxes: [{
+							x: {
 								type: 'time',
 								bounds: 'ticks',
 								time: {
@@ -244,8 +244,8 @@ script.
 									round: "day",
 									unit: "day"
 								}
-							}],
-							yAxes: [ yAxeLinear ]
+							},
+							y: yAxeLinear
 						}
 					}
 				});
@@ -264,7 +264,7 @@ script.
 				options: {
 					responsive: true,
 					scales: {
-						xAxes: [{
+						x: {
 							type: 'time',
 							bounds: 'ticks',
 							time: {
@@ -273,8 +273,8 @@ script.
 								round: "day",
 								unit: "day"
 							}
-						}],
-						yAxes: [ res.pctTasksDone === undefined || parseInt(res.pctTasksDone) >= 30 ? yAxeLinear : yAxeLogarithmic ]
+						},
+						y: res.pctTasksDone === undefined || parseInt(res.pctTasksDone) >= 30 ? yAxeLinear : yAxeLogarithmic
 					}
 				}
 			});
@@ -289,10 +289,7 @@ script.
 					options: {
 						responsive: true,
 						scales: {
-							xAxes: [{
-								ticks: { callback: (value, index, values) => value.length > 15 ? value.slice(0, 12)+"..." : value }
-							}],
-							yAxes: [ yAxeLinear ]
+							y: yAxeLinear
 						}
 					}
 				});
@@ -363,7 +360,7 @@ script.
 							data: {
 								datasets: [{
 									label: "#{__("Total amount")}",
-									data: projectDays.filter(d => fStats[d] !== undefined).map(d => ({ t: d, y: fStats[d] || 0 })),
+									data: projectDays.filter(d => fStats[d] !== undefined).map(d => ({ x: d, y: fStats[d] || 0 })),
 									fill: false,
 									borderColor: "#388E3C",
 									lineTension: 0
@@ -372,7 +369,7 @@ script.
 							options: {
 								responsive: true,
 								scales: {
-									xAxes: [{
+									x: {
 										type: 'time',
 										bounds: 'ticks',
 										time: {
@@ -381,8 +378,8 @@ script.
 											round: "day",
 											unit: "day"
 										}
-									}],
-									yAxes: [ yAxeLinear ]
+									},
+									y: yAxeLinear
 								}
 							}
 						});

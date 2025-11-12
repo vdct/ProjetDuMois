@@ -2,7 +2,7 @@ const CONFIG = require('../config.json');
 const fs = require('fs');
 const projects = require('../website/projects');
 const { getProjectDays } = require('../website/utils');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 const booleanContains = require('@turf/boolean-contains').default;
 
 /*

@@ -1,5 +1,5 @@
 const CONFIG = require('../config.json');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 const tag2link = require('tag2link');
 
 function getFallbackStyle() {

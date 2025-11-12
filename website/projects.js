@@ -1,8 +1,8 @@
 const fs = require('fs');
 const { queryParams } = require('./utils');
-const marked = require('marked');
+const marked = require('marked').marked;
 const PROJECTS_PATH = __dirname + '/../projects';
-const fetch = require('node-fetch');
+const fetch = require('node-fetch').default;
 
 const projects = {};
 fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {

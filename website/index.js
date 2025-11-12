@@ -527,7 +527,7 @@ app.get("/projects/:name/counts", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, label, amount, len
+			SELECT ts, label, amount, len, area
 			FROM pdm_feature_counts
 			WHERE project_id = $1
 			ORDER BY ts ASC
@@ -542,8 +542,9 @@ app.get("/projects/:name/counts", (req, res) => {
             if (row.label == null) {
               acc[row.ts].amount = row.amount;
               acc[row.ts].length = row.len;
+              acc[row.ts].area = row.area;
             } else {
-              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len };
+              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len, area: row.area };
             }
             return acc;
           }, {});
@@ -600,7 +601,7 @@ app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, label, amount, len
+			SELECT ts, label, amount, len, area
 			FROM pdm_feature_counts_per_boundary
 			WHERE project_id = $1 AND boundary = $2
 			ORDER BY ts ASC
@@ -615,8 +616,9 @@ app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
             if (row.label == null) {
               acc[row.ts].amount = row.amount;
               acc[row.ts].length = row.len;
+              acc[row.ts].area = row.area;
             } else {
-              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len };
+              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len, area: row.area };
             }
             return acc;
           }, {});

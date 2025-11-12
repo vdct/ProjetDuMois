@@ -1,4 +1,4 @@
-# Running of ProjetDuMois.fr
+# Running of Podoma
 
 ## Dependencies
 
@@ -14,7 +14,7 @@
 
 ### Osmium building
 
-ProjetDuMois requires a recent version of osmium as it takes advantage to newest tags-filter abilities.
+Podoma requires a recent version of osmium as it takes advantage to newest tags-filter abilities.
 Not many Linux distros got the appropriate package available in their repositories and you may need to build your own binary of osmium.
 
 See guidelines on the [official README](https://github.com/osmcode/osmium-tool/blob/master/README.md#building).
@@ -33,7 +33,7 @@ Following packets on debian can be useful
 
 ```bash
 git clone https://github.com/vdct/ProjetDuMois.git
-cd ProjetDuMois
+cd Podoma
 git submodule update --init
 ```
 
@@ -41,6 +41,10 @@ git submodule update --init
 
 The general configuration of the tool is to be filled in `config.json`. There is a suggested model in the `config.example.json` file. The parameters are as follows:
 
+- `WEBSITE_NAME`: website displayable name
+- `WEBSITE_MOTTO`: website displayable short description
+- `WEBSITE_URL`: front-end URL (for SEO)
+- `WEBSITE_DESCRIPTION`: website description (for SEO)
 - `OSM_USER`: OpenStreetMap username for retrieving the modification history with metadata
 - `OSM_PASS`: password associated with the OSM user account
 - `OSM_CLIENT_ID` : client ID associated with the OSM account
@@ -106,7 +110,7 @@ The properties in `info.json` are as follows:
 - `statistics.feature_name`: name to display to the user for these objects
 - `statistics.osmose_tasks`: name of the tasks performed via Osmose
 - `statistics.points`: configuration of the points obtained according to the type of contribution (in relation with `contribs.sql`)
-- `editors`: specific configuration to each OSM editor. ProjetDuMois is described below, for iD, it is possible to use [the parameters listed here](https://github.com/openstreetmap/iD/blob/develop/API.md).
+- `editors`: specific configuration to each OSM editor. Podoma is described below, for iD, it is possible to use [the parameters listed here](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Projects timeline
 
@@ -115,7 +119,7 @@ Script `project:update` will automatically chose the most appropriate data sourc
 - OSH files which provide all features with they history, over a given geographical area. They are released each month.
 - Daily diffs which expose changes that occured during a given day worldwide.
 
-ProjetDuMois allows whether daily update and complete rebuild of a terminated project history over the whole time period. This second option is particularly useful in case of significant change in the software or in the project extent.
+Podoma allows whether daily update and complete rebuild of a terminated project history over the whole time period. This second option is particularly useful in case of significant change in the software or in the project extent.
 A project can be configured without end date, with `end_date: null`, to enable endless updates.
 
 ![Supported projects timelines](./projects_process.svg)
@@ -151,14 +155,14 @@ A project may be summarized as upside: Perimeter filter accumulates features whi
 
 #### Perimeter
 
-ProjetDuMois makes use of Osmium and Imposm to filter necessary features according to each project's configuration, with the help of `database.osmium_tag_filter` and `database.imposm` keys.
+Podoma makes use of Osmium and Imposm to filter necessary features according to each project's configuration, with the help of `database.osmium_tag_filter` and `database.imposm` keys.
 
 Perimeter filter must be selective enough to deal with reasonable amount of features. It must be wide enough to take care of several tagging practices in OSM community for the topic that matters. It is then recommended to focus on main tags here and use labels to get in details about classification, see below.
 
 Documented syntax of filters is available in [Osmium documentation online](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html). However, due to the need to apply those filters at severel steps of the processing, including outside of Osmium logic, filters that would use `!=` operator aren't currently supported.
 
 #### Labelling
-As to complete filtering functionnality, ProjetDuMois supports the assignment of labels to each version of features depending on their tags.  
+As to complete filtering functionnality, Podoma supports the assignment of labels to each version of features depending on their tags.  
 Each version can be assigned with 0, 1 or more labels. Then each label can cover part or the whole project.
 
 Labels are then used in counts and KPI to distinguishe several population fo features inside the same project. It it then recommended to consider a wide project filter to include even imperfect features and not only the perfect ones and then separate them with labels. Consumers will then not only spot the population covered by the project but the ones that should be completed to be included in it as well. 
@@ -343,7 +347,7 @@ Another kind of datasource can be added and refers to geographical statistics, o
 - `tiles` (default): list of TMS URL
 - `layers` (default): Layer names list to use and corresponding to `tiles` indices
 
-### Projet du Mois integrated editor
+### Integrated editor
 
 Project configuration allows to customize embedded editor with appropriate fields. Let's consider following json to be set in the `editors` list:
 
@@ -520,11 +524,11 @@ Configuration of points is in `info.json`:
 ## Build
 
 Once PDM has been properly configured, you should choose between Docker or standalone to build it.
-Refers to Database section in run chapter to make ProjetDuMois fully runable.
+Refers to Database section in run chapter to make Podoma fully runable.
 
 ### git submodules
 
-ProjetDuMois relies on some git submodules. Please mind using the following to retreive them prior to build
+Podoma relies on some git submodules. Please mind using the following to retreive them prior to build
 
 ```sh
 git submodule init
@@ -533,7 +537,7 @@ git submodule update
 
 ### Docker build
 
-You can build a node.js based ProjetDuMois server including necessary features to run. It includes osmium 1.10.0 with Debian Buster.
+You can build a node.js based Podoma server including necessary features to run. It includes osmium 1.10.0 with Debian Buster.
 It doesn't includes a PgSQL server. You can use [CampToCamp Postgres image](https://hub.docker.com/r/camptocamp/postgres/tags?page=1&ordering=last_updated).
 
 ```bash

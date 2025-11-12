@@ -12,7 +12,7 @@ div.row
 	div.col-12.mb-4
 		h3= __("Podium")
 		p#stats-leaderboard-noauth.text-center
-			| #{__("Inscrivez-vous ou connectez-vous pour voir le podium")}
+			| #{__("Register or log in to see podium")}
 			br.mb-2
 			+user_connect
 		div#stats-leaderboard-container.d-none.row.align-items-center
@@ -22,19 +22,19 @@ div.row
 					thead.sticky-top.thead-light
 						tr
 							th(scope="col") #
-							th(scope="col")= __("Pseudo")
+							th(scope="col")= __("Username")
 							th(scope="col").text-right.pr-2= __("Points")
 					tbody#stats-leaderboard
 
 	//- Count per admin boundary
 	div.col-12.mb-2
-		h3= __("Contributions par zone")
+		h3= __("Contributions per area")
 		div#map-stats-legend.row.mb-2
 		div#map-stats.pdm-loading
 
 	//- Charts
 	div.col-12.mb-2#stats-chart-container
-		h3= __("Avancement")
+		h3= __("Progress")
 		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart.w-100(height="300")
 
@@ -44,7 +44,7 @@ div.row
 		canvas#stats-chart-notes.w-100(height="300")
 
 	div.col-lg-6.mb-2#stats-chart-keys-container
-		h3= __("Clés fréquentes")
+		h3= __("Frequent keys")
 		div.spinner-charts.spinner-border.text-primary(role="status" style="width: 64px; height: 64px")
 		canvas#stats-chart-keys.w-100(height="300")
 
@@ -58,7 +58,7 @@ script.
 		.then(res => {
 			// Last stats update time
 			const lastUpdate = document.getElementById("stats-update");
-			lastUpdate.innerHTML = "#{__("Dernière mise à jour : ")}" + (new Date(res.lastUpdate)).toLocaleDateString();
+			lastUpdate.innerHTML = "#{__("Last update: ")}" + (new Date(res.lastUpdate)).toLocaleDateString();
 
 			// Blocks for small stats
 			const blocks = document.getElementById("stats-blocks");
@@ -87,7 +87,7 @@ script.
 			if(res.added) { addBlock(numberFormat.format(res.added), "#{title.toLowerCase()} ajoutés"); }
 			if(res.count) { addBlock(numberFormat.format(res.count), "#{title.toLowerCase()} au total dans OSM"); }
 			if(res.tasksSolved !== undefined) { addBlock(numberFormat.format(res.tasksSolved), "#{statistics.osmose_tasks}"); }
-			addBlock(numberFormat.format(res.nbContributors), "#{__("personnes ayant contribué")}");
+			addBlock(numberFormat.format(res.nbContributors), "#{__("contributors")}");
 
 			// Leaderboard
 			if(res.leaderboard && res.leaderboard.length > 0) {
@@ -362,7 +362,7 @@ script.
 							type: "line",
 							data: {
 								datasets: [{
-									label: "#{__("Nombre total")}",
+									label: "#{__("Total amount")}",
 									data: projectDays.filter(d => fStats[d] !== undefined).map(d => ({ t: d, y: fStats[d] || 0 })),
 									fill: false,
 									borderColor: "#388E3C",
@@ -421,7 +421,7 @@ script.
 				// Boundary stats legends
 				const mapStatsLegend = document.getElementById("map-stats-legend");
 				mapStatsLegend.innerHTML = '';
-				const admLvlToText = { "2": "#{__("Pays")}", "4": "#{__("Région")}", "6": "#{__("Département")}", "8": "#{__("Commune")}" };
+				const admLvlToText = { "2": "#{__("Country")}", "4": "#{__("Region")}", "6": "#{__("Department")}", "8": "#{__("City")}" };
 				Object.entries(res.mapStyle.legend).forEach(e => {
 					const [lvl, data] = e;
 

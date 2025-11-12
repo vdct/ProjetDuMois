@@ -37,10 +37,10 @@ const pool = new Pool({
  */
 
 const i18n = new I18n({
-  locales: ["fr", "en"],
+  locales: ["en", "fr"],
   directory: path.join(__dirname, "locales"),
   autoReload: true,
-  defaultLocale: "fr",
+  defaultLocale: "en",
   retryInDefaultLocale: true,
 });
 

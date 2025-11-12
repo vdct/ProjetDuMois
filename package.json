@@ -1,10 +1,10 @@
 {
-  "name": "projetdumoisfr",
+  "name": "podoma",
   "version": "0.5.0",
+  "description": "Podoma is a powerful, full-featured, engine and dashboard for getting precise statistics about OpenStreetMap community contributions over specific topics.",
   "engines": {
     "node": ">=24.0.0"
   },
-  "description": "ProjetDuMois.fr est un tableau de bord pour encourager les contributions aux Projets du mois d'OpenStreetMap en France.",
   "main": "website/index.js",
   "scripts": {
     "build:turf": "browserify node_modules/@turf/boolean-contains/index.js -s turf > website/static/turf.js",
@@ -18,12 +18,12 @@
     "type": "git",
     "url": "git+https://github.com/vdct/ProjetDuMois.git"
   },
-  "author": "ProjetDuMois.fr",
+  "author": "Podoma",
   "license": "AGPL-3.0",
   "bugs": {
     "url": "https://github.com/vdct/ProjetDuMois/issues"
   },
-  "homepage": "https://github.com/vdct/ProjetDuMois#readme",
+  "homepage": "https://github.com/vdct/ProjetDuMois",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.14.0",
     "@turf/boolean-contains": "^6.0.1",

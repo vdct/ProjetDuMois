@@ -7,6 +7,28 @@ body {
 	border-bottom: 1px solid #e5e5e5;
 }
 
+
+nav.navbar-pdm a h1,
+.blog-header-logo h1,
+a.navbar-brand h1 {
+	color: #1562ac;
+	font-weight: bold;
+	font-size: 1.3rem;
+	display: inline;
+	vertical-align: middle;
+	margin-left: 10px;
+}
+
+.blog-header-logo h1 {
+	font-size: 3rem;
+}
+
+a.blog-header-logo:hover,
+nav.navbar-pdm a:hover,
+a.navbar-brand:hover {
+	text-decoration: none;
+}
+
 .blog-header-logo {
 	max-width: 300px;
 	max-height: 120px;

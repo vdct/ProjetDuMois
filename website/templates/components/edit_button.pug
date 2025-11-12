@@ -11,7 +11,7 @@ script.
 		if(options.mini && !editors.pdm) { return; }
 
 		const optsPdm = Object.fromEntries(Object.entries(options).filter(e => ["tags", "onInternalEdit", "originalCoordinates"].includes(e[0])));
-		const title = options.title || (editors.pdm && editors.pdm.title[mode]) || "#{__("Plus de détails")}";
+		const title = options.title || (editors.pdm && editors.pdm.title[mode]) || "#{__("More details")}";
 		const { lat, lng } = options.originalCoordinates || (map && map.getCenter()) || { lat: 0, lng: 0 };
 
 		// Main button
@@ -77,7 +77,7 @@ script.
 				if(mode !== "info") {
 					const editWithPdm = document.createElement("a");
 					editWithPdm.classList.add("dropdown-item");
-					editWithPdm.appendChild(document.createTextNode("#{__("Avec l'éditeur intégré")}"));
+					editWithPdm.appendChild(document.createTextNode("#{__("With integrated editor")}"));
 					dropdown.appendChild(editWithPdm);
 
 					if(options.page === "issues") {
@@ -103,14 +103,14 @@ script.
 			const editWithApp = document.createElement("a");
 			editWithApp.classList.add("dropdown-item", "d-sm-none");
 			editWithApp.href = `geo:${lat},${lng}`;
-			editWithApp.appendChild(document.createTextNode("#{__("Avec une appli mobile")}"));
+			editWithApp.appendChild(document.createTextNode("#{__("With mobile app")}"));
 			dropdown.appendChild(editWithApp);
 
 			const editWithID = document.createElement("a");
 			editWithID.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithID.href = `#{CONFIG.OSM_URL}/edit${options.osmid && "?"+options.osmid.replace("/", "=") || ""}#map=20/${lat}/${lng}&!{idParams}`;
 			editWithID.target = "_blank";
-			editWithID.appendChild(document.createTextNode("#{__("Avec iD")}"));
+			editWithID.appendChild(document.createTextNode("#{__("With iD")}"));
 			dropdown.appendChild(editWithID);
 
 			const editWithJOSM = document.createElement("a");
@@ -130,7 +130,7 @@ script.
 				};
 				next();
 			});
-			editWithJOSM.appendChild(document.createTextNode("#{__("Avec JOSM")}"));
+			editWithJOSM.appendChild(document.createTextNode("#{__("With JOSM")}"));
 			dropdown.appendChild(editWithJOSM);
 
 			if(options.osmoseuuid) {
@@ -138,14 +138,14 @@ script.
 				editWithOsmose.classList.add("dropdown-item", "d-none", "d-sm-block");
 				editWithOsmose.href = `#{CONFIG.OSMOSE_URL}/fr/error/${options.osmoseuuid}`;
 				editWithOsmose.target = "_blank";
-				editWithOsmose.appendChild(document.createTextNode("#{__("Via Osmose")}"));
+				editWithOsmose.appendChild(document.createTextNode("#{__("With Osmose")}"));
 				dropdown.appendChild(editWithOsmose);
 			}
 
 			if(options.textnote) {
 				const editWithPdmNote = document.createElement("a");
 				editWithPdmNote.classList.add("dropdown-item");
-				editWithPdmNote.appendChild(document.createTextNode("#{__("Via une note de carte")}"));
+				editWithPdmNote.appendChild(document.createTextNode("#{__("With a map note")}"));
 				editWithPdmNote.addEventListener("click", onStartTextNote);
 				dropdown.appendChild(editWithPdmNote);
 			}
@@ -154,21 +154,21 @@ script.
 			editWithOSM.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithOSM.href = `#{CONFIG.OSM_URL}/${options.noteid || options.osmid || ""}#map=18/${lat}/${lng}`;
 			editWithOSM.target = "_blank";
-			editWithOSM.appendChild(document.createTextNode("#{__("Via OSM.org")}"));
+			editWithOSM.appendChild(document.createTextNode("#{__("With OSM.org")}"));
 			dropdown.appendChild(editWithOSM);
 
 			const editWithMapillary = document.createElement("a");
 			editWithMapillary.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithMapillary.href = `#{CONFIG.MAPILLARY_URL}/app/?lat=${lat}&lng=${lng}&z=18`;
 			editWithMapillary.target = "_blank";
-			editWithMapillary.appendChild(document.createTextNode("#{__("Via Mapillary")}"));
+			editWithMapillary.appendChild(document.createTextNode("#{__("With Mapillary")}"));
 			dropdown.appendChild(editWithMapillary);
 			
 			const editWithPanoramax = document.createElement("a");
 			editWithPanoramax.classList.add("dropdown-item", "d-none", "d-sm-block");
 			editWithPanoramax.href = `#{CONFIG.PANORAMAX_URL}/?focus=map&map=18/${lat}/${lng}`;
 			editWithPanoramax.target = "_blank";
-			editWithPanoramax.appendChild(document.createTextNode("#{__("Via Panoramax")}"));
+			editWithPanoramax.appendChild(document.createTextNode("#{__("With Panoramax")}"));
 			dropdown.appendChild(editWithPanoramax);
 
 			if(options.onExternalEdit) {

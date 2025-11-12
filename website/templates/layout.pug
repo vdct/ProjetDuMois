@@ -1,6 +1,6 @@
 //- Original template from https://getbootstrap.com/docs/4.5/examples/blog/
 doctype html
-html(lang="fr")
+html(lang="en")
 	head
 		include common/head.pug
 
@@ -14,9 +14,10 @@ html(lang="fr")
 			nav.navbar.navbar-light.sticky-top.navbar-pdm
 				div.container.d-flex.p-0.px-sm-3.align-items-center.justify-content-between
 					div.d-flex.align-items-center
-						a.mr-2(href="/" title=__("Accueil"))
+						a.mr-2(href="/" title=__("Home"))
 							img.d-none.d-md-inline-block(style="height: 40px" src="/images/favicon.png")
 							img.d-md-none(style="height: 40px" src="/images/logo_mini.png")
+							h1.d-md-none= CONFIG.WEBSITE_NAME
 						div.navbar-pdm-links.d-none.d-md-block
 							block navbar
 					+user_button

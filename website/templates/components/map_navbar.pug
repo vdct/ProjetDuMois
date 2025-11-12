@@ -2,10 +2,11 @@ nav.navbar.navbar-expand-sm.navbar-light.bg-light.d-flex.justify-content-between
 	div
 		button.btn.btn-outline-secondary.toggle-map-sidebar.mr-2
 			i.fa.fa-bars
-		a.navbar-brand.d-none.d-sm-inline-block.d-md-none(title=__("Retour à la page d'accueil") href="/")
-			img(src="/images/favicon.png" alt=__("Projet du mois OpenStreetMap"))
-		a.navbar-brand.d-none.d-md-inline-block(title=__("Retour à la page d'accueil") href="/")
-			img(src="/images/logo_mini.png" alt=__("Projet du mois"))
+		a.navbar-brand.d-none.d-sm-inline-block.d-md-none(title=__("Go back to homepage") href="/")
+			img(src="/images/favicon.png" alt="")
+		a.navbar-brand.d-none.d-md-inline-block(title=__("Go back to homepage") href="/")
+			img(src="/images/logo_mini.png" alt="")
+			h1= CONFIG.WEBSITE_NAME
 
 	include geocoder.pug
 

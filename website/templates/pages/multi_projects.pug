@@ -3,11 +3,11 @@ extends ../layout.pug
 
 block navbar
 	a(href="#others")
-		i.fa.fa-file-download(title=__("Les projets"))
-		span= __("Les projets")
+		i.fa.fa-file-download(title=__("Projects"))
+		span= __("Projects")
 	a(href="/about")
-		i.fa.fa-flag(title=__("À propos"))
-		span= __("À propos")
+		i.fa.fa-flag(title=__("About"))
+		span= __("About")
 
 
 block content
@@ -17,7 +17,7 @@ block content
 			div#summary.jumbotron.py-2.px-3.pb-3.p-md-5.mb-3.text-white.rounded.bg-dark.position-relative
 				img.position-absolute.pdm-project-badge(src=icon alt="" width="100")
 				div.col-8.px-0.pb-1
-					h1.font-italic= __("En ce moment : %s projets prioritaires", currentProjects.length)
+					h1.font-italic= __("Currently: %s prioritary projects", currentProjects.length)
 
 				div.row
 					each proj in currentProjects
@@ -34,9 +34,9 @@ block content
 		div.container.blog-post
 			h2.blog-post-title
 				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
-				| #{__("Tous nos projets")}
+				| #{__("All our projects")}
 
-			p= __("Retrouvez l'ensemble des projets du mois, leurs outils, statistiques et données.")
+			p= __("Find all projects, tools, statistics and data.")
 				div.row.align-items-center
 					each proj in otherProjects
 						div.col-md-6.col-lg-4.h-100

@@ -5,7 +5,7 @@ const tag2link = require('tag2link');
 function getFallbackStyle() {
 	return {
 		version: 8,
-		name: "Projet du mois.fr fallback style",
+		name: "Podoma fallback style",
 		sources: {
 			osm: {
 				type: "raster",
@@ -441,7 +441,7 @@ exports.getBadgesDetails = (projects, badgesRows) => {
 		if(!badges[row.project]) {
 			badges[row.project] = {
 				project: { name: projects[row.project].title, date: projects[row.project].month, image: projects[row.project].icon },
-				badges: [{ id: row.project.split("_").pop(), name: "A participé", description: "A participé au projet du mois", acquired: true, progress: 100 }]
+				badges: [{ id: row.project.split("_").pop(), name: "A participé", description: "A participé au projet", acquired: true, progress: 100 }]
 			};
 		}
 
@@ -452,7 +452,7 @@ exports.getBadgesDetails = (projects, badgesRows) => {
 
 	// Meta badges
 	if(Object.keys(badges).length - 1 === Object.keys(projects).length) {
-		badges.meta.badges.push({ id: "all", name: "Toujours là", description: "A participé à tous les projets du mois", acquired: true, progress: 100 });
+		badges.meta.badges.push({ id: "all", name: "Toujours là", description: "A participé à tous les projets", acquired: true, progress: 100 });
 	}
 	if(badges.meta.badges.length === 0) {
 		delete badges.meta;

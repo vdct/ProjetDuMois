@@ -33,7 +33,7 @@ script.
 	// Close note on OSM
 	function closeNote(p) {
 		if(window.osm_user && osmApi) {
-			osmApi.closeNote(p.id, "#{__("Marqué comme résolu dans le cadre du projet du mois (via projetdumois.fr)")}")
+			osmApi.closeNote(p.id, "#{__("Marked as solved during the project")}")
 			.then(() => {
 				const source = map.getSource(`notes_${p.pdm_note_source}`);
 				const notes = source._data;
@@ -43,7 +43,7 @@ script.
 				addContribution('add');
 			})
 			.catch(e => {
-				alert("#{__("Une erreur s'est produite lors de la modification de la note")}");
+				alert("#{__("An error occurred while editing the note")}");
 				console.error(e);
 			});
 		}
@@ -59,7 +59,7 @@ script.
 			map.setFilter(f.layer.id, ["!", ["in", ["get", "osm_id"], ["literal", filteredOsmIds]]]);
 		})
 		.catch(e => {
-			alert("#{__("Une erreur s'est produite lors de l'enregistrement, merci de réessayer plus tard")}");
+			alert("#{__("An error occured during upload, please try again later")}");
 			console.error(e);
 		});
 	}
@@ -72,7 +72,7 @@ script.
 
 			const label = document.createElement("label");
 			label.classList.add("m-0", "text-muted");
-			label.appendChild(document.createTextNode(rawTagsLabel || "#{__("Attributs")}"));
+			label.appendChild(document.createTextNode(rawTagsLabel || "#{__("Attributes")}"));
 			div.appendChild(label);
 
 			const tagsContainer = document.createElement("table");
@@ -154,7 +154,7 @@ script.
 							helpBadge = document.createElement("a");
 							helpBadge.className = "badge badge-pill text-light ml-2 bg-info";
 							helpBadge.href = field.help;
-							helpBadge.title = "#{__("Plus d'infos sur ce champ")}";
+							helpBadge.title = "#{__("More details about this field")}";
 							helpBadge.target = "_blank";
 							helpBadge.appendChild(document.createTextNode("?"));
 							title.appendChild(helpBadge);
@@ -167,10 +167,10 @@ script.
 							valueText = field.values.find(v => v.v === tags[field.tag]).l;
 						}
 						else if(field.type === "2states" && tags[field.tag] === "yes") {
-							valueText = "Oui";
+							valueText = "#{__("Yes")}";
 						}
 						else if(field.type === "3states" && ["yes", "no"].includes(tags[field.tag])) {
-							valueText = tags[field.tag] === "yes" ? "#{__("Oui")}" : "#{__("Non")}";
+							valueText = tags[field.tag] === "yes" ? "#{__("Yes")}" : "#{__("No")}";
 						}
 
 						const value = document.createElement("span");
@@ -268,7 +268,7 @@ script.
 			// Check if there are other tags to display as raw
 			const leftTags = Object.keys(tags).filter(t => !editorTags.includes(t));
 			if(leftTags.length > 0) {
-				getReadableTags(container, Object.fromEntries(Object.entries(tags).filter(e => leftTags.includes(e[0]))), "#{__("Autres attributs")}" );
+				getReadableTags(container, Object.fromEntries(Object.entries(tags).filter(e => leftTags.includes(e[0]))), "#{__("Other tags")}" );
 			}
 
 			if(toComplete.length > 0) {
@@ -276,7 +276,7 @@ script.
 
 				const title = document.createElement("span");
 				title.classList.add("text-muted", "d-block");
-				title.appendChild(document.createTextNode("#{__("Attributs à renseigner")}"));
+				title.appendChild(document.createTextNode("#{__("Tags to set")}"));
 				p.appendChild(title);
 
 				const value = document.createElement("ul");
@@ -326,7 +326,7 @@ script.
 			.then(res => res.json())
 			.then(meta => {
 				const labels = Object.assign({ name: meta.title.auto }, osmoseLabels[`${meta.item}_all`], osmoseLabels[`${meta.item}_${meta.class}`]);
-				const buttons = Object.assign({ done: "#{__("C'est fait")}", false: "#{__("Rien ici / déjà fait")}", add: "#{__("Intégrer cet objet")}" }, osmoseButtons[`${meta.item}_all`], osmoseButtons[`${meta.item}_${meta.class}`]);
+				const buttons = Object.assign({ done: "#{__("It's done")}", false: "#{__("Nothing here / Already done")}", add: "#{__("Integrate this feature")}" }, osmoseButtons[`${meta.item}_all`], osmoseButtons[`${meta.item}_${meta.class}`]);
 
 				let tags = [];
 				let tagsForEdit = {};
@@ -407,7 +407,7 @@ script.
 			const noteSource = notesSources[p.pdm_note_source];
 			const buttons = Object.assign({ close: "C'est fait" }, noteSource.buttons);
 			const cmts = typeof p.comments === "object" ? p.comments : JSON.parse(p.comments);
-			const notesStatuses = { "opened": "#{__("Ouvert")}", "closed": "#{__("Fermé")}", "reopened": "#{__("Réouvert")}", "commented": "#{__("Commentaire")}" };
+			const notesStatuses = { "opened": "#{__("Opened")}", "closed": "#{__("Closed")}", "reopened": "#{__("Re-opened")}", "commented": "#{__("Commented")}" };
 
 			resDiv.innerHTML = `
 				<h5>${noteSource.name}</h5>
@@ -463,7 +463,7 @@ script.
 			divButtonDone.appendChild(document.createTextNode("✔ "+buttons.close));
 			divButtonDone.addEventListener("click", () => closeNote(p));
 			const labelConnected = "Marquer cet élément comme \""+buttons.close+"\" si vous avez ajouté/corrigé le point dans OpenStreetMap";
-			const labelDisconnected = "#{__("Vous devez être connecté pour marquer la note comme résolue.")}";
+			const labelDisconnected = "#{__("You must be logged in to set the note as resolved.")}";
 			if(!window.osm_user) {
 				divButtonDone.setAttribute("disabled", "");
 				divButtonDone.title = labelDisconnected;
@@ -484,8 +484,8 @@ script.
 			const divButtonComment = document.createElement("a");
 			divButtonComment.classList.add("btn", "btn-secondary", "w-50");
 			divButtonComment.role = "button";
-			divButtonComment.appendChild(document.createTextNode("💬 Commenter"));
-			divButtonComment.title = "#{__("Participer à la discussion sur cette note")}";
+			divButtonComment.appendChild(document.createTextNode(`#{__("💬 Comment")}`);
+			divButtonComment.title = "#{__("Contribute to the discussion on this note")}";
 			divButtonComment.href = `#{CONFIG.OSM_URL}/note/${p.id}`;
 			divButtonComment.target = "_blank";
 
@@ -545,8 +545,8 @@ script.
 
 				const divButtonFalse = document.createElement("button");
 				divButtonFalse.classList.add("btn", "btn-warning", "btn-block", "mt-2");
-				divButtonFalse.appendChild(document.createTextNode("✘ #{__("Rien ici / déjà fait")}"));
-				divButtonFalse.title = "Marquer qu'il n'y a rien ici si vous n'avez pas vu de #{statistics.feature_name} sur le terrain";
+				divButtonFalse.appendChild(document.createTextNode("✘ #{__("Nothing here / Already done")}"));
+				divButtonFalse.title = "Mark as done here if you didn't see any #{statistics.feature_name} during survey";
 				divButtonFalse.addEventListener("click", e => ignoreOsmCompare(feature));
 				resDiv.appendChild(divButtonFalse);
 			}

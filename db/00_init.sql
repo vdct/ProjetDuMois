@@ -47,6 +47,7 @@ CREATE TABLE pdm_feature_counts(
 	label varchar,
 	amount INT NOT NULL,
 	len numeric not null,
+	area numeric not null,
 
 	CONSTRAINT pdm_feature_counts_unique UNIQUE NULLS NOT DISTINCT(project_id,ts,label)
 );
@@ -73,7 +74,8 @@ CREATE TABLE pdm_feature_counts_per_boundary(
 	label varchar,
 	amount INT NOT NULL,
 	len numeric not null,
-
+	area numeric not null,
+	
 	CONSTRAINT pdm_feature_counts_per_boundary_unique UNIQUE NULLS NOT DISTINCT(project_id, boundary, ts, label)
 );
 

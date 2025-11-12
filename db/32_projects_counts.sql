@@ -9,8 +9,8 @@ INSERT INTO pdm_features_counts_dates (ts) VALUES :dates_list;
 CREATE INDEX ON pdm_features_counts_dates using btree(ts);
 
 -- Main labels count
-INSERT INTO pdm_feature_counts (project_id, ts, label, amount, len)
-    SELECT :project_id as project_id, d.ts, fl.label as label, count(fc.osmid) as amount, sum(fc.geom_len) as len
+INSERT INTO pdm_feature_counts (project_id, ts, label, amount, len, area)
+    SELECT :project_id as project_id, d.ts, fl.label as label, count(fc.osmid) as amount, sum(fc.geom_len) as len, sum(fc.geom_area) as area
     FROM :changes_table fc
     JOIN pdm_features_counts_dates d
     ON d.ts BETWEEN fc.ts_start AND fc.ts_end
@@ -21,8 +21,8 @@ INSERT INTO pdm_feature_counts (project_id, ts, label, amount, len)
 ON CONFLICT (project_id, ts, label) DO UPDATE SET amount=EXCLUDED.amount, len=EXCLUDED.len;
 
 -- Main rollup count
-INSERT INTO pdm_feature_counts (project_id, ts, label, amount, len)
-    SELECT :project_id as project_id, d.ts, null as label, count(fc.osmid) as amount, sum(fc.geom_len) as len
+INSERT INTO pdm_feature_counts (project_id, ts, label, amount, len, area)
+    SELECT :project_id as project_id, d.ts, null as label, count(fc.osmid) as amount, sum(fc.geom_len) as len, sum(fc.geom_area) as area
     FROM :changes_table fc
     JOIN pdm_features_counts_dates d
     ON d.ts BETWEEN fc.ts_start AND fc.ts_end
@@ -32,8 +32,8 @@ INSERT INTO pdm_feature_counts (project_id, ts, label, amount, len)
 ON CONFLICT (project_id, ts, label) DO UPDATE SET amount=EXCLUDED.amount, len=EXCLUDED.len;
 
 -- Boundary labels count
-INSERT INTO pdm_feature_counts_per_boundary (project_id, boundary, ts, label, amount, len)
-    SELECT :project_id as project_id, fb.boundary, d.ts, fl.label as label, count(fc.osmid) as amount, sum(fc.geom_len) as len
+INSERT INTO pdm_feature_counts_per_boundary (project_id, boundary, ts, label, amount, len, area)
+    SELECT :project_id as project_id, fb.boundary, d.ts, fl.label as label, count(fc.osmid) as amount, sum(fc.geom_len) as len, sum(fc.geom_area) as area
     FROM :changes_table fc
     JOIN :boundary_table fb ON fb.osmid=fc.osmid AND fb.version=fc.version
     JOIN pdm_features_counts_dates d
@@ -45,8 +45,8 @@ INSERT INTO pdm_feature_counts_per_boundary (project_id, boundary, ts, label, am
  ON CONFLICT (project_id, boundary, ts, label) DO UPDATE SET amount=EXCLUDED.amount, len=EXCLUDED.len;
 
 -- Boundary rollup count
-INSERT INTO pdm_feature_counts_per_boundary (project_id, boundary, ts, label, amount, len)
-    SELECT :project_id as project_id, fb.boundary, d.ts, null as label, count(fc.osmid) as amount, sum(fc.geom_len) as len
+INSERT INTO pdm_feature_counts_per_boundary (project_id, boundary, ts, label, amount, len, area)
+    SELECT :project_id as project_id, fb.boundary, d.ts, null as label, count(fc.osmid) as amount, sum(fc.geom_len) as len, sum(fc.geom_area) as area
     FROM :changes_table fc
     JOIN :boundary_table fb ON fb.osmid=fc.osmid AND fb.version=fc.version
     JOIN pdm_features_counts_dates d

@@ -57,6 +57,7 @@ The general configuration of the tool is to be filled in `config.json`. There is
 - `NOMINATIM_URL`: instance of Nominatim to use (example `https://nominatim.openstreetmap.org`)
 - `MAPILLARY_URL`: Mapillary instance to use (example `https://www.mapillary.com`)
 - `MAPILLARY_API_KEY`: Mapillary API key ([could be created here](https://www.mapillary.com/dashboard/developers))
+- `PANORAMAX_URL` : Panoramax instance to use (example `https://api.panoramax.xyz`)
 - `MATOMO_HOST`: URL to the Matomo host you want to report analytics to, with trailing /. Remove to disable. (example `https://stats.home.com/`). 
 - `MATOMO_SITE`: ID of the Matomo website you want to report analytics (example `6`)
 - `REPOSITORY_URL`: URL of the software repository (example `https://github.com/vdct/Podoma`)
@@ -94,7 +95,7 @@ The properties in `info.json` are as follows:
 - `end_date`: end date of the mission (format YYYYY-MM-DD)
 - `soft_end_date`: end date of the _strong_ community animation period (format YYYYY-MM-DD). This is only informational, it doesn't affect backend processing.
 - `summary`: summary of the mission
-- `links`: definition of the URLs for links to third party pages (OSM wiki)
+- `links`: definition of the URLs for links to third party pages (OSM wiki, OSM forum or blog page) with this format "osmwiki|osmblog|osmforum": "projetdumois.fr"
 - `database.osmium_tag_filter` : Osmium filter on the tags to be applied to keep only the relevant OSM objects (for example `nwr/*:covid19`, [syntax described here](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). It is possible to list many filters using `&` character and same syntax.
 - `database.imposm`: configuration for importing updated OSM data (`types` for geometry types to be taken into account, `mapping` for attributes, see [the Imposm documentation](https://imposm.org/docs/imposm3/latest/mapping.html#tags) for the format of these fields)
 - `database.compare`: configuration for the search of OpenStreetMap objects to compare, follows the format of `database.imposm` with an additional property `radius` (reconciliation radius in meters)

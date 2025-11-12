@@ -57,6 +57,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
 - `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
 - `MAPILLARY_API_KEY`: clé d'API Mapillary ([peut être créée ici](https://www.mapillary.com/dashboard/developers))
+- `PANORAMAX_URL` : instance Panoramax à utiliser (exemple `https://explore.panoramax.fr`)
 - `MATOMO_HOST`: URL vers l'hôte Matomo auquel nous souhaitons envoyer les statistiques terminant par un /. Supprimez pour désactiver. (exemple `https://stats.maison.fr/`)
 - `MATOMO_SITE`: Identifiant du site web Matomo auquel se rapportent les statistiques (exemple `6`)
 - `REPOSITORY_URL` : URL du dépôt du logiciel (exemple `https://github.com/vdct/Podoma`)
@@ -94,7 +95,7 @@ Les propriétés dans `info.json` sont les suivantes :
 - `end_date` : date de fin de la mission (format AAAA-MM-JJ)
 - `soft_end_date`: date de fin de la période de _forte_ animation communautaire (format AAAA-MM-JJ). Donnée purement à titre informatif, n'affecte pas le traitement des données.
 - `summary` : résumé de la mission
-- `links` : définition des URL pour les liens vers des pages tierces (wiki OSM)
+- `links` : définition des URL pour les liens vers des pages tierces (wiki OSM, forum OSM ou page de blog) avec ce format "osmwiki|osmblog|osmforum": "projetdumois.fr"
 - `database.osmium_tag_filter` : filtre Osmium sur les tags à appliquer pour ne conserver que les objets OSM pertinents (par exemple `nwr/*:covid19`, [syntaxe décrite ici](https://osmcode.org/osmium-tool/manual.html#filtering-by-tags)). Il est possible d'enchaîner plusieurs filtres par & et en répétant l'indication de primitive à chaque niveau. L'opérateur != n'est pour l'instant pas pris en compte.
 - `database.imposm` : configuration pour l'import des données actualisées d'OSM (`types` pour les types de géométrie à prendre en compte, `mapping` pour les attributs, voir [la documentation Imposm](https://imposm.org/docs/imposm3/latest/mapping.html#tags) pour le format de ces champs)
 - `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)

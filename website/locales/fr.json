@@ -122,5 +122,9 @@
 	"Homepage | Discover current projects": "Accueil | Découvrir les projets en cours",
 	"Next to come: %s": "Prochainement : %s",
 	"This project will start on %s, but it's never too soon to start! You can already improve data using our tools or improve the documentation.": "Ce project va débuter le %s, mais il n'est jamais trop tôt pour se lancer ! Vous pouvez dès à présent améliorer les données à l'aide de nos outils et documentations.",
-	"Progress statistics will be shown at project start on %s.": "Les statistiques de progression seront affichées au démarrage du projet le %s."
+	"Progress statistics will be shown at project start on %s.": "Les statistiques de progression seront affichées au démarrage du projet le %s.",
+	"Blog article": "Article de blog",
+	"All the data produced before, during and after the project are available at the following addresses:": "Toutes les données produites avant, pendant et après le projet sont disponibles aux adresses suivantes :",
+	"I don't know": "Je ne sais pas",
+	"With Panoramax": "Via Panoramax"
 }

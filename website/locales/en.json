@@ -122,5 +122,9 @@
 	"Homepage | Discover current projects": "Homepage | Discover current projects",
 	"Next to come: %s": "Next to come: %s",
 	"This project will start on %s, but it's never too soon to start! You can already improve data using our tools or improve the documentation.": "This project will start on %s, but it's never too soon to start! You can already improve data using our tools or improve the documentation.",
-	"Progress statistics will be shown at project start on %s.": "Progress statistics will be shown at project start on %s."
+	"Progress statistics will be shown at project start on %s.": "Progress statistics will be shown at project start on %s.",
+	"Blog article": "Blog article",
+	"All the data produced before, during and after the project are available at the following addresses:": "All the data produced before, during and after the project are available at the following addresses:",
+	"I don't know": "I don't know",
+	"With Panoramax": "With Panoramax"
 }

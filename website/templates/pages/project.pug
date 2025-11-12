@@ -130,7 +130,7 @@ block content
 				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
 				| #{__("Data")}
 			if !isNext && opendata && opendata.length > 0
-				p= __("All the data produced before, during and after the project of the month are available at the following addresses:")
+				p= __("All the data produced before, during and after the project are available at the following addresses:")
 				ul
 					each datalink in opendata
 						li: a(href=datalink.url)

@@ -41,6 +41,10 @@ git submodule update --init
 
 The general configuration of the tool is to be filled in `config.json`. There is a suggested model in the `config.example.json` file. The parameters are as follows:
 
+- `WEBSITE_NAME`: website displayable name
+- `WEBSITE_MOTTO`: website displayable short description
+- `WEBSITE_URL`: front-end URL (for SEO)
+- `WEBSITE_DESCRIPTION`: website description (for SEO)
 - `OSM_USER`: OpenStreetMap username for retrieving the modification history with metadata
 - `OSM_PASS`: password associated with the OSM user account
 - `OSM_CLIENT_ID` : client ID associated with the OSM account

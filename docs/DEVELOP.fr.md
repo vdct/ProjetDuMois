@@ -41,6 +41,10 @@ git submodule update --init
 
 La configuration générale de l'outil est à renseigner dans `config.json`. Un modèle est proposé dans le fichier `config.example.json`. Les paramètres sont les suivants :
 
+- `WEBSITE_NAME`: nom visible du site web
+- `WEBSITE_MOTTO`: slogan visible du site web
+- `WEBSITE_URL`: adresse du site web (pour le SEO)
+- `WEBSITE_DESCRIPTION`: description du site web (pour le SEO)
 - `OSM_USER` : nom d'utilisateur OpenStreetMap pour la récupération de l'historique des modifications avec métadonnées
 - `OSM_PASS` : mot de passe associé au compte utilisateur OSM
 - `OSM_CLIENT_ID` : client ID généré depuis le compte OpenStreetMap

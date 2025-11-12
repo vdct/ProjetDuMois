@@ -130,9 +130,9 @@ A project can be configured without end date, with `end_date: null`, to enable e
 - 5th case: A recently began project with an end date in the future, on which daily diffs updates are applicable until current date.
 - 6th case: A project to began in the future, which doesn't require any processing currently.
 
-### Features counts
+### Counting
 
-Features counts are done over change log fed by update and filtered by each project's own configuration. Counting features is enabled with the help of `statistics.count` flag.  
+Features and contributors counts are done over change log fed by update and filtered by each project's own configuration. Counting features is enabled with the help of `statistics.count` flag.  
 Computing suh statistics not only requires existence dates of each version but their validity regarding the project's filter as well.
 
 Each possible configuration can be summarised in this chart: 
@@ -145,8 +145,22 @@ Dates on which features are counted are selected by the processing script follow
 
 Running the count script each day will lead to 364 values at the end of a complete year.
 
-W currently support the following counts:
+#### Features counting
+
+The following counts are currently supported:
 - Total amount of features that valides the project's filter on a given date.
+- Ways length when some get selected by each project's filter
+- Area surface when some get selected by each project's filter
+
+#### Contributors counting
+
+The following counts are currently supported:
+- Total amount of contributors involved by features version in project's change log
+- Amount of contributors involved on features versions on a 24 hours time window
+- Amount of contributors involved on features versions on a 30 days time window
+
+The total amount of contributors should not be understood as the total amount of contributors involved since OSM beginning on project's perimeter.  
+Actually, we only select existing versions at the beginning of the project. It avoid contributors involved on completely deleted objects and previous versions.
 
 ### Filtering features
 

@@ -428,20 +428,34 @@ app.get("/projects/:name/stats", (req, res) => {
     }
   }
 
-  // Fetch user statistics from DB
+  // Fetch mappers count
   allPromises.push(
     pool
-      .query(`SELECT * FROM pdm_leaderboard WHERE project = $1 ORDER BY pos`, [
-        req.params.name,
+      .query(`SELECT * FROM pdm_mapper_counts WHERE project_id = $1 ORDER BY ts DESC limit 1`, [
+        p.id,
       ])
       .then((results) => ({
-        nbContributors: results.rows.length,
-        leaderboard: osmUserAuthentified ? results.rows.map(r => {
-          r.username = r.username.replace("%20%", " ");
-          return r;
-        }) : null,
+        nbContributors: results.rows[0].amount,
+        nbContributors_1d: results.rows[0].amount_1d,
+        nbContributors_30d: results.rows[0].amount_30d
       })),
   );
+
+  // Fetch user statistics from DB
+  if (osmUserAuthentified){
+    allPromises.push(
+      pool
+        .query(`SELECT * FROM pdm_leaderboard WHERE project = $1 ORDER BY pos`, [
+          req.params.name,
+        ])
+        .then((results) => ({
+          leaderboard: results.rows.map(r => {
+            r.username = r.username.replace("%20%", " ");
+            return r;
+          }),
+        })),
+    );
+  }
 
   // Fetch last count update time
   allPromises.push(
@@ -675,7 +689,7 @@ app.get("/projects/:name/mappers", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, label, amount_1d, amount_30d
+			SELECT ts, label, amount, amount_1d, amount_30d
 			FROM pdm_mapper_counts
 			WHERE project_id = $1
 			ORDER BY ts ASC
@@ -688,10 +702,11 @@ app.get("/projects/:name/mappers", (req, res) => {
               acc[row.ts] = { t: row.ts, labels: {} };
             }
             if (row.label == null) {
+              acc[row.ts].amount = row.amount;
               acc[row.ts].amount_1d = row.amount_1d;
               acc[row.ts].amount_30d = row.amount_30d;
             } else {
-              acc[row.ts].labels[row.label] = { amount_1d: row.amount_1d, amount_30d: row.amount_30d };
+              acc[row.ts].labels[row.label] = { amount: row.amount, amount_1d: row.amount_1d, amount_30d: row.amount_30d };
             }
             return acc;
           }, {});
@@ -748,7 +763,7 @@ app.get("/projects/:name/mappers/boundary/:boundary", (req, res) => {
       pool
         .query(
           `
-			SELECT ts, label, amount_1d, amount_30d
+			SELECT ts, label, amount, amount_1d, amount_30d
 			FROM pdm_mapper_counts_per_boundary
 			WHERE project_id = $1 AND boundary = $2
 			ORDER BY ts ASC
@@ -761,10 +776,11 @@ app.get("/projects/:name/mappers/boundary/:boundary", (req, res) => {
               acc[row.ts] = { t: row.ts, labels: {} };
             }
             if (row.label == null) {
+              acc[row.ts].amount = row.amount;
               acc[row.ts].amount_1d = row.amount_1d;
               acc[row.ts].amount_30d = row.amount_30d;
             } else {
-              acc[row.ts].labels[row.label] = { amount_1d: row.amount_1d, amount_30d: row.amount_30d };
+              acc[row.ts].labels[row.label] = { amount: row.amount, amount_1d: row.amount_1d, amount_30d: row.amount_30d };
             }
             return acc;
           }, {});

@@ -130,9 +130,9 @@ Un projet peut ne pas avoir de date de fin, en utilisant `end_date: null` dans s
 - Cas 5 : un projet commencé récemment et se terminant dans le futur, régulièrement mis à jour et éligible à la mise à jour via les fichiers diffs.
 - Cas 6 : un projet non commencé, n'entrainant pour l'instant aucun traitement.
 
-### Dénombrement des objets
+### Dénombrements
 
-Le dénombrement des objets est opéré sur le journal des modifications de chaque objet sélectionné par le filtre du projet. Il est activé via le drapeau `statistics.count` dans la configuration du projet.  
+Le dénombrement des objets et des contributeurs est opéré sur le journal des modifications de chaque objet sélectionné par le filtre du projet. Il est activé via le drapeau `statistics.count` dans la configuration du projet.  
 Ces opérations nécessitent non seulement de connaître les dates d'existence de chaque version mais aussi l'adhérence de chacune au filtre du projet.  
 
 Il est possible de résumer les différentes configurations et leurs effets selon le schéma suivant :
@@ -146,8 +146,22 @@ Ces dates sont sélectionnées selon les hypothèses suivantes :
 
 En exécutant le script de calcul chaque jour, on obtiendra donc 364 valeurs à la fin d'une année complète de traitement.
 
+#### Dénombrement des objets
+
 Les dénombrements suivants sont réalisés de manière systématique :
 - Nombre d'objets existants et validant le filtre du projet à une date donnée
+- Longueur des chemins lorsque certains sont sélectionnés dans le filtre du projet
+- Surface des chemins fermés lorsque certains sont selectionnés dans le filtre du projet
+
+#### Dénombrement des contributeurs
+
+Les dénombrements de contributeurs sont réalisés de manière systématique :
+- Le nombre total de contributeurs aux versions sélectionnées par le filtre du projet
+- Le nombre de contributeurs étant intervenus sur des versions sélectionnées par le filtre du projet sur une fenêtre glissante de 24 heures
+- Le nombre de contributeurs étant intervenus sur des versions sélectionnées par le filtre du projet sur une fenêtre glissante de 30 jours
+
+Il convient d'indiquer que le nombre total de contributeurs ne doit pas être interprété comme le nombre d'utilisateurs ayant contribué depuis le début d'OSM sur le sujet concerné par le projet.  
+En effet, seules les versions actives au début du projet sont sélectionnées, masquant ainsi les contributeurs ayant contribué sur des objets complètement supprimés ou sur de précédentes version.
 
 ### Filtrer les objets
 

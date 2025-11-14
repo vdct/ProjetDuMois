@@ -23,6 +23,7 @@ script.
 		let buttonIcon = document.createElement("span");
 		buttonIcon.classList.add("d-inline-block", "container-svg-fa");
 		buttonIcon.style.height = options.mini ? "24px" : "30px";
+		buttonIcon.style.width = options.mini ? "24px" : "30px";
 		const iconName = { "add": "map-marker-plus", "edit": "map-marker-edit", "info": "map-marker-info" };
 		buttonIcon.appendChild(document.getElementById(iconName[mode]).firstChild.cloneNode(true));
 

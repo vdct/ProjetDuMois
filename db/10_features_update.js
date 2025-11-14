@@ -122,7 +122,7 @@ Object.entries(projects).forEach(e => {
 });
 
 if (IMPOSM_ENABLED){
-	fs.writeFile(IMPOSM_YML_FS, yaml.safeDump(yamlData), err => {
+	fs.writeFile(IMPOSM_YML_FS, yaml.dump(yamlData), err => {
 		if(err) {
 			throw new Error(err);
 		}

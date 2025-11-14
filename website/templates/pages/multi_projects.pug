@@ -3,7 +3,7 @@ extends ../layout.pug
 
 block navbar
 	a(href="#others")
-		i.fa.fa-file-download(title=__("Projects"))
+		i.fa.fa-file-arrow-down(title=__("Projects"))
 		span= __("Projects")
 	a(href="/about")
 		i.fa.fa-flag(title=__("About"))
@@ -33,7 +33,7 @@ block content
 	div.container-fluid.pb-5
 		div.container.blog-post
 			h2.blog-post-title
-				i.fa.fa-file-download.mr-2(style="font-size: 2.1rem")
+				i.fa.fa-file-arrow-down.mr-2(style="font-size: 2.1rem")
 				| #{__("All our projects")}
 
 			p= __("Find all projects, tools, statistics and data.")

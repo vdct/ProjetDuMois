@@ -484,7 +484,7 @@ script.
 			const divButtonComment = document.createElement("a");
 			divButtonComment.classList.add("btn", "btn-secondary", "w-50");
 			divButtonComment.role = "button";
-			divButtonComment.appendChild(document.createTextNode(`#{__("💬 Comment")}`);
+			divButtonComment.appendChild(document.createTextNode(`#{__("💬 Comment")}`));
 			divButtonComment.title = "#{__("Contribute to the discussion on this note")}";
 			divButtonComment.href = `#{CONFIG.OSM_URL}/note/${p.id}`;
 			divButtonComment.target = "_blank";
@@ -520,7 +520,6 @@ script.
 				<div class="alert alert-info">${osmSource.description}</div>`;
 
 			getReadableTags(resDiv, tags);
-			createPicturesCarousel(resDiv, searchPicturesInOSMTags(tags), { classes: "mb-1" });
 
 			createFeatureButton(resDiv, "edit", "btn-block mt-2 dropup", {
 				osmid: p.osm_id,

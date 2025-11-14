@@ -53,7 +53,7 @@
 	"Edit location": "Modifier la position",
 	"Send info to OpenStreetMap": "Envoyer les infos à OpenStreetMap",
 	"Go back to map without sending to OpenStreetMap": "Retourner à la carte sans envoyer à OpenStreetMap",
-	"Cancel": "Annumer",
+	"Cancel": "Annuler",
 	"The creation of notes is reserved for ambiguous cases. If the situation is obvious, prefer another editing mode.": "La création de notes de carte est à réserver aux cas ambigus, si la situation est claire préférez un autre mode d'édition.",
 	"Comment": "Commenter",
 	"Send map comment to OpenStreetMap": "Envoyer le commentaire de carte sur OpenStreetMap",
@@ -126,5 +126,10 @@
 	"Blog article": "Article de blog",
 	"All the data produced before, during and after the project are available at the following addresses:": "Toutes les données produites avant, pendant et après le projet sont disponibles aux adresses suivantes :",
 	"I don't know": "Je ne sais pas",
-	"With Panoramax": "Via Panoramax"
+	"With Panoramax": "Via Panoramax",
+	"OpenStreetMap profile": "Profil OpenStreetMap",
+	"Contact": "Contact",
+	"changesets": "groupes de modifications",
+	"Registered on OSM on": "Inscription sur OSM le",
+	"participations": "participations"
 }

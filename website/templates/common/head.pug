@@ -16,14 +16,15 @@ link(rel="icon" href="/images/favicon.png")
 //- CSS
 link(rel="stylesheet" type="text/css" href="/lib/bootstrap/bootstrap.css")
 link(rel="stylesheet" type="text/css" href="/lib/maplibre-gl/maplibre-gl.css")
-link(rel="stylesheet" type="text/css" href="/lib/chart.js/chart.css")
 link(rel="stylesheet" type="text/css" href="/lib/fontawesome/css/all.min.css")
 style
 	include ../style.css
 
 //- JS
 script(src="/lib/bootstrap.native/bootstrap.js")
+script(src="/lib/moment/moment.js")
 script(src="/lib/chart.js/chart.js")
+script(src="/lib/chartjs-adapter-moment/chartjs-adapter-moment.js")
 script(src="/lib/osm-auth/osmauth.js")
 script(src="/lib/osm-request/osmrequest.js")
 
@@ -45,8 +46,6 @@ if CONFIG
 			})();
 
 	script.
-		Chart.defaults.global.defaultFontSize = 15;
-
 		const conf = {
 		  scope: "read_prefs write_api write_notes openid",
 		  client_id: "#{CONFIG.OSM_CLIENT_ID}",
@@ -68,7 +67,7 @@ if CONFIG
 		  scope: conf.scope,
 		};
 
-		const auth = osmAuth.osmAuth(authOpts);
+		const auth = osmAuth(authOpts);
 		let authWait;
 
 		const params = new URLSearchParams((window.location.search || "?").substring(1));

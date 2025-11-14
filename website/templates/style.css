@@ -124,9 +124,6 @@ a.dropdown-item:not([href]):hover {
 		font-size: 35px;
 		border-radius: 45px;
 	}
-	.btn-floating .fa {
-	display: block;
-	}
 }
 
 .dropdown-menu {

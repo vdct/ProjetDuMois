@@ -350,6 +350,7 @@ Des couches raster peuvent être ajoutées en fond de carte pour faciliter la co
 - `tileSize` (défaut 256) : Taille d'une arrête de tuile en pixels
 
 Ces sources doivent être déclarées dans l'ordre inverse d'apparition. La couche inférieure doit être donnée en premier.
+Les urls des fonds raster sont disponibles sur ce dépôt https://github.com/osmlab/editor-layer-index
 
 #### Sources stats
 

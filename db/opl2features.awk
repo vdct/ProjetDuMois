@@ -54,6 +54,9 @@ BEGIN {
     if (length(output_members) > 0){
         printf "" >> output_members
     }
+    if (length(output_users) > 0){
+        printf "" >> output_users
+    }
 }
 
 {
@@ -101,12 +104,20 @@ BEGIN {
             N = substr($9, 2);
             n=split(N, Nlist, /,/)
             for (j=1 ; j<=n ; j++){
-                printf "%s/%s,%s/%s,%s,%s\n",
+                printf "%s/%s,%s/%s,%s,%s,\n",
                     features[substr(Nlist[j], 1, 1)], substr(Nlist[j], 2), features[f], fi, v, j >> output_members
             }
         }
     } else if (f == "r"){
-        
+        if (a != "delete" && length(output_members) > 0){
+            M = substr($9, 2);
+            n=split(M, Mlist, /,/)
+            for (j=1 ; j<=n ; j++){
+                split(Mlist[j], member, /@/)
+                printf "%s/%s,%s/%s,%s,,%s\n",
+                    features[substr(member[1], 1, 1)], substr(member[1], 2), features[f], fi, v, member[2] >> output_members
+            }
+        }
     }
 
     n=split(T, tag_pairs, /,/);
@@ -145,7 +156,13 @@ BEGIN {
         }
     }
 
+    # Construction de la sortie contributeurs
+    if (length(output_users) > 0){
+        printf "%s,%s\n",
+           u, w >> output_users
+    }
+
     # Construction de la sortie CSV principale
-    printf "%s/%s,%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
-           features[f], fi, v, cs, a, c, t, w, u, tagsjson, g, tagfilter_r >> output_main
+    printf "%s/%s,%s,%s,%s,%s,%s,%s,\"{%s}\",%s,%s\n",
+           features[f], fi, v, cs, a, c, t, w, tagsjson, g, tagfilter_r >> output_main
 }

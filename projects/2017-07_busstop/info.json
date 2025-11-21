@@ -38,9 +38,15 @@
 		{
 			"source": "background",
 			"tiles": "mapillary",
-			"name": "Photos de rue",
+			"name": "Photos de rue (Mapillary)",
 			"icon": "picture"
-		  },
+		},
+		{
+			"source": "background",
+			"tiles": "panoramax",
+			"name": "Photos de rue (Panoramax)",
+			"icon": "picture"
+		},
 		{
 			"source": "background",
 			"tiles": ["https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM_0_19&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"],

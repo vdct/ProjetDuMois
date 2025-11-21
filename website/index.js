@@ -1043,6 +1043,10 @@ const authorized = {
     "mapillary.js": "dist/mapillary.js",
     "mapillary.css": "dist/mapillary.css",
   },
+  "@panoramax/web-viewer": {
+    "photoviewer.js": "build/photoviewer.js",
+    "photoviewer.css": "build/photoviewer.css",
+  },
   "moment": {
     "moment.js": "moment.js"
   },
@@ -1055,6 +1059,16 @@ const authorized = {
 app.get("/lib/:modname/:file", (req, res) => {
   if (!req.params.modname || !req.params.file) {
     return res.status(400).send("Missing parameters");
+  } else if (
+    req.params.modname.startsWith("@")
+  ) {
+    req.params.modname = req.params.modname.replace("_", "/");
+    if(
+      !authorized[req.params.modname] ||
+      !authorized[req.params.modname][req.params.file]
+    ) {
+      return res.status(404).send("File not found");
+    }
   } else if (
     !authorized[req.params.modname] ||
     !authorized[req.params.modname][req.params.file]
@@ -1083,6 +1097,13 @@ app.use(
   "/lib/fontawesome",
   express.static(
     path.join(__dirname, "../node_modules/@fortawesome/fontawesome-free"),
+  ),
+);
+
+app.use(
+  "/lib/@panoramax_web-viewer/static/",
+  express.static(
+    path.join(__dirname, "../node_modules/@panoramax/web-viewer/build/static"),
   ),
 );
 

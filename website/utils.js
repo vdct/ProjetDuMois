@@ -140,8 +140,8 @@ exports.getMapStyle = (p) => {
 						"source-layer": "image",
 						paint: {
 							"circle-color": "rgb(53, 175, 109)",
-							"circle-radius": ["interpolate", ["linear"], ["zoom"], 14, 2, 16, 6],
-							"circle-opacity": ["interpolate", ["linear"], ["zoom"], 14, 0, 15, ["case", ["all",
+							"circle-radius": ["interpolate", ["linear"], ["zoom"], 15, 2, 17, 6],
+							"circle-opacity": ["interpolate", ["linear"], ["zoom"], 15, 0, 15.3, ["case", ["all",
 								[">=", ["get","captured_at"], Date.now()-3*365*24*60*60*1000],
 								[">=", ["get", "quality_score"], 3]],
 							1, 0]]
@@ -150,6 +150,29 @@ exports.getMapStyle = (p) => {
 					});
 
 					legend.push({ media: "raster", color: "rgb(53, 175, 109)", label: ds.name, layerId: id, icon: ds.icon });
+				}
+				else if(ds.tiles === "panoramax") {
+					sources[id].tiles = [ CONFIG.PANORAMAX_URL+"/api/map/{z}/{x}/{y}.mvt" ];
+					sources[id].type = "vector";
+					sources[id].minzoom = 15;
+					sources[id].maxzoom = 15;
+
+					layers.push({
+						id: id,
+						source: id,
+						"source-layer": "pictures",
+						type: "circle",
+						paint: {
+							"circle-color": "#4527A0",
+							"circle-radius": ["interpolate", ["linear"], ["zoom"], 15, 2, 17, 6],
+							"circle-opacity": ["interpolate", ["linear"], ["zoom"], 15, 0, 15.3, 1],
+							"circle-stroke-color": "#ffffff",
+							"circle-stroke-width": ["interpolate", ["linear"], ["zoom"], 15, 0, 17, 2]
+						},
+						layout: { visibility: "none" }
+					});
+
+					legend.push({ media: "raster", color: "#4527A0", label: ds.name, layerId: id, icon: ds.icon });
 				}
 				else {
 					sources[id].type = "raster";

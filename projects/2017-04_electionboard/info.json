@@ -45,7 +45,13 @@
 		{
 			"source": "background",
 			"tiles": "mapillary",
-			"name": "Photos de rue",
+			"name": "Photos de rue (Mapillary)",
+			"icon": "picture"
+		},
+		{
+			"source": "background",
+			"tiles": "panoramax",
+			"name": "Photos de rue (Panoramax)",
 			"icon": "picture"
 		},
 		{ "source": "stats" }

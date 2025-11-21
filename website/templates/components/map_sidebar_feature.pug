@@ -606,6 +606,54 @@ script.
 			resDiv.appendChild(mlyDiv);
 			resDiv.appendChild(fullscreenBtn);
 		}
+		// Panoramax pictures
+		else if(s.startsWith("background_") && p.sequences) {
+			const pnxDiv = document.createElement("pnx-photo-viewer");
+			pnxDiv.style.height = '350px';
+			pnxDiv.style.width = '100%';
+			pnxDiv.style.border = 'none';
+			pnxDiv.style.position = 'relative';
+			pnxDiv.style.overflow = 'hidden';
+			pnxDiv.setAttribute("widgets", false);
+			pnxDiv.setAttribute("keyboard-shortcuts", false);
+			pnxDiv.setAttribute("url-parameters", false);
+			pnxDiv.setAttribute("endpoint", "#{CONFIG.PANORAMAX_URL}/api");
+			pnxDiv.setAttribute("sequence", JSON.parse(p.sequences)[0]);
+			pnxDiv.setAttribute("picture", p.id);
+
+			// Legend
+			const pnxLegend = document.createElement("pnx-widget-legend");
+			pnxLegend.setAttribute("focus", "pic");
+			pnxLegend.setAttribute("picture", p.id);
+			pnxLegend.setAttribute("light", "");
+			pnxLegend.setAttribute("slot", "bottom-right");
+			pnxDiv.appendChild(pnxLegend);
+
+			// Picture load event
+			const onPicLoad = e => showMarker([e.detail.lon, e.detail.lat]);
+			pnxDiv.addEventListener("psv:picture-loaded", onPicLoad);
+			pnxDiv.addEventListener("psv:picture-loading", onPicLoad);
+
+			// Fullscreen button
+			const fullscreenBtn = document.createElement("button");
+			fullscreenBtn.innerHTML = '<i class="fa fa-expand"></i>';
+			fullscreenBtn.addEventListener("click", () => {
+				if(document.fullscreenElement === pnxDiv) {
+					pnxDiv.exitFullscreen();
+				}
+				else {
+					pnxDiv.requestFullscreen();
+				}
+			});
+			fullscreenBtn.style.position = "absolute";
+			fullscreenBtn.style.top = "5px";
+			fullscreenBtn.style.right = "5px";
+			fullscreenBtn.classList.add("pnx-full-btn");
+
+			resDiv.style.position = "relative";
+			resDiv.appendChild(pnxDiv);
+			resDiv.appendChild(fullscreenBtn);
+		}
 		else {
 			resDiv.innerHTML = "<ul>"+Object.entries(p).map(e => "<li>"+e.join(" : ")+"</li>").join("")+"</ul>";
 		}

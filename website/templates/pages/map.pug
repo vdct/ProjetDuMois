@@ -6,12 +6,14 @@ html(lang="en")
 
 		//- Map specific styles
 		link(rel="stylesheet" type="text/css" href="/lib/mapillary-js/mapillary.css")
+		link(rel="stylesheet" type="text/css" href="/lib/@panoramax_web-viewer/photoviewer.css")
 
 		//- Map specific libraries
 		script(src="/lib/maplibre-gl/maplibre-gl.js")
 		script(src="/lib/swiped-events/swiped-events.js")
 		script(src="/turf.js")
 		script(src="/lib/mapillary-js/mapillary.js")
+		script(src="/lib/@panoramax_web-viewer/photoviewer.js")
 		script.
 			const booleanContains = turf.default;
 		include ../components/pictures.pug

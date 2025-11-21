@@ -3,19 +3,6 @@
 ANALYSE pdm_user_names;
 ANALYSE :features_table;
 
-WITH unknown_users AS (
-  SELECT DISTINCT f.userid, f.username
-  FROM :features_table f
-  LEFT JOIN pdm_user_names un ON un.userid=f.userid
-  WHERE f.ts BETWEEN :start_date AND :end_date
-    AND f.userid IS NOT NULL
-    AND tagsfilter
-    AND un.username IS NULL
-)
-INSERT INTO pdm_user_names
-SELECT u.userid, u.username
-FROM unknown_users u;
-
 -- Establishing user contributions in every running project
 DELETE FROM pdm_user_contribs WHERE project_id=:project_id AND ts >= :start_date;
 

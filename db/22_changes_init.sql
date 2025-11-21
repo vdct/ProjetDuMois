@@ -4,7 +4,6 @@ CREATE TABLE :features_table (
 	version INT NOT NULL,
 	ts TIMESTAMP NOT NULL,
 	changeset bigint,
-	username VARCHAR,
 	userid BIGINT,
 	tags JSONB,
 	geom geometry default null,
@@ -18,7 +17,8 @@ CREATE TABLE :members_table (
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,
 	memberid VARCHAR NOT NULL,
-	pos int not null
+	pos int null,
+	role varchar null
 );
 
 DROP MATERIALIZED VIEW IF EXISTS :changes_table;
@@ -29,7 +29,6 @@ CREATE MATERIALIZED VIEW :changes_table as
 	changeset,
     ts as ts_start,
 	LEAD(ts) OVER (PARTITION BY osmid ORDER BY version) AS ts_end,
-    username,
     userid,
     tags,
     action,
@@ -37,7 +36,7 @@ CREATE MATERIALIZED VIEW :changes_table as
     tagsfilter,
     geom,
     CASE when geom is not null then St_Length(geom::geography) else 0 end as geom_len,
-	CASE when geom is not null and ST_IsClosed(geom) then St_Area(geom::geography) else 0 end as geom_area
+	CASE when geom is not null and ST_IsClosed(geom) and St_geometrytype(geom) != 'ST_Point' then St_Area(ST_buildarea(geom)::geography) else 0 end as geom_area
     FROM :features_table
 	WHERE action!='delete';
 

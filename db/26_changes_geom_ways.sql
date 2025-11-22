@@ -7,7 +7,7 @@ with nodes as (
     ts as ts_start,
     LEAD(ts) OVER (PARTITION BY osmid ORDER BY version) AS ts_end,
     geom
-    FROM :features_table
+    FROM :features_perm_table
 	WHERE osmid like 'n%' and action != 'delete'
 ), list as (
 	select f.osmid osmid, f.version version, n.geom geom
@@ -21,4 +21,4 @@ with nodes as (
 	from list
 	group by osmid, version
 )
-update :features_table f set geom=ways.geom from ways where f.osmid=ways.osmid and f.version=ways.version;
+update :features_perm_table f set geom=ways.geom from ways where f.osmid=ways.osmid and f.version=ways.version;

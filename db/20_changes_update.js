@@ -25,7 +25,7 @@ const pgPool = new Pool({
     connectionString: `${process.env.DB_URL}`
 });
 
-function macroChangesCsv (mode, project, oplProject, csvFeatures, csvUsers, csvMembers = null, start_ts = null, end_ts = null){
+function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures, csvUsers, csvMembers = null, start_ts = null, end_ts = null){
     const slug = project.name.split("_").pop();
     const features_table = `pdm_features_${slug}`;
     const members_table = `pdm_members_${slug}`;
@@ -79,8 +79,8 @@ function macroChangesCsv (mode, project, oplProject, csvFeatures, csvUsers, csvM
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Accumulate changes table in database"
         ${PSQL} -c "DELETE FROM ${features_table} WHERE ts BETWEEN '${start_ts}' AND '${end_ts}'"
 
-        ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${features_table}_tmp (LIKE ${features_table})"
-        ${PSQL} -c "TRUNCATE TABLE ${features_table}_tmp"
+        ${PSQL} -c "DROP TABLE IF EXISTS ${features_table}_tmp"
+        ${PSQL} -c "CREATE TABLE ${features_table}_tmp (LIKE ${features_table})"
 
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
         ${PSQL} -c "\\COPY ${features_table}_tmp (osmid, version, changeset, action, contrib, ts, userid, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
@@ -104,8 +104,8 @@ function macroChangesCsv (mode, project, oplProject, csvFeatures, csvUsers, csvM
         if (csvMembers != null){
             script += `
             echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy members"
-            ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${members_table}_tmp (LIKE ${members_table})"
-            ${PSQL} -c "TRUNCATE TABLE ${members_table}_tmp"
+            ${PSQL} -c "DROP TABLE IF EXISTS ${members_table}_tmp"
+            ${PSQL} -c "CREATE TABLE ${members_table}_tmp (LIKE ${members_table})"
             ${PSQL} -c "\\COPY ${members_table}_tmp (memberid, osmid, version, pos, role) FROM '${csvMembers}' CSV"
 
             ${PSQL} -v members_table="${members_table}" -v members_table_tmp="${members_table}_tmp" -f "${__dirname}/25_changes_members.sql"
@@ -115,13 +115,21 @@ function macroChangesCsv (mode, project, oplProject, csvFeatures, csvUsers, csvM
     }
 
     if (csvMembers != null){
+        // Features members are only available in features_table and can't only rely on features_table_tmp
+        let features_table_geom = features_table;
+        if (mode == "update"){
+            features_table_geom = `${features_table}_tmp`
+        }
         script += `
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Building geometries of ways"
-        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v start_date="'${start_ts}'" -f "${__dirname}/26_changes_geom_ways.sql"
-
-        echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Building geometries of relations"
-        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v start_date="'${start_ts}'" -f "${__dirname}/26_changes_geom_rels.sql"
+        ${PSQL} -v features_table="${features_table_geom}" -v features_perm_table="${features_table}" -v members_table="${members_table}" -v start_date="'${start_ts}'" -f "${__dirname}/26_changes_geom_ways.sql"
         `;
+        if (filterFeatures.indexOf("r") > -1){
+            script += `
+            echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Building geometries of relations"
+            ${PSQL} -v features_table="${features_table_geom}" -v features_perm_table="${features_table}" -v members_table="${members_table}" -v start_date="'${start_ts}'" -f "${__dirname}/26_changes_geom_rels.sql"
+            `;
+        }
     }
 
     script += `
@@ -129,15 +137,26 @@ function macroChangesCsv (mode, project, oplProject, csvFeatures, csvUsers, csvM
     ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
 
     echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Process usernames"
-    ${PSQL} -c "CREATE TABLE IF NOT EXISTS ${features_table}_users (LIKE pdm_user_names)"
-    ${PSQL} -c "TRUNCATE TABLE ${features_table}_users"
+    ${PSQL} -c "DROP TABLE IF EXISTS ${features_table}_users"
+    ${PSQL} -c "CREATE TABLE ${features_table}_users (LIKE pdm_user_names)"
     ${PSQL} -c "\\COPY ${features_table}_users (username, userid) FROM '${csvUsers}' CSV"
     ${PSQL} -c "INSERT INTO pdm_user_names SELECT * FROM ${features_table}_users ON CONFLICT DO NOTHING"
     ${PSQL} -c "DROP TABLE ${features_table}_users"
 
     if ${HAS_BOUNDARY}; then
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Populate boundaries"
-        ${PSQL} -v features_table="${features_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary.sql"
+        `;
+        // It needs updated geometry in features_table to run and can't only rely on features_table_tmp
+        if (mode == "update"){
+            script += `
+            ${PSQL} -v features_table="${features_table}" -v features_table_tmp="${features_table}_tmp" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary_partial.sql"
+            `;
+        }else{
+            script += `
+            ${PSQL} -v features_table="${features_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary.sql"
+            `;
+        }
+        script += `
     fi
 
     if [ -f "${__dirname}/../projects/${project.name}/contribs.sql" ]; then
@@ -213,6 +232,7 @@ var script = `#!/bin/bash
 
 set -e
 mode="$1"
+keep="$2"
 if [[ -z "$mode" ]]; then
     mode="update"
 fi
@@ -381,7 +401,7 @@ Object.values(projects).forEach(project => {
         osmium getid ${getIdOptions} "\$history_osh" -I "${oshProjectTags}" -f opl,history=true -o "${oplProject}"
         rm -f "${csvFeatures}" "${csvMembers}" "${oshProjectTags}"
 
-        ${macroChangesCsv ("init", project, oplProject, csvFeatures, csvUsers, csvMembers, "\$process_start_ts", "\$process_end_tss")}
+        ${macroChangesCsv ("init", project, tagFilterFeatures, oplProject, csvFeatures, csvUsers, csvMembers, "\$process_start_ts", "\$process_end_tss")}
 
         ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${process_end_ts}', counts_lastupdate_date=NULL WHERE project_id=${project.id}"
         echo "== [\$((\$(date -d now +%s) - \$process_start_t0))s] Project ${project.name} initied. Errors may have occured upside."
@@ -391,8 +411,10 @@ Object.values(projects).forEach(project => {
 });
 
 script += `
-    echo "== Removing temp files"
-    rm -f ${CONFIG.WORK_DIR}/*.osh.pbf
+    if [[ "\$keep" = "keep" ]]; then
+        echo "== Removing temp files"
+        rm -f ${CONFIG.WORK_DIR}/*.osh.pbf
+    fi
 ${separator}
 fi
 
@@ -557,7 +579,7 @@ Object.values(projects).forEach(project => {
             fi
             rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}"
 
-            ${macroChangesCsv ("update", project, oplProject, csvFeatures, csvUsers, csvMembers, "\$project_start_ts", "\$project_end_ts")}
+            ${macroChangesCsv ("update", project, tagFilterFeatures, oplProject, csvFeatures, csvUsers, csvMembers, "\$project_start_ts", "\$project_end_ts")}
 
             ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${project_end_ts}' WHERE project_id=${project.id}"
             echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Project update successful"
@@ -568,8 +590,10 @@ Object.values(projects).forEach(project => {
 });
 
 script += `
-    echo "== Removing temp files"
-    rm -f ${CONFIG.WORK_DIR}/*.osc.*
+    if [[ "\$keep" = "keep" ]]; then
+        echo "== Removing temp files"
+        rm -f ${CONFIG.WORK_DIR}/*.osc.*
+    fi
 fi
 `;
 

@@ -7,7 +7,7 @@ with members as (
     ts as ts_start,
     LEAD(ts) OVER (PARTITION BY osmid ORDER BY version) AS ts_end,
     geom
-    FROM :features_table
+    FROM :features_perm_table
 	WHERE action != 'delete'
 ), list as (
 	select f.osmid osmid, f.version version, m.geom geom
@@ -22,4 +22,4 @@ with members as (
 	group by osmid, version
 	having NOT bool_or(geom is null)
 )
-update :features_table f set geom=rels.geom from rels where f.osmid=rels.osmid and f.version=rels.version;
+update :features_perm_table f set geom=rels.geom from rels where f.osmid=rels.osmid and f.version=rels.version;

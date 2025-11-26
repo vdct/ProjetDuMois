@@ -16,14 +16,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/vdct/ProjetDuMois.git"
+    "url": "git+https://github.com/osm-fr/podoma.git"
   },
   "author": "Podoma",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/vdct/ProjetDuMois/issues"
+    "url": "https://github.com/osm-fr/podoma/issues"
   },
-  "homepage": "https://github.com/vdct/ProjetDuMois",
+  "homepage": "https://github.com/osm-fr/podoma",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
     "@panoramax/web-viewer": "^4.2.0",

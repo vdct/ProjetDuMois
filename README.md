@@ -21,12 +21,12 @@ __🧭 TL;DR__ : Podoma = OpenStreetMap + Thematic Stats + Open Community ❤️
 Podoma is **free and open source**, built by a passionate community of volunteers.
 You can help make it better by:
 
-* 💬 [Sharing feedback or feature requests](https://github.com/vdct/ProjetDuMois/issues) — in English or French
+* 💬 [Sharing feedback or feature requests](https://github.com/osm-fr/podoma/issues) — in English or French
 * 🧑‍💻 [Contributing code or documentation](DEVELOP.md) — for new features or bug fixes
 
 We embrace the [Digital Principles for Development](https://digitalprinciples.org/): our website and tools are built **for humans**.
 
-> While making proposals, please refer to [our personas](https://github.com/vdct/ProjetDuMois/issues/66) *(available in French only).*
+> While making proposals, please refer to [our personas](https://github.com/osm-fr/podoma/issues/66) *(available in French only).*
 
 ![Persona Example](/website/images/personna_h.png)
 
@@ -51,7 +51,7 @@ Podoma powers several OSM-related initiatives across the community:
 ## 📬 Contact
 
 Questions, ideas, or collaboration proposals?
-→ Open an [issue](https://github.com/vdct/ProjetDuMois/issues) or start a discussion on our GitHub page!
+→ Open an [issue](https://github.com/osm-fr/podoma/issues) or start a discussion on our GitHub page!
 
 ## 🧾 License
 

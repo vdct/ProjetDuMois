@@ -57,6 +57,7 @@ The general configuration of the tool is to be filled in `config.json`. There is
 - `OSM_URL`: OpenStreetMap instance to use (example `https://www.openstreetmap.org`)
 - `OSM_API_URL` : API OpenStreetMap instance to use (example `https://www.api.openstreetmap.org`)
 - `JOSM_REMOTE_URL`: address of the JOSM server to reach (example `http://localhost:8111`)
+- `OVERPASS_URL`: URL towards the interpreter of an Overpass-API instance to be used for missing members retrieval
 - `OSMOSE_URL`: Osmose instance to use (example `https://osmose.openstreetmap.fr`)
 - `NOMINATIM_URL`: instance of Nominatim to use (example `https://nominatim.openstreetmap.org`)
 - `MAPILLARY_URL`: Mapillary instance to use (example `https://www.mapillary.com`)
@@ -202,6 +203,17 @@ psql -d postgresql://... -v features_table="pdm_features_project" -v labels_tabl
 ```
 
 Then, the `update_projects` should be inited again to propagate the new labels into counts and KPI.
+
+#### Missing members
+As explained upside, Podoma uses the daily diffs to keep projects updated. Those diffs files only contain modified features and even if a way or a relation may be included in it, none of their members will be mentioned is they hadn't been edited themselves.  
+It can finally causes issues when some unknown features in the database are rferenced by ways or relations.
+
+Podoma only keeps track of useful features for projects, it needs to check after each update if unknown features should be retrieved.  
+Overpass API is used by projects which require to get such missing members. A single query is sent to retrieve all nodes, ways, relations and their descendents to take care of recursivity. Thus a query covering 10 missing features can lead to a greater amount of results.
+
+Those features are then processed the same way than the ones we got from daily diffs files. This process complete the temporary files without any particularism.
+
+To disable this retrieval, just set a null `OVERPASS_URL` in your Podoma configuration file.
 
 ### Disable imposm3 usage
 

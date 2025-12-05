@@ -8,6 +8,8 @@ CREATE INDEX ON :features_table (userid);
 CREATE INDEX ON :features_table using gist(geom);
 CREATE INDEX ON :features_table using gin(tags);
 
+CREATE INDEX ON :update_table using gist(geom);
+
 CREATE INDEX ON :members_table (osmid, version, memberid, pos);
 CREATE INDEX ON :members_table (osmid, version);
 CREATE INDEX ON :members_table (memberid);

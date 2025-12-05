@@ -1,12 +1,12 @@
 -- Insert unknown changes in main table
 \timing
-CREATE INDEX ON :features_table_tmp using btree(osmid, version);
+CREATE INDEX ON :update_table using btree(osmid, version);
 
 WITH unknown AS (
-	SELECT tmp.*
-	FROM :features_table_tmp tmp
-	LEFT JOIN :features_table pc ON pc.osmid=tmp.osmid AND pc.version=tmp.version
-	WHERE pc.osmid IS NULL
+	SELECT fu.*
+	FROM :update_table fu
+	LEFT JOIN :features_table f ON f.osmid=fu.osmid AND f.version=fu.version
+	WHERE f.osmid IS NULL
 )
 INSERT INTO :features_table
 SELECT u.*

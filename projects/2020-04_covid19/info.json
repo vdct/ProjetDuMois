@@ -33,8 +33,9 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "lieux",
-		"points": { "add_covid": 3, "edit_covid": 1 }
+		"points": { "edit-in": 3, "edit_covid": 1 }
 	},
 	"editors": {
 		"all": {

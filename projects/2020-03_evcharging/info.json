@@ -46,6 +46,7 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "bornes de recharge",
 		"osmose_tasks": "bornes officielles intégrées",
 		"points": { "add": 3, "edit": 1 }

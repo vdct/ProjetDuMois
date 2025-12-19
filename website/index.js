@@ -45,9 +45,197 @@ const i18n = new I18n({
 });
 
 /*
- * Init API
+ * Promises factories
  */
 
+function promises_lastUpdate(project_id){
+  return pool
+    .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project_id = $1`, [
+      project_id,
+    ])
+    .then((results) => ({
+      lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
+    }));
+}
+
+function promises_featureCounts (project, boundary){
+  let allPromises = [];
+
+  if (project.statistics.count) {
+    let qryParams = [project.id];
+    let table = "pdm_feature_counts"
+    let boundaryWhere = "";
+    if (boundary != null){
+      table = "pdm_feature_counts_per_boundary"
+      boundaryWhere = " AND boundary = $2"
+      qryParams = [project.id, boundary]
+    }
+
+    allPromises.push(
+      pool
+        .query(
+          `
+			SELECT ts, label, amount, len, area
+			FROM ${table}
+			WHERE project_id = $1 ${boundaryWhere}
+			ORDER BY ts ASC
+		`,
+          qryParams
+        )
+        .then((results) => {
+          const records = results.rows.reduce((acc, row) => {
+            if (!acc[row.ts]) {
+              acc[row.ts] = { x: row.ts, labels: {} };
+            }
+            if (row.label == null) {
+              acc[row.ts].amount = row.amount;
+              acc[row.ts].length = row.len;
+              acc[row.ts].area = row.area;
+            } else {
+              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len, area: row.area };
+            }
+            return acc;
+          }, {});
+
+          return { data: Object.values(records) };
+        }),
+    );
+  }
+
+  // Fetch last count update time
+  allPromises.push(promises_lastUpdate(project.id));
+
+  return allPromises;
+}
+
+function promises_featureContribs (project, team, user){
+  let allPromises = [];
+
+  if (project.statistics.count) {
+    let qryParams = [project.id];
+    let filterWhere = "uc.project_id = $1";
+    let teamJoin = "";
+    if (team != null){
+      teamJoin = "JOIN pdm_projects_teams pt ON pt.project_id=uc.project_id AND pt.userid=uc.userid";
+      filterWhere += " AND pt.team = $2"
+      qryParams = [project.id, team]
+    }else if (user != null){
+      filterWhere += " AND uc.userid = $2"
+      qryParams = [project.id, user]
+    }
+
+    allPromises.push(
+      pool
+        .query(
+          `
+          SELECT uc.ts, uc.label, SUM(uc.amount_delta) as amount_delta, SUM(uc.len_delta) as len_delta, SUM(uc.area_delta) as area_delta, SUM(uc.points) as points
+          FROM pdm_user_contribs uc
+          ${teamJoin}
+          WHERE ${filterWhere}
+          GROUP BY uc.ts, uc.label
+          ORDER BY uc.ts, uc.label ASC
+        `,
+          qryParams
+        )
+        .then((results) => {
+          const records = results.rows.reduce((acc, row) => {
+            if (!acc[row.ts]) {
+              acc[row.ts] = { x: row.ts, labels: {} };
+            }
+            if (row.label == null) {
+              acc[row.ts].amount_delta = row.amount_delta;
+              acc[row.ts].length_delta = row.len_delta;
+              acc[row.ts].area_delta = row.area_delta;
+              acc[row.ts].points = row.points;
+            } else {
+              acc[row.ts].labels[row.label] = { amount_delta: row.amount_delta, length_delta: row.len_delta, area_delta: row.area_delta, points: row.points };
+            }
+            return acc;
+          }, {});
+
+          return { data: Object.values(records) };
+        }),
+    );
+  }
+
+  // Fetch last count update time
+  allPromises.push(promises_lastUpdate(project.id));
+
+  return allPromises;
+}
+
+function promises_mappersCounts (project, boundary){
+  let allPromises = [];
+
+  if (project.statistics.count) {
+    let qryParams = [project.id];
+    let table = "pdm_mapper_counts"
+    let boundaryWhere = "";
+    if (boundary != null){
+      table = "pdm_mapper_counts_per_boundary"
+      boundaryWhere = " AND boundary = $2"
+      qryParams = [project.id, boundary]
+    }
+
+    allPromises.push(
+      pool
+        .query(
+          `
+			SELECT ts, label, amount, amount_1d, amount_30d
+			FROM ${table}
+			WHERE project_id = $1 ${boundaryWhere}
+			ORDER BY ts ASC
+		`,
+          qryParams
+        )
+        .then((results) => {
+          const records = results.rows.reduce((acc, row) => {
+            if (!acc[row.ts]) {
+              acc[row.ts] = { x: row.ts, labels: {} };
+            }
+            if (row.label == null) {
+              acc[row.ts].amount = row.amount;
+              acc[row.ts].amount_1d = row.amount_1d;
+              acc[row.ts].amount_30d = row.amount_30d;
+            } else {
+              acc[row.ts].labels[row.label] = { amount: row.amount, amount_1d: row.amount_1d, amount_30d: row.amount_30d };
+            }
+            return acc;
+          }, {});
+
+          return { data: Object.values(records) };
+        })
+    );
+  }
+
+  // Fetch last count update time
+  allPromises.push(promises_lastUpdate(project.id));
+
+  return allPromises;
+}
+
+function processPromises (res) {
+    function p(results){
+      let toSend = {};
+      if (typeof results == "object" && results != null) {
+        results.forEach((r) => {
+          if (r != null && r.status === "fulfilled") {
+            Object.entries(r.value).forEach((e) => {
+              toSend[e[0]] = e[1];
+            });
+          }else if (r != null && r.status === "rejected"){
+            console.error(`Promise rejected: ${r.reason}`);
+          }
+        });
+      }
+      res.send(toSend);
+    }
+    return p;
+  }
+
+/*
+ * Init API
+ */
 const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors());
@@ -531,68 +719,9 @@ app.get("/projects/:name/counts", (req, res) => {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.name];
-  const allPromises = [];
+  const allPromises = promises_featureCounts (projects[req.params.name], null);
 
-  // Fetch feature counts
-  if (p.statistics.count) {
-    allPromises.push(
-      pool
-        .query(
-          `
-			SELECT ts, label, amount, len, area
-			FROM pdm_feature_counts
-			WHERE project_id = $1
-			ORDER BY ts ASC
-		`,
-          [p.id]
-        )
-        .then((results) => {
-          const records = results.rows.reduce((acc, row) => {
-            if (!acc[row.ts]) {
-              acc[row.ts] = { x: row.ts, labels: {} };
-            }
-            if (row.label == null) {
-              acc[row.ts].amount = row.amount;
-              acc[row.ts].length = row.len;
-              acc[row.ts].area = row.area;
-            } else {
-              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len, area: row.area };
-            }
-            return acc;
-          }, {});
-
-          return { data: Object.values(records) };
-        })
-    );
-  }
-
-  // Fetch last count update time
-  allPromises.push(
-    pool
-      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
-        req.params.name,
-      ])
-      .then((results) => ({
-        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
-      })),
-  );
-
-  Promise.allSettled(allPromises).then((results) => {
-    let toSend = {};
-    if (typeof results == "object" && results != null) {
-      results.forEach((r) => {
-        if (r != null && r.status === "fulfilled") {
-          Object.entries(r.value).forEach((e) => {
-            toSend[e[0]] = e[1];
-          });
-        }else if (r != null && r.status === "rejected"){
-          console.error(`Promise rejected: ${r.reason}`);
-        }
-      });
-    }
-    res.send(toSend);
-  });
+  Promise.allSettled(allPromises).then(processPromises(res));
 });
 
 // Feature counts per boundary
@@ -605,68 +734,54 @@ app.get("/projects/:name/counts/boundary/:boundary", (req, res) => {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.name];
-  const allPromises = [];
+  const allPromises = promises_featureCounts(projects[req.params.name], req.params.boundary);
 
-  // Fetch feature counts
-  if (p.statistics.count) {
-    allPromises.push(
-      pool
-        .query(
-          `
-			SELECT ts, label, amount, len, area
-			FROM pdm_feature_counts_per_boundary
-			WHERE project_id = $1 AND boundary = $2
-			ORDER BY ts ASC
-		`,
-          [p.id, req.params.boundary]
-        )
-        .then((results) => {
-          const records = results.rows.reduce((acc, row) => {
-            if (!acc[row.ts]) {
-              acc[row.ts] = { x: row.ts, labels: {} };
-            }
-            if (row.label == null) {
-              acc[row.ts].amount = row.amount;
-              acc[row.ts].length = row.len;
-              acc[row.ts].area = row.area;
-            } else {
-              acc[row.ts].labels[row.label] = { amount: row.amount, length: row.len, area: row.area };
-            }
-            return acc;
-          }, {});
+  Promise.allSettled(allPromises).then(processPromises(res));
+});
 
-          return { data: Object.values(records) };
-        }),
-    );
+// Feature contribution
+app.get("/projects/:name/contrib", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
   }
 
-  // Fetch last count update time
-  allPromises.push(
-    pool
-      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
-        req.params.name,
-      ])
-      .then((results) => ({
-        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
-      })),
-  );
+  if (!req.params.name || !projects[req.params.name]) {
+    return res.redirect("/error/404");
+  }
 
-  Promise.allSettled(allPromises).then((results) => {
-    let toSend = {};
-    if (typeof results == "object" && results != null) {
-      results.forEach((r) => {
-        if (r != null && r.status === "fulfilled") {
-          Object.entries(r.value).forEach((e) => {
-            toSend[e[0]] = e[1];
-          });
-        }else if (r != null && r.status === "rejected"){
-          console.error(`Promise rejected: ${r.reason}`);
-        }
-      });
-    }
-    res.send(toSend);
-  });
+  const allPromises = promises_featureContribs (projects[req.params.name], null, null);
+
+  Promise.allSettled(allPromises).then(processPromises(res));
+});
+
+// Feature contribution for a team
+app.get("/projects/:name/contrib/team/:team", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
+  }
+
+  if (!req.params.name || !projects[req.params.name]) {
+    return res.redirect("/error/404");
+  }
+
+  const allPromises = promises_featureContribs (projects[req.params.name], req.params.team, null);
+
+  Promise.allSettled(allPromises).then(processPromises(res));
+});
+
+// Feature contribution for a mapper
+app.get("/projects/:name/contrib/mapper/:user", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
+  }
+
+  if (!req.params.name || !projects[req.params.name]) {
+    return res.redirect("/error/404");
+  }
+
+  const allPromises = promises_featureContribs (projects[req.params.name], null, req.params.user);
+
+  Promise.allSettled(allPromises).then(processPromises(res));
 });
 
 // Mappers counts
@@ -679,68 +794,9 @@ app.get("/projects/:name/mappers", (req, res) => {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.name];
-  const allPromises = [];
+  const allPromises = promises_mappersCounts (projects[req.params.name], null);
 
-  // Fetch mappers counts
-  if (p.statistics.count) {
-    allPromises.push(
-      pool
-        .query(
-          `
-			SELECT ts, label, amount, amount_1d, amount_30d
-			FROM pdm_mapper_counts
-			WHERE project_id = $1
-			ORDER BY ts ASC
-		`,
-          [p.id]
-        )
-        .then((results) => {
-          const records = results.rows.reduce((acc, row) => {
-            if (!acc[row.ts]) {
-              acc[row.ts] = { x: row.ts, labels: {} };
-            }
-            if (row.label == null) {
-              acc[row.ts].amount = row.amount;
-              acc[row.ts].amount_1d = row.amount_1d;
-              acc[row.ts].amount_30d = row.amount_30d;
-            } else {
-              acc[row.ts].labels[row.label] = { amount: row.amount, amount_1d: row.amount_1d, amount_30d: row.amount_30d };
-            }
-            return acc;
-          }, {});
-
-          return { data: Object.values(records) };
-        })
-    );
-  }
-
-  // Fetch last count update time
-  allPromises.push(
-    pool
-      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
-        req.params.name,
-      ])
-      .then((results) => ({
-        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
-      })),
-  );
-
-  Promise.allSettled(allPromises).then((results) => {
-    let toSend = {};
-    if (typeof results == "object" && results != null) {
-      results.forEach((r) => {
-        if (r != null && r.status === "fulfilled") {
-          Object.entries(r.value).forEach((e) => {
-            toSend[e[0]] = e[1];
-          });
-        }else if (r != null && r.status === "rejected"){
-          console.error(`Promise rejected: ${r.reason}`);
-        }
-      });
-    }
-    res.send(toSend);
-  });
+  Promise.allSettled(allPromises).then(processPromises(res));
 });
 
 // Mapper counts per boundary
@@ -753,21 +809,36 @@ app.get("/projects/:name/mappers/boundary/:boundary", (req, res) => {
     return res.redirect("/error/404");
   }
 
-  const p = projects[req.params.name];
-  const allPromises = [];
+  const allPromises = promises_mappersCounts (projects[req.params.name], req.params.boundary);
 
-  // Fetch mappers counts
-  if (p.statistics.count) {
+  Promise.allSettled(allPromises).then(processPromises(res));
+});
+
+// Mapper counts for a team
+app.get("/projects/:name/mappers/team/:team", (req, res) => {
+  if (CONFIG.MAINTENANCE_MODE === true) {
+    return res.redirect("/");
+  }
+
+  if (!req.params.name || !projects[req.params.name] || !req.params.boundary) {
+    return res.redirect("/error/404");
+  }
+
+  const allPromises = [];
+  const project = projects[req.params.name];
+  if (project.statistics.count) {
     allPromises.push(
       pool
         .query(
           `
-			SELECT ts, label, amount, amount_1d, amount_30d
-			FROM pdm_mapper_counts_per_boundary
-			WHERE project_id = $1 AND boundary = $2
-			ORDER BY ts ASC
-		`,
-          [p.id, req.params.boundary]
+          SELECT uc.ts, uc.label, count(distinct uc.userid) as mappers_period, count(distinct uc.userid) over (partition by project_id, label order by ts) as mappers
+          FROM pdm_user_contribs uc
+          JOIN pdm_projects_teams pt ON pt.project_id=uc.project_id AND pt.userid=uc.userid
+          WHERE uc.project_id = $1 AND pt.team = $2
+          GROUP BY uc.ts, uc.label
+          ORDER BY uc.ts, uc.label ASC
+          `,
+          [project.id, req.params.team]
         )
         .then((results) => {
           const records = results.rows.reduce((acc, row) => {
@@ -775,46 +846,23 @@ app.get("/projects/:name/mappers/boundary/:boundary", (req, res) => {
               acc[row.ts] = { x: row.ts, labels: {} };
             }
             if (row.label == null) {
-              acc[row.ts].amount = row.amount;
-              acc[row.ts].amount_1d = row.amount_1d;
-              acc[row.ts].amount_30d = row.amount_30d;
+              acc[row.ts].amount = row.mappers;
+              acc[row.ts].amount_period = row.mappers_period;
             } else {
-              acc[row.ts].labels[row.label] = { amount: row.amount, amount_1d: row.amount_1d, amount_30d: row.amount_30d };
+              acc[row.ts].labels[row.label] = { amount: row.mappers, amount_period: row.mappers_period };
             }
             return acc;
           }, {});
 
           return { data: Object.values(records) };
-        }),
+        })
     );
   }
 
   // Fetch last count update time
-  allPromises.push(
-    pool
-      .query(`SELECT counts_lastupdate_date FROM pdm_projects WHERE project = $1`, [
-        req.params.name,
-      ])
-      .then((results) => ({
-        lastUpdate: results.rows?.length > 0 && results.rows[0].counts_lastupdate_date,
-      })),
-  );
+  allPromises.push(promises_lastUpdate(project.id));
 
-  Promise.allSettled(allPromises).then((results) => {
-    let toSend = {};
-    if (typeof results == "object" && results != null) {
-      results.forEach((r) => {
-        if (r != null && r.status === "fulfilled") {
-          Object.entries(r.value).forEach((e) => {
-            toSend[e[0]] = e[1];
-          });
-        }else if (r != null && r.status === "rejected"){
-          console.error(`Promise rejected: ${r.reason}`);
-        }
-      });
-    }
-    res.send(toSend);
-  });
+  Promise.allSettled(allPromises).then(processPromises(res));
 });
 
 // User contributions

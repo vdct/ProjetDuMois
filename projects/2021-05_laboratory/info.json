@@ -66,6 +66,7 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "laboratoires",
 		"osmose_tasks": "laboratoires officiels intégrés",
 		"points": { "add": 3, "edit": 1, "note": 1 }

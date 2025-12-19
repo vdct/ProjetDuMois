@@ -105,11 +105,14 @@ Les propriétés dans `info.json` sont les suivantes :
 - `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
 - `database.labels` : Objet de définition d'étiquettes attribuées aux versions d'objets en fonction de leurs tags. Chaque étiquette est associée au path JSON utilisé par la fonction [jsonb_path_exists](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE) utilisée sur la chaine de tags. Exemple `"labels":{"etiquette1":"$ ? (@.substation==\"transmission\")"}` pour attribuer `etiquette1` à tous les objets portant le tags `substation=transmission`. Voir ci-dessous à propos du filtrage
 - `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
+- `teams` : liste d'équipes utiles à la construction des statistiques et définies par leur nom correspondant à un tableau de noms d'utilisateurs OSM.
 - `statistics` : configuration de l'affichage des statistiques sur la page du projet
 - `statistics.count` : activer le comptage des objets du projet
+- `statistics.length` : activer les mesures de longueurs et de surface des objets du projet. Oblige à réinitialiser le projet en cas de changement.
 - `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
 - `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
-- `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
+- `statistics.points` : configuration des points obtenus selon la contribution au projet (en lien avec `contribs.sql`). `{"add":1, "edit":2}`
+- `statistics.points_labels` : configuration des points obtenus selon la contribution sur un label précis (en lien avec `contribs.sql`). `{"label1": {"add":1, "edit":2}}`
 - `editors` : configuration spécifique à chaque éditeur OSM. Pour Podoma, les informations sont disponibles ci-dessous. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Temporalité des projets
@@ -129,39 +132,6 @@ Un projet peut ne pas avoir de date de fin, en utilisant `end_date: null` dans s
 - Cas 4 : un projet ancien se terminant dans le futur, qui utilisera donc les données OSH puis les diffs journaliers jusqu'à la date courante.
 - Cas 5 : un projet commencé récemment et se terminant dans le futur, régulièrement mis à jour et éligible à la mise à jour via les fichiers diffs.
 - Cas 6 : un projet non commencé, n'entrainant pour l'instant aucun traitement.
-
-### Dénombrements
-
-Le dénombrement des objets et des contributeurs est opéré sur le journal des modifications de chaque objet sélectionné par le filtre du projet. Il est activé via le drapeau `statistics.count` dans la configuration du projet.  
-Ces opérations nécessitent non seulement de connaître les dates d'existence de chaque version mais aussi l'adhérence de chacune au filtre du projet.  
-
-Il est possible de résumer les différentes configurations et leurs effets selon le schéma suivant :
-![Dénombrements au fil du temps](./projects_counts.svg)
-Certains objets ont une vie complexe et peuvent perdre et retrouver une validité dans le projet à plusieurs reprises.
-
-La plateforme établit elle-même les dates des décomptes à chaque fois que le script est executé par rapport à la date de dernière mise à jour des décomptes de chaque projet.  
-Ces dates sont sélectionnées selon les hypothèses suivantes :
-- Tous les jours à minuit jusqu'à la date de dernière mise à jour des décomptes ou du début du mois en cours
-- Chaque premier de chaque mois jusqu'à la date de dernière mise à jour des décomptes ou le début du projet
-
-En exécutant le script de calcul chaque jour, on obtiendra donc 364 valeurs à la fin d'une année complète de traitement.
-
-#### Dénombrement des objets
-
-Les dénombrements suivants sont réalisés de manière systématique :
-- Nombre d'objets existants et validant le filtre du projet à une date donnée
-- Longueur des chemins lorsque certains sont sélectionnés dans le filtre du projet
-- Surface des chemins fermés lorsque certains sont selectionnés dans le filtre du projet
-
-#### Dénombrement des contributeurs
-
-Les dénombrements de contributeurs sont réalisés de manière systématique :
-- Le nombre total de contributeurs aux versions sélectionnées par le filtre du projet
-- Le nombre de contributeurs étant intervenus sur des versions sélectionnées par le filtre du projet sur une fenêtre glissante de 24 heures
-- Le nombre de contributeurs étant intervenus sur des versions sélectionnées par le filtre du projet sur une fenêtre glissante de 30 jours
-
-Il convient d'indiquer que le nombre total de contributeurs ne doit pas être interprété comme le nombre d'utilisateurs ayant contribué depuis le début d'OSM sur le sujet concerné par le projet.  
-En effet, seules les versions actives au début du projet sont sélectionnées, masquant ainsi les contributeurs ayant contribué sur des objets complètement supprimés ou sur de précédentes version.
 
 ### Filtrer les objets
 
@@ -189,80 +159,127 @@ La syntaxe qui permet de les définir est basée sur le [SQL/JSON de Postgresql]
   "label2":"$ ? (@.\"char:key\" == \"value\")",
   "label3":"$ ? (@.numeric_key < 20000)",
   "label4":"$.numeric_array_key ? (@ < 20000)",
-  "label5":"$ ? (@.numeric_array_key[*] > 10000 && @.char_key != \"value\")"
+  "label5":"$ ? (@.numeric_array_key[*] > 10000 && @.char_key != \"value\")",
+  "label6":"$ ? (@.numeric_array_key[*] > 10000 && !exists(@.char_key_unknown))"
 }
 ```
 
 L'attribution des étiquettes est réalisé durant la phase `update_changes`. Seule une réinitialisation de cette phase permet de réviser naturellement la population de versions concernée par une modification des définitions.  
-Toutefois, il est possible manuellement de supprimer puis attribuer à nouveau une étiquette `label1` donnée, par les trois commandes suivantes :
+Toutefois, il est possible manuellement de supprimer puis attribuer à nouveau une étiquette `label1` donnée, par les quatre commandes suivantes :
 
 ```bash
 psql -d postgresql://... -c "DELETE FROM pdm_features_project_labels WHERE label='label1'"
 psql -d postgresql://... -v features_table="pdm_features_project" -v labels_table="pdm_features_project_labels" -v label="'label1'" -v labelfilter="'... new label filer ...'" -f "db/27_changes_labels.sql"
+psql -d postgresql://... -v features_table="pdm_features_project" -v labels_table="pdm_features_project_labels" -f "db/27_changes_labels_contrib.sql"
 ```
 
 La phase `update_projects` devra ensuite être réinitialisée à son tour pour prendre en compte les nouveaux dénombrements.
 
-### Se passer d'imposm3
+#### Qualification des contributions
 
-Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.
-Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
+Podoma met en place une qualificiation des contributions plus fine à partir des 3 catégories du format [OsmChange](https://wiki.openstreetmap.org/wiki/OsmChange) (add, modifiy, delete).  
+De plus, cette qualificiation est distincte entre les niveaux projet et étiquettes. On peut ajouter ou retirer n'importe quelle étiquette et les conserver dans le projet au cours de leur cycle de vie.
 
-Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
+Similairement aux étiquettes, la qualificiation des contributions est utile au calcul des KPI en tant que cadre général pour regrouper des contributions d'apparence très diverses selon les tags employés dans différents projets.
 
-#### Généralités
+Les contributions au projet sont qualifiées dans les tables `pdm_features_...` et dans les tables de labels pour chaque étiquette. Podoma considère généralement les catégories suivants :
 
-Il est nécessaire d'avoir une table `pdm_boundary` contenant le découpage administratif de la zone ([niveaux administratifs](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 et 8) et ayant cette structure :
+* Niveau projet :
+  - `add` : L'objet est créé dans OpenStreetMap et apparait d'emblée dans le projet
+  - `edit-in` : L'objet a été édité et apparaît dans le projet à partir d'une version > 1. Cela signifie que le contributeur n'a pas créé l'objet mais a réalisé une édition capitale qui a permi à l'objet de correspondre au filtre du projet.
+  - `edit` : L'objet a été édité et était déjà inclus dans le projet.
+  - `edit-out` : L'objet a été édité et n'est plus conforme au filtre du projet.
+  - `delete` : L'objet a été supprimé et n'est donc plus partie du projet.
+* Niveau étiquette :
+  - `edit-in` : L'objet a été édité et la nouvelle version a reçue l'étiquette correspondante
+  - `edit` : L'objet a été édité et était déjà muni de l'étiquette concernée
 
-```sql
-id INT
-osm_id BIGINT
-name VARCHAR
-admin_level INT
-tags HSTORE
-geom GEOMETRY(Geometry, 3857)
-centre GEOMETRY(Point, 3857)
+Les qualificiations projet peuvent être complétées pour chaque projet en créant un script `contribs.sql` à côté de `info.json`.  
+Ce script contient des requêtes UPDATE pour changer la valeur de la colonne contrib dans les tables `pdm_features_...`. Chaque contribution ne peut avoir qu'un seul qualificatif et donc une seule quantité de points associées.
+
+### Dénombrements
+
+Le dénombrement des objets et des contributeurs est opéré sur le journal des modifications de chaque objet sélectionné par le filtre du projet. Il est activé via le drapeau `statistics.count` dans la configuration du projet.  
+Ces opérations nécessitent non seulement de connaître les dates d'existence de chaque version mais aussi l'adhérence de chacune au filtre du projet.  
+
+Il est possible de résumer les différentes configurations et leurs effets selon le schéma suivant :
+![Dénombrements au fil du temps](./projects_counts.svg)
+Certains objets ont une vie complexe et peuvent perdre et retrouver une validité dans le projet à plusieurs reprises.
+
+La plateforme établit elle-même les dates des décomptes à chaque fois que le script est executé par rapport à la date de dernière mise à jour des décomptes de chaque projet.  
+Ces dates sont sélectionnées selon les hypothèses suivantes :
+- Tous les jours à minuit jusqu'à la date de dernière mise à jour des décomptes ou du début du mois en cours
+- Chaque premier de chaque mois jusqu'à la date de dernière mise à jour des décomptes ou le début du projet
+
+En exécutant le script de calcul chaque jour, on obtiendra donc 364 valeurs à la fin d'une année complète de traitement.
+
+Les statistiques projet sont établies par le script `./db/31_projects_update_tmp.sh`. Le script complète la table SQL pdm_feature_counts avec les jours manquant entre le timestamp OSH et le jour courant.
+
+Il est possible de forcer le recomptage de l'intégralité d'un projet en supprimant le fichier de timestamp OSH, récupération des fichiers PBF/PBH et en relançant le script
+
+```bash
+rm ${WORK_DIR}/osh_timestamp
+./db/11_pbf_update_tmp.sh
+./db/31_projects_update_tmp.sh
 ```
 
-La colonne `centre` est comprise comme étant un point compris dans le périmètre de la limite (vous pouvez utiliser [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html)).
+#### Dénombrement des objets
 
-Créer des indexes sur les colonnes `osm_id`, `tags`, `geom` et `centre` peut être utile suivant la population d'objets touchée par un projet donné.
+Les dénombrements suivants sont réalisés de manière systématique :
+- Nombre d'objets existants et validant le filtre du projet à une date donnée
+- Longueur des chemins lorsque certains sont sélectionnés dans le filtre du projet
+- Surface des chemins fermés lorsque certains sont selectionnés dans le filtre du projet
 
-PdM va automatiquement créer une table `pdm_boundary_subdivide` en utilisant [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) pour faciliter le calcul d'intersection entre les objets du projet et le zonage administratif.
+#### Contribution des équipes
 
-Une fois mise à jour, pensez à propager les changements aux vues utilisants les périmètres administratifs :
+![Evauation de la contribution des équipes](./team_work.svg)
 
-```sql
-REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
+La contribution des équipes est pour l'instant calculée au niveau global uniquement.  
+Les dénombrements suivants sont évalués au cours d'une période de temps, entre deux dates du chronogramme ci-dessus:
+- La longueur effectivement contribuée par l'équipe, la somme des delta de longueur de chaque version attribuée à l'un des utilisateurs de l'équipe.
+- La surface effectivement contribuée par l'équipe, la somme des delta de surface de chaque version attribuée à l'un des utilisateurs de l'équipe.
+
+La figure ci-dessus tente d'illustrer la méthode de dénombrement des contributions des équpes en prenant pour exemple un chemin édité 5 fois par 3 contributeurs.  
+Actuellement, les contributions qui retirent des objets des labels ne peuvent pas être comptées. Ainsi, seules les contributions ajoutant des objets ne sont comptabilisées dans le total pour un lable donné.
+
+#### Dénombrement des contributeurs
+
+Les dénombrements de contributeurs sont réalisés de manière systématique :
+- Le nombre total de contributeurs aux versions sélectionnées par le filtre du projet
+- Le nombre de contributeurs étant intervenus sur des versions sélectionnées par le filtre du projet sur une fenêtre glissante de 24 heures
+- Le nombre de contributeurs étant intervenus sur des versions sélectionnées par le filtre du projet sur une fenêtre glissante de 30 jours
+
+Il convient d'indiquer que le nombre total de contributeurs ne doit pas être interprété comme le nombre d'utilisateurs ayant contribué depuis le début d'OSM sur le sujet concerné par le projet.  
+En effet, seules les versions actives au début du projet sont sélectionnées, masquant ainsi les contributeurs ayant contribué sur des objets complètement supprimés ou sur de précédentes version.
+
+#### Points et contributions
+
+Certaines contribution peuvent donner lieu à l'attribution de points aux contributeurs responsables.
+
+Les montant de points attribués sont configurés dans `info.json` :
+
+```json
+{
+  "statistics": {
+    "points": { 
+      "add": 3,
+      "project1": 1
+    },
+    "points_label": { 
+      "label1": {
+        "edit-in": 3,
+        "edit": 1
+      }, 
+      "label2": {
+        "edit-in": 3,
+        "edit": 1 
+      }
+    }
+  }
+}
 ```
 
-#### Remplacé par une autre base de données
-Dans le cas vous disposez de votre propre base de données tenue à jour en dehors de Podoma, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_slug}`, avec la structure suivante :
-
-```sql
-osm_id varchar,
-gid bigint,
-name VARCHAR(255)
-tags json
-geom GEOMETRY
-```
-
-#### Remplacé par le journal des modifications
-Dans le cas où vous accepteriez une mise à jour quotidienne de la vue des objets actuels, c'est à dire sans prise en compte immédiate des objets contribués pendant la journée, il est possible de créer manuellement une vue matérialisée comme suit :
-
-```sql
-create materialized view pdm_project_projectslug as
-  select fc.osmid as osm_id, 
-  split_part(fc.osmid, '/', 2)::bigint as gid, 
-  fc.tags->>'name' as name, 
-  to_json(fc.tags) as tags, 
-  ST_Centroid(fc.geom)::geometry(point,4326) as geom 
-  from pdm_features_projectslug_changes fc
-  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
-        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
-```
-
-Il faut penser à la mettre à jour chaque jour.
+Les points sont distingués entre les contributions au niveau du projet et de chaque étiuette.
 
 ### Sources de tuiles
 
@@ -489,40 +506,6 @@ Exemple d'utilisation :
 { "type": "nsi", "name": "Marque", "path": "brands/shop/bakery", "locationSet": "fr" }
 ```
 
-### Décomptes et statistiques
-
-Les statistiques projet sont établies par le script `./db/31_projects_update_tmp.sh`. Le script complète la table SQL pdm_feature_counts avec les jours manquant entre le timestamp OSH et le jour courant.
-
-Il est possible de forcer le recomptage de l'intégralité d'un projet en supprimant le fichier de timestamp OSH, récupération des fichiers PBF/PBH et en relançant le script
-
-```bash
-rm ${WORK_DIR}/osh_timestamp
-./db/11_pbf_update_tmp.sh
-./db/31_projects_update_tmp.sh
-```
-
-#### Points et contributions
-
-Certaines contribution peuvent donner lieu à l'attribution de points aux contributeurs responsables.
-La configuration des projets établit le lien entre des classes de contribution et les points associés. Il faut donc qualifier certains changement avec les bonnes classes.
-La plateforme attribue les classes communes suivantes :
-
-- `add`: Les changements concernant des objets version=1
-- `edit` : Les changements concernant des objets version>1
-
-Il est possible d'attribuer des classes propres à chaque projet en créant un fichier `contribs.sql` à côté de `info.json`.
-Ce script contient des requêtes UPDATE modifiant les entrées nécessaires de la table `pdm_features`. Chaque changement ne peut avoir qu'une classe et ne correspondre qu'à une valeur de point unique.
-
-Les montant de points attribués sont configurés dans `info.json` :
-
-```json
-{
-  "statistics": {
-    "points": { "add": 3, "project1": 1 }
-  }
-}
-```
-
 ## Installation
 
 L'installation peut se faire en utilisant docker ou bien directement sur l'hôte.
@@ -622,8 +605,8 @@ Des commandes dédiées sont néamoins disponibles pour relancer une update part
 
 ```bash
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes {init,update} [keep]
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects [init]
 ```
 
 Si vous utilisez la mise à jour via Imposm, vous devez avoir un container qui tourne en fond pour gérer les mises à jour régulières :
@@ -671,6 +654,67 @@ Le script suivant est à lancer quotidiennement pour récupérer les statistique
 npm run projects:update
 ./db/31_projects_update_tmp.sh
 ```
+
+### Se passer d'imposm3
+
+Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.
+Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
+
+Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
+
+#### Généralités
+
+Il est nécessaire d'avoir une table `pdm_boundary` contenant le découpage administratif de la zone ([niveaux administratifs](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 et 8) et ayant cette structure :
+
+```sql
+id INT
+osm_id BIGINT
+name VARCHAR
+admin_level INT
+tags HSTORE
+geom GEOMETRY(Geometry, 3857)
+centre GEOMETRY(Point, 3857)
+```
+
+La colonne `centre` est comprise comme étant un point compris dans le périmètre de la limite (vous pouvez utiliser [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html)).
+
+Créer des indexes sur les colonnes `osm_id`, `tags`, `geom` et `centre` peut être utile suivant la population d'objets touchée par un projet donné.
+
+PdM va automatiquement créer une table `pdm_boundary_subdivide` en utilisant [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) pour faciliter le calcul d'intersection entre les objets du projet et le zonage administratif.
+
+Une fois mise à jour, pensez à propager les changements aux vues utilisants les périmètres administratifs :
+
+```sql
+REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
+```
+
+#### Remplacé par une autre base de données
+Dans le cas vous disposez de votre propre base de données tenue à jour en dehors de Podoma, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_slug}`, avec la structure suivante :
+
+```sql
+osm_id varchar,
+gid bigint,
+name VARCHAR(255)
+tags json
+geom GEOMETRY
+```
+
+#### Remplacé par le journal des modifications
+Dans le cas où vous accepteriez une mise à jour quotidienne de la vue des objets actuels, c'est à dire sans prise en compte immédiate des objets contribués pendant la journée, il est possible de créer manuellement une vue matérialisée comme suit :
+
+```sql
+create materialized view pdm_project_projectslug as
+  select fc.osmid as osm_id, 
+  split_part(fc.osmid, '/', 2)::bigint as gid, 
+  fc.tags->>'name' as name, 
+  to_json(fc.tags) as tags, 
+  ST_Centroid(fc.geom)::geometry(point,4326) as geom 
+  from pdm_features_projectslug_changes fc
+  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
+        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
+```
+
+Il faut penser à la mettre à jour chaque jour.
 
 ## Site web
 

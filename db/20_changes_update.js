@@ -25,7 +25,7 @@ const pgPool = new Pool({
     connectionString: `${process.env.DB_URL}`
 });
 
-function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures, csvUsers, csvMembers = null, start_ts = null, end_ts = null){
+function macroChangesCsv (mode, project, oplProject, csvFeatures, csvUsers, csvMembers = null, start_ts = null, end_ts = null){
     const slug = project.name.split("_").pop();
     const features_table = `pdm_features_${slug}`;
     const members_table = `pdm_members_${slug}`;
@@ -48,8 +48,15 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
     if (mode == "init"){
         script += `
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Init changes table in database"
-        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_init.sql"
+        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_init.sql"
+        `;
+        if (project.statistics.length){
+            script += `${PSQL} -v features_table="${features_table}" -v changes_table="${changes_table}" -f "${__dirname}/22_changes_init_linear.sql"`
+        }else{
+            script += `${PSQL} -v features_table="${features_table}" -v changes_table="${changes_table}" -f "${__dirname}/22_changes_init_nodes.sql"`
+        }
 
+        script += `
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
         ${PSQL} -c "\\COPY ${features_table} (osmid, version, changeset, action, contrib, ts, userid, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
         `;
@@ -124,7 +131,7 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Building geometries of ways"
         ${PSQL} -v features_table="${features_table_geom}" -v features_perm_table="${features_table}" -v members_table="${members_table}" -v start_date="'${start_ts}'" -f "${__dirname}/26_changes_geom_ways.sql"
         `;
-        if (filterFeatures.indexOf("r") > -1){
+        if (project.database.tagFilterFeatures.indexOf("r") > -1){
             script += `
             echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Building geometries of relations"
             ${PSQL} -v features_table="${features_table_geom}" -v features_perm_table="${features_table}" -v members_table="${members_table}" -v start_date="'${start_ts}'" -f "${__dirname}/26_changes_geom_rels.sql"
@@ -132,7 +139,20 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
         }
     }
 
+    if (project.database.hasOwnProperty("labels")){
+        // It needs features to be populated in main table to get previous versions and can't rely on features_table_tmp only
+        script += `
+        echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Update contrib on labels"
+        ${PSQL} -v features_table="${features_table}" -v labels_table="${labels_table}" -f "${__dirname}/27_changes_labels_contrib.sql"
+        `
+    }
+
     script += `
+    if [ -f "${__dirname}/../projects/${project.name}/contribs.sql" ]; then
+        echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Including project custom contributions"
+        ${PSQL} -f "${__dirname}/../projects/${project.name}/contribs.sql"
+    fi
+    
     echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Refresh changes"
     ${PSQL} -c "REFRESH MATERIALIZED VIEW ${changes_table}"
 
@@ -158,11 +178,6 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
         }
         script += `
     fi
-
-    if [ -f "${__dirname}/../projects/${project.name}/contribs.sql" ]; then
-        echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Including project custom contributions"
-        ${PSQL} -f "${__dirname}/../projects/${project.name}/contribs.sql"
-    fi
     `;
 
     if (mode == "update"){
@@ -183,9 +198,11 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
 console.log("Projects installation");
 
 let projectsQry = "INSERT INTO pdm_projects (project_id, project, start_date, end_date) VALUES ";
-let projectPointsQry = "INSERT INTO pdm_projects_points (project_id, contrib, points) VALUES ";
-let projectPointsLength = 0;
+let projectPointsQry = "INSERT INTO pdm_projects_points (project_id, contrib, label, points) VALUES ";
+let projectTeamsQry = "INSERT INTO pdm_projects_teams (project_id, team, username) VALUES ";
 let projectLength = 0;
+let projectPointsLength = 0;
+let projectTeamsLength = 0;
 
 Object.values(projects).forEach(project => {
     let project_end_date = project.end_date;
@@ -198,26 +215,53 @@ Object.values(projects).forEach(project => {
     projectsQry += `(${project.id}, '${project.name}', '${project.start_date}', ${project_end_date}),`;
     projectLength++;
 
-    Object.entries(project.statistics.points).forEach(([contrib,value]) => {
-        projectPointsQry += `(${project.id}, '${contrib}', ${value}),`;
-        projectPointsLength++;
-    });
+    if (project.statistics.hasOwnProperty("points")){
+        Object.entries(project.statistics.points).forEach(([contrib,value]) => {
+            projectPointsQry += `(${project.id}, '${contrib}', NULL, ${value}),`;
+            projectPointsLength++;
+        });
+    }
+    if (project.statistics.hasOwnProperty("points_labels")){
+        Object.entries(project.statistics.point_labels).forEach(([label,label_points]) => {
+            Object.entries(label_points).forEach(([contrib, value]) => {
+                projectPointsQry += `(${project.id}, '${contrib}', '${label}', ${value}),`;
+                projectPointsLength++;
+            });
+        });
+    }
+
+    if (project.hasOwnProperty("teams")){
+        Object.entries(project.teams).forEach(([team,usernames]) => {
+            usernames.forEach((username) => {
+                projectTeamsQry += `(${project.id}, '${team}', '${username}'),`;
+            });
+            projectTeamsLength++;
+        });
+    }
 });
 
 projectsQry = `${projectsQry.substring(0, projectsQry.length-1)} ON CONFLICT (project_id) DO UPDATE SET start_date=EXCLUDED.start_date, end_date=EXCLUDED.end_date`;
 pgPool.query(projectsQry, (err, res) => {
     if (err){
-        throw new Error(`Erreur installation projets: ${err}`);
+        throw new Error(`Error when installing projects: ${err}`);
     }
     console.log(projectLength+" project(s) installed");
 });
 
-projectPointsQry = `${projectPointsQry.substring(0, projectPointsQry.length-1)} ON CONFLICT (project_id, contrib) DO UPDATE SET points=EXCLUDED.points`;
+projectPointsQry = `${projectPointsQry.substring(0, projectPointsQry.length-1)} ON CONFLICT (project_id, contrib, label) DO UPDATE SET points=EXCLUDED.points`;
 pgPool.query(projectPointsQry, (err, res) => {
     if (err){
-        throw new Error(`Erreur installation points projet: ${err}`);
+        throw new Error(`Error when installing projects points: ${err}`);
     }
     console.log(projectPointsLength+" project(s) point(s) installed");
+});
+
+projectTeamsQry = `${projectTeamsQry.substring(0, projectTeamsQry.length-1)} ON CONFLICT (project_id, team, username) DO NOTHING`;
+pgPool.query(projectTeamsQry, (err, res) => {
+    if (err){
+        throw new Error(`Error when installing projects teams: ${err}`);
+    }
+    console.log(projectTeamsLength+" project(s) team(s) installed");
 });
 
 // Script text
@@ -245,6 +289,7 @@ fi
 
 nbProjects=\$(${PSQL} -tAc "select count(*) from pdm_projects" | sed 's/[^0-9]*//g' )
 nbPoints=\$(${PSQL} -tAc "select count(*) from pdm_projects_points" | sed 's/[^0-9]*//g' )
+nbTeams=\$(${PSQL} -tAc "select count(*) from pdm_projects_teams" | sed 's/[^0-9]*//g' )
 
 if (( \$nbProjects < 1 )); then
     echo "WARN: No known projects in SQL projects table"
@@ -256,6 +301,11 @@ if (( $nbPoints < 1 )); then
     echo "WARN: No declared points for projects contributions"
 else
     echo "\$nbPoints points known"
+fi
+if (( \$nbTeams < 1 )); then
+    echo "INFO: No declared teams for projects contributions"
+else
+    echo "\$nbTeams team members known"
 fi
 
 if ${HAS_BOUNDARY}; then
@@ -374,11 +424,7 @@ Object.values(projects).forEach(project => {
         `;
         let oshProjectTime = "\$history_osh";
         let getIdOptions = "-H";
-        let tagFilterFeatures = "nwr";
         tagFilterParts.forEach(tagFilter => {
-            if (tagFilter.indexOf('/') > -1){
-                tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
-            }
             script += `
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Extract features from OSH (${tagFilter})"
         rm -f "${oshProjectInterm}"
@@ -389,7 +435,7 @@ Object.values(projects).forEach(project => {
             oshProjectTime = oshProjectTags;
         });
 
-        if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
+        if (project.database.tagFilterFeatures.indexOf("w") > -1 || project.database.tagFilterFeatures.indexOf("r") > -1){
             getIdOptions += " -r -t";
         }else{
             csvMembers = null;
@@ -401,7 +447,7 @@ Object.values(projects).forEach(project => {
         osmium getid ${getIdOptions} "\$history_osh" -I "${oshProjectTags}" -f opl,history=true -o "${oplProject}"
         rm -f "${csvFeatures}" "${csvMembers}" "${oshProjectTags}"
 
-        ${macroChangesCsv ("init", project, tagFilterFeatures, oplProject, csvFeatures, csvUsers, csvMembers, "\$process_start_ts", "\$process_end_tss")}
+        ${macroChangesCsv ("init", project, oplProject, csvFeatures, csvUsers, csvMembers, "\$process_start_ts", "\$process_end_tss")}
 
         ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${process_end_ts}', counts_lastupdate_date=NULL WHERE project_id=${project.id}"
         echo "== [\$((\$(date -d now +%s) - \$process_start_t0))s] Project ${project.name} initied. Errors may have occured upside."
@@ -534,12 +580,8 @@ Object.values(projects).forEach(project => {
     `;
 
     let getIdOptions = "-H";
-    let tagFilterFeatures = "nwr";
     let oscProjectUpdate = "\$projectChanges_osc";
     tagFilterParts.forEach(tagFilter => {
-        if (tagFilter.indexOf('/') > -1){
-            tagFilterFeatures = (tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
-        }
         script += `
             echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Extract features from OSH (${tagFilter})"
             rm -f "${oscProjectInterm}"
@@ -553,7 +595,7 @@ Object.values(projects).forEach(project => {
             osmium cat "${oscProjectTags}" -f opl | grep ' v1 ' | mawk '{print $1}' > "${listCreatedIds}"
         `;
 
-    if (tagFilterFeatures.indexOf("w") > -1 || tagFilterFeatures.indexOf("r") > -1){
+    if (project.database.tagFilterFeatures.indexOf("w") > -1 || project.database.tagFilterFeatures.indexOf("r") > -1){
         getIdOptions += " -r -t";
     }else{
         csvMembers = null;
@@ -579,7 +621,7 @@ Object.values(projects).forEach(project => {
             fi
             rm -f "${CSV_FEATURES_FS}" "${listKnownIds}" "${listCreatedIds}"
 
-            ${macroChangesCsv ("update", project, tagFilterFeatures, oplProject, csvFeatures, csvUsers, csvMembers, "\$project_start_ts", "\$project_end_ts")}
+            ${macroChangesCsv ("update", project, oplProject, csvFeatures, csvUsers, csvMembers, "\$project_start_ts", "\$project_end_ts")}
 
             ${PSQL} -c "UPDATE pdm_projects SET changes_lastupdate_date='\${project_end_ts}' WHERE project_id=${project.id}"
             echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Project update successful"

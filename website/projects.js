@@ -12,6 +12,15 @@ fs.readdirSync(PROJECTS_PATH).forEach(projectDir => {
 		project.month = project.name.split("_").shift()+"-05T00:00:00Z";
 		project.slug = project.name.split("_").pop();
 
+		// Filtered features
+		let tagFilterParts = project.database.osmium_tag_filter.split("&");
+		project.database.tagFilterFeatures = "nwr";
+    	tagFilterParts.forEach(tagFilter => {
+			if (tagFilter.indexOf('/') > -1){
+				project.database.tagFilterFeatures = (project.database.tagFilterFeatures.match(new RegExp('[' + tagFilter.split('/').shift() + ']', 'g')) || []).join('');
+			}
+		});
+
 		// Add auto-computed metadata
 		project.osmoseLabels = {};
 		project.osmoseButtons = {};

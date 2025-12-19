@@ -38,3 +38,16 @@ SELECT osmid, version, tags_old, tags, (not tags_old ? 'circuits' and tags ? 'ci
 from lines_changes
 where tags is not null and not tags_old ? 'circuits' and tags ? 'circuits'
 ```
+
+### Evaluate contribution
+
+Get all teams involvement in a given project between two dates
+
+```sql
+select team, label, sum(uc.len_delta) as len_delta
+from pdm_user_contribs uc
+join pdm_projects_teams pt ON pt.userid=uc.userid and pt.project_id=uc.project_id
+where uc.project_id=11 and uc.ts BETWEEN '2025-01-01' AND CURRENT_TIMESTAMP
+group by team, label
+order by team, label;
+```

@@ -105,11 +105,14 @@ The properties in `info.json` are as follows:
 - `database.compare`: configuration for the search of OpenStreetMap objects to compare, follows the format of `database.imposm` with an additional property `radius` (reconciliation radius in meters)
 - `database.labels` : Labels definitions that are assigned to each feature version depending on their tags. Each label is associated to a JSON path used by [jsonb_path_exists](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE) over each feature tags. Example `"labels":{"label1":"$ ? (@.substation==\"transmission\")"}` to assign `label1` to any object that holds `substation=transmission`. See below about filtering.
 - `datasources`: list of data sources that appear on the page (see below)
+- `teams` : list of teams used to build statistics and defined with their name corresponding to a OSM usernames table.
 - `statistics`: configuration of statistics display on the project page
-- `statistics.count`: enable object counting in OSM
+- `statistics.count`: enable projects features counting
+- `statistics.length` : enable length and surface measurement on projects features. Don't forget to reinit project to enforce any change.
 - `statistics.feature_name`: name to display to the user for these objects
 - `statistics.osmose_tasks`: name of the tasks performed via Osmose
-- `statistics.points`: configuration of the points obtained according to the type of contribution (in relation with `contribs.sql`)
+- `statistics.points`: configuration of the points obtained when contributing to the project (in relation with `contribs.sql`). `{"add":1, "edit":2}`
+- `statistics.points_labels`: configuration of the points obtained when contributing to a given label (in relation with `contribs.sql`). `{"label1": {"add":1, "edit":2}}`
 - `editors`: specific configuration to each OSM editor. Podoma is described below, for iD, it is possible to use [the parameters listed here](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Projects timeline
@@ -129,38 +132,6 @@ A project can be configured without end date, with `end_date: null`, to enable e
 - 4th case: An old project with an end date in the future, on which daily diffs updates are applicable until current date.
 - 5th case: A recently began project with an end date in the future, on which daily diffs updates are applicable until current date.
 - 6th case: A project to began in the future, which doesn't require any processing currently.
-
-### Counting
-
-Features and contributors counts are done over change log fed by update and filtered by each project's own configuration. Counting features is enabled with the help of `statistics.count` flag.  
-Computing suh statistics not only requires existence dates of each version but their validity regarding the project's filter as well.
-
-Each possible configuration can be summarised in this chart: 
-![Counting features along time](./projects_counts.svg)
-Some features may have a complex timeline, gaining and losing tags and validity regarding a given project several times.
-
-Dates on which features are counted are selected by the processing script following a precise logic. The span on which the script is used impacts the way those dates are selected. Starting from the current date, we keep the following:
-- Each day at midnight until last count update or 1st day of the current month
-- First day of each month until the last count update or begining of the project
-
-Running the count script each day will lead to 364 values at the end of a complete year.
-
-#### Features counting
-
-The following counts are currently supported:
-- Total amount of features that valides the project's filter on a given date.
-- Ways length when some get selected by each project's filter
-- Area surface when some get selected by each project's filter
-
-#### Contributors counting
-
-The following counts are currently supported:
-- Total amount of contributors involved by features version in project's change log
-- Amount of contributors involved on features versions on a 24 hours time window
-- Amount of contributors involved on features versions on a 30 days time window
-
-The total amount of contributors should not be understood as the total amount of contributors involved since OSM beginning on project's perimeter.  
-Actually, we only select existing versions at the beginning of the project. It avoid contributors involved on completely deleted objects and previous versions.
 
 ### Filtering features
 
@@ -189,7 +160,8 @@ The syntax that is used to define labels conforms to [Postgresql's SQL/JSON](htt
   "label2":"$ ? (@.\"char:key\" == \"value\")",
   "label3":"$ ? (@.numeric_key < 20000)",
   "label4":"$.numeric_array_key ? (@ < 20000)",
-  "label5":"$ ? (@.numeric_array_key[*] > 10000 && @.char_key != \"value\")"
+  "label5":"$ ? (@.numeric_array_key[*] > 10000 && @.char_key != \"value\")",
+  "label6":"$ ? (@.numeric_array_key[*] > 10000 && !exists(@.char_key_unknown))"
 }
 ```
 
@@ -203,66 +175,109 @@ psql -d postgresql://... -v features_table="pdm_features_project" -v labels_tabl
 
 Then, the `update_projects` should be inited again to propagate the new labels into counts and KPI.
 
-### Disable imposm3 usage
+#### Contributions taggings
 
-Is it possible to not use imposm3 and provide an updated database with all necessary data.  
-You must ensure yourself it will be updated at the necessary pace for PdM need, at least daily.
+Podoma operates a more detailed tagging of contributions out of 3 [OsmChange](https://wiki.openstreetmap.org/wiki/OsmChange) categories (add, modifiy, delete).  
+Furthermore, it distinguishes project level and label levels. Features can be independently added and removed from labels and kept in project along their lifecycle.
 
-#### Common principles
+Similarly to labels, contribution taggings are useful for KPI computing as a global framework to group very diverse contributions under the same term.
 
-A table `pdm_boundary` with every administrative boundaries will be useful to aggregate statistics at several levels. [Administrative boundaries](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 and 8 are supported by web interface.  
-It should conform to this structure:
+Contributions tagging are established in `pdm_features_...` tables for project level and labels tables for label level. Podoma now considers following global values:
 
-```sql
-id INT
-osm_id BIGINT
-name VARCHAR
-admin_level INT
-tags HSTORE
-geom GEOMETRY(Geometry, 3857)
-centre GEOMETRY(Point, 3857)
+* Project level:
+  - `add`: The feature is created in OpenStreetMap and appears in the project
+  - `edit-in`: The feature was edited and appears in the project starting a version > 1. It means the mapper hasn't created the feature but made a crucial edit that pushed new features in the project (or restored them)
+  - `edit`: The feature was edited and was already included in the project
+  - `edit-out`: The feature was edited and aren't part of the project anymore.
+  - `delete`: The feature was deleted and was part of the project
+* Label level:
+  - `edit-in`: The feature was edited and got the mentioned label for the first time or was restored into it.
+  - `edit`: The feature was edited and already got the mentionned label on a past version.
+
+Global contribution tagging can be extended for each project by creating a `contribs.sql` file next to `info.json`.
+This script contains UPDATE SQL requests to add entries in `pdm_features_...` table. Each OSM change can only have a single type and have a single amount of points associated.
+
+### Counting
+
+Features and contributors counts are done over change log fed by update and filtered by each project's own configuration. Counting features is enabled with the help of `statistics.count` flag.  
+Computing suh statistics not only requires existence dates of each version but their validity regarding the project's filter as well.
+
+Each possible configuration can be summarised in this chart: 
+![Counting features along time](./projects_counts.svg)
+Some features may have a complex timeline, gaining and losing tags and validity regarding a given project several times.
+
+Dates on which features are counted are selected by the processing script following a precise logic. The span on which the script is used impacts the way those dates are selected. Starting from the current date, we keep the following:
+- Each day at midnight until last count update or 1st day of the current month
+- First day of each month until the last count update or begining of the project
+
+Running the count script each day will lead to 364 values at the end of a complete year.
+
+Project statistics are made by `./db/31_projects_update_tmp.sh` script. This script fills `pdm_feature_counts` SQL table with missing daily data according to last OSH file timestamp and current day.
+
+It is possible to force full recount for a project by deleting OSH timestamp file, retreive again PBF/PBH files and launch again the script:
+
+```bash
+rm ${WORK_DIR}/osh_timestamp
+./db/11_pbf_update_tmp.sh
+./db/31_projects_update_tmp.sh
 ```
 
-`centre` column contains a point that must be inside the boundary perimeter (please use [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html) function).  
-Indices should be created on columns `osm_id`, `tags`, `geom` and `centre` depending on the amount of boundaries covering each project.
+#### Features counting
 
-Processing will automatically derivate another table `pdm_boundary_subdivide` by using [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) as to significantly ease the intersecting computation between features and boundaries.
+The following counts are currently supported:
+- Total amount of features that valides the project's filter on a given date.
+- Ways length when some get selected by each project's filter
+- Area surface when some get selected by each project's filter
 
-Once updated, use the following to propagate the changes you have made to the boundaries:
+#### Teams contribution
 
-```sql
-REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
+![Team contribution evaluation](./team_work.svg)
+
+Teams contribution is for now evaluated at project level only, with or without labels.  
+Following counts are done over a time frame between two dates of the timeline upside:
+- The actual length contributed by the team, as the sum of lengths delta of each version linked to each team member
+- The actual surface contributed by the team, as the sum of surface delta of each version linked to each team member
+
+Figure upside tries to explain how two teams contributions are counted over a way edited 5 times by 3 différent mappers.  
+Currenty, contributions that removes feature out of a label can't be counted. As a result for each label, only positive contributions are part of the total.
+
+#### Contributors counting
+
+The following counts are currently supported:
+- Total amount of contributors involved by features version in project's change log
+- Amount of contributors involved on features versions on a 24 hours time window
+- Amount of contributors involved on features versions on a 30 days time window
+
+The total amount of contributors should not be understood as the total amount of contributors involved since OSM beginning on project's perimeter.  
+Actually, we only select existing versions at the beginning of the project. It avoid contributors involved on completely deleted objects and previous versions.
+
+#### Points and gamification
+
+Certain OSM contributions can give points to users.
+Each project configuration set how many points are given according to contribution tagging, in `info.json`:
+
+```json
+{
+  "statistics": {
+    "points": { 
+      "add": 3,
+      "project1": 1
+    },
+    "points_label": { 
+      "label1": {
+        "edit-in": 3,
+        "edit": 1
+      }, 
+      "label2": {
+        "edit-in": 3,
+        "edit": 1 
+      }
+    }
+  }
+}
 ```
 
-#### Replace by another database
-In case you have access to your own database already updated outside of PdM, you should produce a materialized view for each active project, called `pdm_project_${project_slug}` that conforms to following structure:
-
-```sql
-osm_id varchar,
-gid bigint,
-name VARCHAR(255)
-tags json
-geom GEOMETRY
-```
-
-Optionally, if the compare mode is enabled for a given project, a supplemntary view called `pdm_project_${project_id}_compare` that conforms to the given structure for `pdm_project_${project_id}` is needed.
-
-#### Replace by the changelog
-If you accept to only have a daily update to most statsitics, which means without instant update when some features get edited along the day, it is possible to create a materialized view as such:
-
-```sql
-create materialized view pdm_project_projectslug as
-  select fc.osmid as osm_id, 
-  split_part(fc.osmid, '/', 2)::bigint as gid, 
-  fc.tags->>'name' as name, 
-  to_json(fc.tags) as tags, 
-  fc.geom 
-  from pdm_features_projectslug_changes fc
-  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
-        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
-```
-
-Please mind refreshing it every day.
+Points are distinguishsed between project and label contributions.
 
 ### Data sources
 
@@ -502,40 +517,6 @@ Icon select fields allow simple selecting of several similar attributes, for exa
 }
 ```
 
-### Feature counts and statistics
-
-Project statistics are made by `./db/31_projects_update_tmp.sh` script. This script fills `pdm_feature_counts` SQL table with missing daily data according to last OSH file timestamp and current day.
-
-It is possible to force full recount for a project by deleting OSH timestamp file, retreive again PBF/PBH files and launch again the script:
-
-```bash
-rm ${WORK_DIR}/osh_timestamp
-./db/11_pbf_update_tmp.sh
-./db/31_projects_update_tmp.sh
-```
-
-#### Points and contributions
-
-Certain OSM contributions can give points to users.
-Each project configuration set how many points are given according to the type of contribution.
-By default, the platform create the following contribution types:
-
-- `add`: changes concerning features with version=1 (creation)
-- `edit` : changes concerning features version>1 (tag or geometry edits)
-
-It is possible to attribute your own type for each project by creating a `contribs.sql` file next to `info.json`.
-This script contains UPDATE SQL requests to add entries in `pdm_features` table. Each OSM change can only have a single type and have a single amount of points associated.
-
-Configuration of points is in `info.json`:
-
-```json
-{
-  "statistics": {
-    "points": { "add": 3, "project1": 1 }
-  }
-}
-```
-
 ## Build
 
 Once PDM has been properly configured, you should choose between Docker or standalone to build it.
@@ -632,8 +613,8 @@ Individual updates are also available for punctual calls:
 
 ```bash
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes {init,update} [keep]
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects [init]s
 ```
 See below for the related documentation.
 
@@ -677,6 +658,67 @@ The following script has to be launched daily to retrieve the contribution stati
 npm run projects:update
 ./db/31_projects_update_tmp.sh
 ```
+
+### Disable imposm3 usage
+
+Is it possible to not use imposm3 and provide an updated database with all necessary data.  
+You must ensure yourself it will be updated at the necessary pace for PdM need, at least daily.
+
+#### Common principles
+
+A table `pdm_boundary` with every administrative boundaries will be useful to aggregate statistics at several levels. [Administrative boundaries](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 and 8 are supported by web interface.  
+It should conform to this structure:
+
+```sql
+id INT
+osm_id BIGINT
+name VARCHAR
+admin_level INT
+tags HSTORE
+geom GEOMETRY(Geometry, 3857)
+centre GEOMETRY(Point, 3857)
+```
+
+`centre` column contains a point that must be inside the boundary perimeter (please use [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html) function).  
+Indices should be created on columns `osm_id`, `tags`, `geom` and `centre` depending on the amount of boundaries covering each project.
+
+Processing will automatically derivate another table `pdm_boundary_subdivide` by using [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) as to significantly ease the intersecting computation between features and boundaries.
+
+Once updated, use the following to propagate the changes you have made to the boundaries:
+
+```sql
+REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
+```
+
+#### Replace by another database
+In case you have access to your own database already updated outside of PdM, you should produce a materialized view for each active project, called `pdm_project_${project_slug}` that conforms to following structure:
+
+```sql
+osm_id varchar,
+gid bigint,
+name VARCHAR(255)
+tags json
+geom GEOMETRY
+```
+
+Optionally, if the compare mode is enabled for a given project, a supplemntary view called `pdm_project_${project_id}_compare` that conforms to the given structure for `pdm_project_${project_id}` is needed.
+
+#### Replace by the changelog
+If you accept to only have a daily update to most statsitics, which means without instant update when some features get edited along the day, it is possible to create a materialized view as such:
+
+```sql
+create materialized view pdm_project_projectslug as
+  select fc.osmid as osm_id, 
+  split_part(fc.osmid, '/', 2)::bigint as gid, 
+  fc.tags->>'name' as name, 
+  to_json(fc.tags) as tags, 
+  fc.geom 
+  from pdm_features_projectslug_changes fc
+  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
+        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
+```
+
+Please mind refreshing it every day.
 
 ## Website
 

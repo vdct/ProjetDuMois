@@ -53,6 +53,7 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "postes électriques",
 		"osmose_tasks": "postes intégrés",
 		"points": { "add": 3, "edit": 2 }

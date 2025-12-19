@@ -138,6 +138,7 @@ fi
 echo "== Prerequisites"
 nbProjects=$(${PSQL} -tAc "select count(*) from pdm_projects" | sed 's/[^0-9]*//g' )
 nbPoints=$(${PSQL} -tAc "select count(*) from pdm_projects_points" | sed 's/[^0-9]*//g' )
+nbTeams=$(${PSQL} -tAc "select count(*) from pdm_projects_teams" | sed 's/[^0-9]*//g' )
 
 if (( \$nbProjects < 1 )); then
     echo "WARN: No known projects in SQL projects table"
@@ -148,6 +149,11 @@ if (( \$nbPoints < 1 )); then
     echo "WARN: No declared points for projects contributions"
 else
     echo "\$nbPoints points known"
+fi
+if (( \$nbTeams < 1 )); then
+    echo "INFO: No declared teams for projects contributions"
+else
+    echo "\$nbTeams team members known"
 fi
 
 ${separator}
@@ -206,13 +212,14 @@ if [[ \$process_start_ts == \$process_end_ts ]]; then
     echo "No date to count"
 else
     echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Counting features"
-    count_dates_list="('\$process_end_ts')"
+    count_dates_list=""
     process_interm_time=\$(date -d "\${process_end_year}-\${process_end_month}-01T00:00:00Z" +%s --utc)
     if (( \$process_end_day <= 15 )); then
         process_interm_time=$((\$process_interm_time - 20*86400))
     fi
     process_interm_year=\$(date -d "@\$process_interm_time" +%Y)
     process_interm_month=\$(date -d "@\$process_interm_time" +%-m)
+    count_date_current_past="NULL"
     if [[ "\$process_start_month" != "\$process_end_month" ]] || [[ "\$process_start_year" != "\$process_end_year" ]]; then
         for ((count_date_year=process_start_year; count_date_year<=process_interm_year; count_date_year++))
             do
@@ -221,7 +228,8 @@ else
             for((count_date_month=count_date_month; count_date_month<=count_date_month_end; count_date_month++))
                 do
                 count_date_current=\$(date -d "\${count_date_year}-\${count_date_month}-01" --utc +'%Y-%m-%dT00:00:00Z')
-                count_dates_list="\$count_dates_list,('\$count_date_current')"
+                count_dates_list="('\$count_date_current', \$count_date_current_past),\$count_dates_list"
+                count_date_current_past="'\$count_date_current'"
             done
         done
         process_interm_day="02"
@@ -232,8 +240,10 @@ else
     for((count_date_offset=process_interm_time; count_date_offset<process_end_time; count_date_offset+=86400))
         do
         count_date_current=\$(date -d "@\$count_date_offset" +'%Y-%m-%dT00:00:00Z')
-        count_dates_list="\$count_dates_list,('\$count_date_current')"
+        count_dates_list="('\$count_date_current', \$count_date_current_past),\$count_dates_list"
+        count_date_current_past="'\$count_date_current'"
     done
+    count_dates_list="\$count_dates_list ('\$process_end_ts', \$count_date_current_past)"
         
     ${PSQL} -v project_id="${project.id}" -v changes_table="pdm_features_${slug}_changes" -v boundary_table="pdm_features_${slug}_boundary" -v labels_table="pdm_features_${slug}_labels" -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v dates_list="\$count_dates_list" -f "${__dirname}/32_projects_counts.sql"
         `;
@@ -241,7 +251,7 @@ else
 
     script += `
     echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Generate user contributions"
-    ${PSQL} -v project_id="${project.id}" -v features_table="pdm_features_${slug}" -v boundary_table="pdm_features_${slug}_boundary" -v labels_table="pdm_features_${slug}_labels"  -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v project_start_date="'${project.start_date}'" -v dates_list="\$count_dates_list" -f "${__dirname}/33_projects_contribs.sql"
+    ${PSQL} -v project_id="${project.id}" -v features_table="pdm_features_${slug}" -v changes_table="pdm_features_${slug}_changes" -v boundary_table="pdm_features_${slug}_boundary" -v labels_table="pdm_features_${slug}_labels"  -v start_date="'\${process_start_ts}'" -v end_date="'\${process_end_ts}'" -v project_start_date="'${project.start_date}'" -v dates_list="\$count_dates_list" -f "${__dirname}/33_projects_contribs.sql"
 
     if [ -f '${__dirname}/../projects/${project.name}/extract.sh' ]; then
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Extract script"

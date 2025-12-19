@@ -77,6 +77,7 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "défibrillateurs",
 		"osmose_tasks": "défibrillateurs officiels intégrés",
 		"points": { "add": 3, "edit": 1, "note": 1 }

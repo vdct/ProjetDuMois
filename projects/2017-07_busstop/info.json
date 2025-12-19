@@ -60,6 +60,7 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "arrêts de bus",
 		"osmose_tasks": "arrêts de bus complétés/intégrés",
 		"points": {

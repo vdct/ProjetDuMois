@@ -1,12 +1,15 @@
 -- Remove existing counts
 \timing
+ANALYSE :changes_table;
+ANALYSE :labels_table;
+
 DELETE FROM pdm_feature_counts WHERE project_id=:project_id AND ts BETWEEN :start_date AND :end_date;
 DELETE FROM pdm_feature_counts_per_boundary WHERE project_id=:project_id AND ts BETWEEN :start_date AND :end_date;
 
 -- Handle dates list
-CREATE TEMP TABLE IF NOT EXISTS pdm_features_counts_dates (ts timestamp); TRUNCATE TABLE pdm_features_counts_dates;
-INSERT INTO pdm_features_counts_dates (ts) VALUES :dates_list;
-CREATE INDEX ON pdm_features_counts_dates using btree(ts);
+CREATE TEMP TABLE IF NOT EXISTS pdm_features_counts_dates (ts timestamp, ts_past timestamp); TRUNCATE TABLE pdm_features_counts_dates;
+INSERT INTO pdm_features_counts_dates (ts, ts_past) VALUES :dates_list;
+CREATE INDEX ON pdm_features_counts_dates using btree(ts, ts_past);
 
 -- Main labels count
 INSERT INTO pdm_feature_counts (project_id, ts, label, amount, len, area)

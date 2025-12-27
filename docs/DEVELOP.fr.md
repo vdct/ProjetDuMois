@@ -105,11 +105,14 @@ Les propriétés dans `info.json` sont les suivantes :
 - `database.compare` : configuration pour la recherche d'objets OpenStreetMap à comparer, suit le format de `database.imposm` avec une propriété supplémentaire `radius` (rayon de rapprochement en mètres)
 - `database.labels` : Objet de définition d'étiquettes attribuées aux versions d'objets en fonction de leurs tags. Chaque étiquette est associée au path JSON utilisé par la fonction [jsonb_path_exists](https://www.postgresql.org/docs/current/functions-json.html#FUNCTIONS-JSON-PROCESSING-TABLE) utilisée sur la chaine de tags. Exemple `"labels":{"etiquette1":"$ ? (@.substation==\"transmission\")"}` pour attribuer `etiquette1` à tous les objets portant le tags `substation=transmission`. Voir ci-dessous à propos du filtrage
 - `datasources` : liste des sources de données qui apparaissent sur la page (voir ci-dessous)
+- `teams` : liste d'équipes utiles à la construction des statistiques et définies par leur nom correspondant à un tableau de noms d'utilisateurs OSM.
 - `statistics` : configuration de l'affichage des statistiques sur la page du projet
 - `statistics.count` : activer le comptage des objets du projet
+- `statistics.length` : activer les mesures de longueurs et de surface des objets du projet. Oblige à réinitialiser le projet en cas de changement.
 - `statistics.feature_name` : nom à afficher à l'utilisateur pour ces objets
 - `statistics.osmose_tasks` : nom des tâches accomplies via Osmose
-- `statistics.points` : configuration des points obtenus selon le type de contribution (en lien avec `contribs.sql`)
+- `statistics.points` : configuration des points obtenus selon la contribution au projet (en lien avec `contribs.sql`). `{"add":1, "edit":2}`
+- `statistics.points_labels` : configuration des points obtenus selon la contribution sur un label précis (en lien avec `contribs.sql`). `{"label1": {"add":1, "edit":2}}`
 - `editors` : configuration spécifique à chaque éditeur OSM. Pour Podoma, les informations sont disponibles ci-dessous. Pour iD, il est possible d'utiliser [les paramètres listés ici](https://github.com/openstreetmap/iD/blob/develop/API.md).
 
 ### Temporalité des projets
@@ -152,6 +155,13 @@ Les dénombrements suivants sont réalisés de manière systématique :
 - Nombre d'objets existants et validant le filtre du projet à une date donnée
 - Longueur des chemins lorsque certains sont sélectionnés dans le filtre du projet
 - Surface des chemins fermés lorsque certains sont selectionnés dans le filtre du projet
+
+#### Contribution des équipes
+
+La contribution des équipes est pour l'instant calculée au niveau global uniquement.  
+Les dénombrements suivants sont évalués au cours d'une période de temps, entre deux dates du chronogramme ci-dessus:
+- La longueur effectivement contribuée par l'équipe, la somme des delta de longueur de chaque version attribuée à l'un des utilisateurs de l'équipe
+- La surface effectivement contribuée par l'équipe, la somme des delta de surface de chaque version attribuée à l'un des utilisateurs de l'équipe
 
 #### Dénombrement des contributeurs
 
@@ -202,67 +212,6 @@ psql -d postgresql://... -v features_table="pdm_features_project" -v labels_tabl
 ```
 
 La phase `update_projects` devra ensuite être réinitialisée à son tour pour prendre en compte les nouveaux dénombrements.
-
-### Se passer d'imposm3
-
-Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.
-Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
-
-Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
-
-#### Généralités
-
-Il est nécessaire d'avoir une table `pdm_boundary` contenant le découpage administratif de la zone ([niveaux administratifs](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 et 8) et ayant cette structure :
-
-```sql
-id INT
-osm_id BIGINT
-name VARCHAR
-admin_level INT
-tags HSTORE
-geom GEOMETRY(Geometry, 3857)
-centre GEOMETRY(Point, 3857)
-```
-
-La colonne `centre` est comprise comme étant un point compris dans le périmètre de la limite (vous pouvez utiliser [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html)).
-
-Créer des indexes sur les colonnes `osm_id`, `tags`, `geom` et `centre` peut être utile suivant la population d'objets touchée par un projet donné.
-
-PdM va automatiquement créer une table `pdm_boundary_subdivide` en utilisant [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) pour faciliter le calcul d'intersection entre les objets du projet et le zonage administratif.
-
-Une fois mise à jour, pensez à propager les changements aux vues utilisants les périmètres administratifs :
-
-```sql
-REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
-```
-
-#### Remplacé par une autre base de données
-Dans le cas vous disposez de votre propre base de données tenue à jour en dehors de Podoma, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_slug}`, avec la structure suivante :
-
-```sql
-osm_id varchar,
-gid bigint,
-name VARCHAR(255)
-tags json
-geom GEOMETRY
-```
-
-#### Remplacé par le journal des modifications
-Dans le cas où vous accepteriez une mise à jour quotidienne de la vue des objets actuels, c'est à dire sans prise en compte immédiate des objets contribués pendant la journée, il est possible de créer manuellement une vue matérialisée comme suit :
-
-```sql
-create materialized view pdm_project_projectslug as
-  select fc.osmid as osm_id, 
-  split_part(fc.osmid, '/', 2)::bigint as gid, 
-  fc.tags->>'name' as name, 
-  to_json(fc.tags) as tags, 
-  ST_Centroid(fc.geom)::geometry(point,4326) as geom 
-  from pdm_features_projectslug_changes fc
-  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
-        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
-```
-
-Il faut penser à la mettre à jour chaque jour.
 
 ### Sources de tuiles
 
@@ -622,8 +571,8 @@ Des commandes dédiées sont néamoins disponibles pour relancer une update part
 
 ```bash
 docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_features
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes
-docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes {init,update} [keep]
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_projects [init]
 ```
 
 Si vous utilisez la mise à jour via Imposm, vous devez avoir un container qui tourne en fond pour gérer les mises à jour régulières :
@@ -671,6 +620,67 @@ Le script suivant est à lancer quotidiennement pour récupérer les statistique
 npm run projects:update
 ./db/31_projects_update_tmp.sh
 ```
+
+### Se passer d'imposm3
+
+Il est possible de ne pas utiliser imposm3 et de se connecter à une base de données pourvue des données nécessaires.
+Il faudra s'assurer qu'elle est tenue à jour toutes les heures minimum pour les besoins de PdM.
+
+Optionellement, si le mode compare est activé dans un projet donné, une vue supplémentaire appelée `pdm_project_${project_id}_compare` conforme à ce qui doit être comparé est nécessaire. Elle a la même structure que ci-dessus.
+
+#### Généralités
+
+Il est nécessaire d'avoir une table `pdm_boundary` contenant le découpage administratif de la zone ([niveaux administratifs](https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative) 2, 4, 6 et 8) et ayant cette structure :
+
+```sql
+id INT
+osm_id BIGINT
+name VARCHAR
+admin_level INT
+tags HSTORE
+geom GEOMETRY(Geometry, 3857)
+centre GEOMETRY(Point, 3857)
+```
+
+La colonne `centre` est comprise comme étant un point compris dans le périmètre de la limite (vous pouvez utiliser [ST_PointOnSurface](https://postgis.net/docs/ST_PointOnSurface.html)).
+
+Créer des indexes sur les colonnes `osm_id`, `tags`, `geom` et `centre` peut être utile suivant la population d'objets touchée par un projet donné.
+
+PdM va automatiquement créer une table `pdm_boundary_subdivide` en utilisant [ST_Subdivide](https://postgis.net/docs/ST_Subdivide.html) pour faciliter le calcul d'intersection entre les objets du projet et le zonage administratif.
+
+Une fois mise à jour, pensez à propager les changements aux vues utilisants les périmètres administratifs :
+
+```sql
+REFRESH MATERIALIZED VIEW pdm_boundary_subdivide;
+```
+
+#### Remplacé par une autre base de données
+Dans le cas vous disposez de votre propre base de données tenue à jour en dehors de Podoma, il faudra produire des vues matérialisées pour chaque projet configurés appelées `pdm_project_${project_slug}`, avec la structure suivante :
+
+```sql
+osm_id varchar,
+gid bigint,
+name VARCHAR(255)
+tags json
+geom GEOMETRY
+```
+
+#### Remplacé par le journal des modifications
+Dans le cas où vous accepteriez une mise à jour quotidienne de la vue des objets actuels, c'est à dire sans prise en compte immédiate des objets contribués pendant la journée, il est possible de créer manuellement une vue matérialisée comme suit :
+
+```sql
+create materialized view pdm_project_projectslug as
+  select fc.osmid as osm_id, 
+  split_part(fc.osmid, '/', 2)::bigint as gid, 
+  fc.tags->>'name' as name, 
+  to_json(fc.tags) as tags, 
+  ST_Centroid(fc.geom)::geometry(point,4326) as geom 
+  from pdm_features_projectslug_changes fc
+  where fc.tagsfilter=true and (CURRENT_TIMESTAMP BETWEEN fc.ts_start AND fc.ts_end
+        OR (CURRENT_TIMESTAMP > fc.ts_start AND fc.ts_end is null));
+```
+
+Il faut penser à la mettre à jour chaque jour.
 
 ## Site web
 

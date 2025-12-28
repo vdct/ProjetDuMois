@@ -57,6 +57,7 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "toilettes",
 		"osmose_tasks": "toilettes complétés/intégrés",
 		"points": {

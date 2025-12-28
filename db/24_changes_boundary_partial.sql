@@ -5,7 +5,7 @@ WITH unknown AS (
 	f.version as version,
 	b.osm_id AS boundary
 	FROM :features_table f
-	JOIN :features_table_tmp ft ON ft.osmid=f.osmid AND ft.version=f.version
+	JOIN :update_table fu ON fu.osmid=f.osmid AND fu.version=f.version
 	JOIN pdm_boundary_subdivide b ON ST_Intersects(f.geom, b.geom)
 	LEFT JOIN :boundary_table fb ON fb.osmid=f.osmid AND fb.version=f.version AND fb.boundary=b.osm_id
 	WHERE fb.osmid IS NULL AND f.action!='delete' AND f.geom IS NOT NULL AND f.tagsfilter=true

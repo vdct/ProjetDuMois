@@ -58,6 +58,7 @@
 	],
 	"statistics": {
 		"count": true,
+		"length": false,
 		"feature_name": "panneaux",
 		"points": { "add": 3, "edit": 1, "note": 1 }
 	},

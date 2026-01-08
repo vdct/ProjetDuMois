@@ -107,7 +107,11 @@ It is not required to configure a whole project. Following lines of the `info.js
 You may face problems that requires to investigate intermediates files of the processing scripts.  
 They are usually removed as to not overload storage but it's possible to build a docker image that prevent them to disappear.
 
-In the processing scripts `db/20_changes_update.js` or `db/30_projects_update.js`, find the few `rm -f` commands and remove the ones that prevent to access the file you seek for. And rebuild the docker image afterwards to run with these temporarily measures.
+During import, you can enable the `keep` mode by adding that word at the of the import docker command:
+
+```bash
+docker run --rm [--network=your-network] -v host_work_dir:container_work_dir -e DB_URL=postgres://user:password@host:5432/database pdm/server:latest update_changes init keep
+```
 
 ### Propose your changes
 

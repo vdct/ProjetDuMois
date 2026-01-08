@@ -18,8 +18,18 @@ CREATE TABLE pdm_projects(
 CREATE TABLE pdm_projects_points (
 	project_id int,
 	contrib VARCHAR,
+	label VARCHAR default null,
 	points integer not null,
-	PRIMARY KEY (project_id, contrib)
+
+	CONSTRAINT pdm_projects_points_unique UNIQUE NULLS NOT DISTINCT (project_id, contrib, label)
+);
+
+CREATE TABLE pdm_projects_teams (
+	project_id int,
+	team varchar,
+	username varchar,
+	userid bigint default null,
+	PRIMARY KEY (project_id,team,username)
 );
 
 -- Users contributions
@@ -28,10 +38,13 @@ CREATE TABLE pdm_user_contribs(
 	project_id int NOT NULL,
 	userid BIGINT NOT NULL,
 	ts DATE NOT NULL,
+	label varchar default null,
 	contribution VARCHAR NOT NULL,
 	verified BOOLEAN NOT NULL DEFAULT TRUE,
-	amount INT NOT NULL DEFAULT 1,
-	points INT NOT NULL DEFAULT 1
+	amount_delta INT NOT NULL DEFAULT 0,
+	len_delta numeric default 0,
+	area_delta numeric default 0,
+	points INT DEFAULT 1
 );
 
 CREATE INDEX ON pdm_user_contribs(project_id);
@@ -49,7 +62,7 @@ CREATE TABLE pdm_feature_counts(
 	len numeric not null,
 	area numeric not null,
 
-	CONSTRAINT pdm_feature_counts_unique UNIQUE NULLS NOT DISTINCT(project_id,ts,label)
+	CONSTRAINT pdm_feature_counts_unique UNIQUE NULLS NOT DISTINCT(project_id, ts, label)
 );
 
 CREATE INDEX ON pdm_feature_counts(project_id);
@@ -62,7 +75,7 @@ CREATE TABLE pdm_mapper_counts(
 	amount_1d INT NOT NULL,
 	amount_30d INT NOT NULL,
 
-	CONSTRAINT pdm_mapper_counts_unique UNIQUE NULLS NOT DISTINCT(project_id,ts,label)
+	CONSTRAINT pdm_mapper_counts_unique UNIQUE NULLS NOT DISTINCT(project_id, ts, label)
 );
 
 CREATE INDEX ON pdm_mapper_counts(project_id);

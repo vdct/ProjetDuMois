@@ -1,4 +1,4 @@
--- Rebuild geometries of ways
+-- Labeling features versions
 \timing
 WITH unknown AS (
 	SELECT distinct f.osmid AS osmid,

@@ -57,6 +57,7 @@ La configuration générale de l'outil est à renseigner dans `config.json`. Un 
 - `OSM_URL` : instance OpenStreetMap à utiliser (exemple `https://www.openstreetmap.org`)
 - `OSM_API_URL` : instance API OpenStreetMap à utiliser (exemple `https://api.openstreetmap.org`)
 - `JOSM_REMOTE_URL` : adresse du serveur JOSM à contacter (exemple `http://localhost:8111`)
+- `OVERPASS_URL`: URL vers l'interpreter d'une instance Overpass API utilisée pour la récupération des membres manquants
 - `OSMOSE_URL` : instance Osmose à utiliser (exemple `https://osmose.openstreetmap.fr`)
 - `NOMINATIM_URL` : instance de Nominatim à utiliser (exemple `https://nominatim.openstreetmap.org`)
 - `MAPILLARY_URL` : instance Mapillary à utiliser (exemple `https://www.mapillary.com`)
@@ -196,12 +197,24 @@ La syntaxe qui permet de les définir est basée sur le [SQL/JSON de Postgresql]
 L'attribution des étiquettes est réalisé durant la phase `update_changes`. Seule une réinitialisation de cette phase permet de réviser naturellement la population de versions concernée par une modification des définitions.  
 Toutefois, il est possible manuellement de supprimer puis attribuer à nouveau une étiquette `label1` donnée, par les trois commandes suivantes :
 
+
 ```bash
 psql -d postgresql://... -c "DELETE FROM pdm_features_project_labels WHERE label='label1'"
 psql -d postgresql://... -v features_table="pdm_features_project" -v labels_table="pdm_features_project_labels" -v label="'label1'" -v labelfilter="'... new label filer ...'" -f "db/27_changes_labels.sql"
 ```
 
 La phase `update_projects` devra ensuite être réinitialisée à son tour pour prendre en compte les nouveaux dénombrements.
+
+#### Membres manquants
+Tel que décrit ci-dessus, Podoma exploite les diff quotidiens pour tenir les projets à jour. Ces diffs ne contiennent que les objets modifiés, si bien que lorsqu'un chemin ou une relation y figurent, nous n'y trouvons pas leurs membres.  
+Cela peut finalement poser des problèmes quand ces objets référencent des membres qui ne sont pas encore présents dans la base de données.
+
+Podoma ne conservant pas d'autres objets que ceux nécessaires aux projets, il est nécessaire de vérifier à chaque mise à jour si des objets manquants doivent être récupérés.  
+Overpass API est utilisé pour les projets qui le nécessitent pour retrouver ces objets. Une requête est envoyée pour récupérer l'ensemble des noeuds, chemins et relations manquants ainsi que leurs déscendants pour tenir compte de la récursivité. Ainsi une requête portant sur 10 objets manquants pourra mener à une nombre de résultats plus important.
+
+Ces objets sont ensuite traités en même temps que ceux obtenus de l'analyse des diffs, ce processus complète les fichiers temporaires sans particularisme.
+
+Pour désactiver cette fonctionnalité, vous devez définir le paramètre `OVERPASS_URL` à null dans votre fichier de configuration.
 
 ### Se passer d'imposm3
 

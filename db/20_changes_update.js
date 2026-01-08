@@ -28,6 +28,7 @@ const pgPool = new Pool({
 function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures, csvUsers, csvMembers = null, start_ts = null, end_ts = null){
     const slug = project.name.split("_").pop();
     const features_table = `pdm_features_${slug}`;
+    const update_table = `pdm_features_${slug}_update`;
     const members_table = `pdm_members_${slug}`;
     const changes_table = `pdm_features_${slug}_changes`;
     const boundary_table = `pdm_features_${slug}_boundary`;
@@ -48,7 +49,7 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
     if (mode == "init"){
         script += `
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Init changes table in database"
-        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_init.sql"
+        ${PSQL} -v features_table="${features_table}" -v update_table="${update_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_init.sql"
 
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
         ${PSQL} -c "\\COPY ${features_table} (osmid, version, changeset, action, contrib, ts, userid, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
@@ -63,7 +64,7 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
 
         script += `
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Indexing"
-        ${PSQL} -v features_table="${features_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_index.sql"
+        ${PSQL} -v features_table="${features_table}" -v update_table="${update_table}" -v members_table="${members_table}" -v changes_table="${changes_table}" -v boundary_table="${boundary_table}" -v labels_table="${labels_table}" -f "${__dirname}/22_changes_index.sql"
         `;
 
         if (project.database.hasOwnProperty("labels")){
@@ -77,28 +78,11 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
     }else{
         script += `
         echo "   => [\$((\$(date -d now +%s) - \$process_start_t0))s] Accumulate changes table in database"
+        ${PSQL} -c "TRUNCATE TABLE ${update_table}"
         ${PSQL} -c "DELETE FROM ${features_table} WHERE ts BETWEEN '${start_ts}' AND '${end_ts}'"
 
-        ${PSQL} -c "DROP TABLE IF EXISTS ${features_table}_tmp"
-        ${PSQL} -c "CREATE TABLE ${features_table}_tmp (LIKE ${features_table})"
-
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Copy features"
-        ${PSQL} -c "\\COPY ${features_table}_tmp (osmid, version, changeset, action, contrib, ts, userid, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
-        `;
-
-        if (project.database.hasOwnProperty("labels")){
-            Object.keys(project.database.labels).forEach(label => {
-                script += `
-                echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Labelling ${label}"
-                ${PSQL} -v features_table="${features_table}_tmp" -v labels_table="${labels_table}" -v label="'${label}'" -v labelfilter="'${project.database.labels[label].replaceAll('"', '\\"')}'" -f "${__dirname}/27_changes_labels.sql"
-                `
-            });
-        }
-
-        script += `
-        echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Populate features"
-        ${PSQL} -v features_table="${features_table}" -v features_table_tmp="${features_table}_tmp" -f "${__dirname}/23_changes_populate.sql"
-        ${PSQL} -c "CREATE INDEX ON ${features_table}_tmp using gist(geom)"
+        ${PSQL} -c "\\COPY ${update_table} (osmid, version, changeset, action, contrib, ts, userid, tags, geom, tagsfilter) FROM '${csvFeatures}' CSV"
         `;
 
         if (csvMembers != null){
@@ -107,18 +91,57 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
             ${PSQL} -c "DROP TABLE IF EXISTS ${members_table}_tmp"
             ${PSQL} -c "CREATE TABLE ${members_table}_tmp (LIKE ${members_table})"
             ${PSQL} -c "\\COPY ${members_table}_tmp (memberid, osmid, version, pos, role) FROM '${csvMembers}' CSV"
+            rm -f "${csvMembers}"
+            `
+            if (CONFIG.hasOwnProperty("OVERPASS_URL") && CONFIG.OVERPASS_URL != null){
+                script += `
+                echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Fetching missing members"
+                rm -f "${CONFIG.WORK_DIR}/missing_osm.xml" "${CONFIG.WORK_DIR}/missing_osm.overpass" "${CONFIG.WORK_DIR}/missing_osm.opl" "${CONFIG.WORK_DIR}/missing_osm.csv"
+                missing_members=\$(${PSQL} -qtAf "${__dirname}/25_changes_members_missing.sql" -v members_table="${members_table}_tmp" -v features_table="${features_table}" -v features_table_update="${update_table}" )
+                read -d "|" -a missing_members_qry_res <<< \$missing_members
 
+                echo "data=(\${missing_members_qry_res[0]} \${missing_members_qry_res[1]} \${missing_members_qry_res[2]}); (._;>>;); out meta;" > ${CONFIG.WORK_DIR}/missing_osm.overpass
+
+                curl -d @${CONFIG.WORK_DIR}/missing_osm.overpass --retry 5 --retry-max-time 120 -o "${CONFIG.WORK_DIR}/missing_osm.xml" -X POST ${CONFIG.OVERPASS_URL}
+                if [ -f "${CONFIG.WORK_DIR}/missing_osm.xml" ]; then
+                    osmium cat -f opl -o "${CONFIG.WORK_DIR}/missing_osm.opl" "${CONFIG.WORK_DIR}/missing_osm.xml"
+                    echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] \$(wc -l ${CONFIG.WORK_DIR}/missing_osm.opl | mawk '{print $1}') features has been retrieved from overpass"
+                    mawk -f ${OPL2FTS_FS} -v tagfilter="${project.database.osmium_tag_filter}" -v output_main="${CONFIG.WORK_DIR}/missing_osm.csv" -v output_users="${csvUsers}" ${awk_param_members} "${CONFIG.WORK_DIR}/missing_osm.opl"
+
+                    ${PSQL} -c "\\COPY ${update_table} (osmid, version, changeset, action, contrib, ts, userid, tags, geom, tagsfilter) FROM '${CONFIG.WORK_DIR}/missing_osm.csv' CSV"
+                    ${PSQL} -c "\\COPY ${members_table}_tmp (memberid, osmid, version, pos, role) FROM '${csvMembers}' CSV"
+                else
+                    echo "ERROR possible missing members with unreachable Overpass API"
+                fi
+                rm -f "${CONFIG.WORK_DIR}/missing_osm.xml" "${CONFIG.WORK_DIR}/missing_osm.overpass" "${CONFIG.WORK_DIR}/missing_osm.opl" "${CONFIG.WORK_DIR}/missing_osm.csv"
+                `
+            }
+
+            script += `
             ${PSQL} -v members_table="${members_table}" -v members_table_tmp="${members_table}_tmp" -f "${__dirname}/25_changes_members.sql"
             ${PSQL} -c "DROP TABLE ${members_table}_tmp"
             `;
         }
+
+        if (project.database.hasOwnProperty("labels")){
+            Object.keys(project.database.labels).forEach(label => {
+                script += `
+                echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Labelling ${label}"
+                ${PSQL} -v features_table="${update_table}" -v labels_table="${labels_table}" -v label="'${label}'" -v labelfilter="'${project.database.labels[label].replaceAll('"', '\\"')}'" -f "${__dirname}/27_changes_labels.sql"
+                `
+            });
+        }
+
+        script += `
+        echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Populate features"
+        ${PSQL} -v features_table="${features_table}" -v update_table="${update_table}" -f "${__dirname}/23_changes_populate.sql"
+        `;
     }
 
     if (csvMembers != null){
-        // Features members are only available in features_table and can't only rely on features_table_tmp
         let features_table_geom = features_table;
         if (mode == "update"){
-            features_table_geom = `${features_table}_tmp`
+            features_table_geom = `${update_table}`
         }
         script += `
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Building geometries of ways"
@@ -146,10 +169,10 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
     if ${HAS_BOUNDARY}; then
         echo "  [\$((\$(date -d now +%s) - \$process_start_t0))s] Populate boundaries"
         `;
-        // It needs updated geometry in features_table to run and can't only rely on features_table_tmp
+        // It needs updated geometry in features_table to run and can't only rely on update_table
         if (mode == "update"){
             script += `
-            ${PSQL} -v features_table="${features_table}" -v features_table_tmp="${features_table}_tmp" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary_partial.sql"
+            ${PSQL} -v features_table="${features_table}" -v update_table="${update_table}" -v boundary_table="${boundary_table}" -f "${__dirname}/24_changes_boundary_partial.sql"
             `;
         }else{
             script += `
@@ -164,11 +187,6 @@ function macroChangesCsv (mode, project, filterFeatures, oplProject, csvFeatures
         ${PSQL} -f "${__dirname}/../projects/${project.name}/contribs.sql"
     fi
     `;
-
-    if (mode == "update"){
-        script += `${PSQL} -c "DROP TABLE ${features_table}_tmp"
-        `;
-    }
 
     script += `
     rm -f "${csvFeatures}" "${csvMembers}" "${csvUsers}"
@@ -411,7 +429,7 @@ Object.values(projects).forEach(project => {
 });
 
 script += `
-    if [[ "\$keep" = "keep" ]]; then
+    if [ "\$keep" != "keep" ]; then
         echo "== Removing temp files"
         rm -f ${CONFIG.WORK_DIR}/*.osh.pbf
     fi
@@ -590,7 +608,7 @@ Object.values(projects).forEach(project => {
 });
 
 script += `
-    if [[ "\$keep" = "keep" ]]; then
+    if [ "\$keep" != "keep" ]; then
         echo "== Removing temp files"
         rm -f ${CONFIG.WORK_DIR}/*.osc.*
     fi

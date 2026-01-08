@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS :features_table CASCADE;
+DROP TABLE IF EXISTS :update_table CASCADE;
 CREATE TABLE :features_table (
 	osmid VARCHAR NOT NULL,
 	version INT NOT NULL,
@@ -11,6 +12,7 @@ CREATE TABLE :features_table (
 	contrib VARCHAR DEFAULT NULL,
 	tagsfilter boolean
 );
+CREATE TABLE :update_table (like :features_table);
 
 DROP TABLE IF EXISTS :members_table CASCADE;
 CREATE TABLE :members_table (
